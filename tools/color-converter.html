@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chrysaki Color Converter</title>
+<style>
+  :root {
+    --abyss:       #0f1117;
+    --base:        #161821;
+    --surface:     #1c1f2b;
+    --raised:      #252836;
+    --elevated:    #2e3142;
+    --border:      #363a4f;
+    --emerald:     #14664e;
+    --emerald-lt:  #1a8a6a;
+    --teal:        #197278;
+    --teal-lt:     #20969c;
+    --amethyst-lt: #583090;
+    --blonde:      #FBB13C;
+    --blonde-lt:   #FCC96A;
+    --error:       #8C2F39;
+    --text:        #e0e2ea;
+    --text-sec:    #a0a4b8;
+    --text-muted:  #6a6e82;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--base);
+    color: var(--text);
+    font-family: 'Iosevka Slab', 'Cascadia Code', 'Consolas', monospace;
+    font-size: 14px;
+    min-height: 100vh;
+    padding: 32px;
+  }
+
+  h1 {
+    font-size: 1.4em;
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--emerald-lt), var(--teal-lt), var(--amethyst-lt));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 0.85em;
+    margin-bottom: 32px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 900px;
+    margin-bottom: 40px;
+  }
+
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px;
+  }
+
+  .card h2 {
+    font-size: 0.9em;
+    font-weight: 600;
+    color: var(--teal-lt);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+  }
+
+  label {
+    display: block;
+    color: var(--text-sec);
+    font-size: 0.8em;
+    margin-bottom: 4px;
+    margin-top: 12px;
+  }
+
+  label:first-of-type { margin-top: 0; }
+
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    background: var(--abyss);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.9em;
+    padding: 8px 10px;
+    outline: none;
+  }
+
+  input[type="text"]:focus, input[type="number"]:focus {
+    border-color: var(--emerald-lt);
+    box-shadow: 0 0 0 1px var(--emerald-lt);
+  }
+
+  .oklch-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+
+  button {
+    margin-top: 14px;
+    width: 100%;
+    background: var(--emerald);
+    color: var(--text);
+    border: none;
+    font-family: inherit;
+    font-size: 0.85em;
+    font-weight: 600;
+    padding: 9px 16px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  button:hover { background: var(--emerald-lt); }
+
+  .result {
+    margin-top: 14px;
+    background: var(--raised);
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .swatch {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+
+  .result-text {
+    font-size: 0.9em;
+    color: var(--blonde);
+    font-weight: 600;
+    flex: 1;
+  }
+
+  .copy-btn {
+    margin-top: 0;
+    width: auto;
+    padding: 4px 10px;
+    font-size: 0.75em;
+    background: var(--raised);
+    border: 1px solid var(--border);
+    color: var(--text-sec);
+  }
+
+  .copy-btn:hover { background: var(--elevated); color: var(--text); }
+
+  .error-msg { color: var(--error); font-size: 0.8em; margin-top: 6px; min-height: 18px; }
+
+  /* Palette reference */
+  .palette-section h2 {
+    font-size: 0.9em;
+    font-weight: 600;
+    color: var(--teal-lt);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82em;
+    max-width: 900px;
+  }
+
+  th {
+    background: var(--abyss);
+    color: var(--text-sec);
+    text-align: left;
+    padding: 6px 10px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 5px 10px;
+    border-bottom: 1px solid rgba(54, 58, 79, 0.4);
+    color: var(--text-sec);
+  }
+
+  td:first-child { color: var(--text); }
+
+  tr:hover td { background: var(--surface); }
+
+  .td-swatch {
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 6px;
+    border: 1px solid var(--border);
+  }
+
+  .hex-val {
+    font-family: inherit;
+    color: var(--blonde);
+    cursor: pointer;
+  }
+
+  .hex-val:hover { color: var(--blonde-lt); text-decoration: underline; }
+
+  .oklch-val { color: var(--text-muted); font-size: 0.9em; }
+
+  .section-label {
+    color: var(--teal-lt);
+    font-size: 0.75em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 10px 10px 4px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .copied-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--emerald);
+    color: var(--text);
+    padding: 8px 16px;
+    font-size: 0.85em;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+
+  .copied-toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<h1>Chrysaki Color Converter</h1>
+<p class="subtitle">hex &harr; oklch &mdash; click any hex value in the palette to load it</p>
+
+<div class="grid">
+
+  <!-- Hex → OKLCH -->
+  <div class="card">
+    <h2>Hex &rarr; OKLCH</h2>
+    <label>Hex value</label>
+    <input type="text" id="hexInput" placeholder="#1a8a6a" maxlength="7">
+    <div class="error-msg" id="hexErr"></div>
+    <button onclick="convertHexToOklch()">Convert</button>
+    <div class="result" id="hexResult">
+      <div class="swatch" id="hexSwatch"></div>
+      <span class="result-text" id="hexResultText">&mdash;</span>
+      <button class="copy-btn" onclick="copyResult('hexResultText')">copy</button>
+    </div>
+  </div>
+
+  <!-- OKLCH → Hex -->
+  <div class="card">
+    <h2>OKLCH &rarr; Hex</h2>
+    <div class="oklch-row">
+      <div>
+        <label>L (0&ndash;1)</label>
+        <input type="number" id="oklchL" placeholder="0.50" step="0.01" min="0" max="1">
+      </div>
+      <div>
+        <label>C (0&ndash;0.4)</label>
+        <input type="number" id="oklchC" placeholder="0.09" step="0.01" min="0" max="0.5">
+      </div>
+      <div>
+        <label>H (0&ndash;360)</label>
+        <input type="number" id="oklchH" placeholder="168" step="1" min="0" max="360">
+      </div>
+    </div>
+    <div class="error-msg" id="oklchErr"></div>
+    <button onclick="convertOklchToHex()">Convert</button>
+    <div class="result" id="oklchResult">
+      <div class="swatch" id="oklchSwatch"></div>
+      <span class="result-text" id="oklchResultText">&mdash;</span>
+      <button class="copy-btn" onclick="copyResult('oklchResultText')">copy</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Palette Reference -->
+<div class="palette-section">
+  <h2>Chrysaki Palette Reference</h2>
+  <table id="paletteTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Hex</th>
+        <th>OKLCH</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div class="copied-toast" id="toast">Copied</div>
+
+<script>
+// ─── OKLCH ↔ HEX MATH ────────────────────────────────────────────────────────
+
+function srgbToLinear(c) {
+  return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+}
+
+function linearToSrgb(c) {
+  return c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+}
+
+function hexToRgb(hex) {
+  hex = hex.replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+  if (hex.length !== 6) return null;
+  return [
+    parseInt(hex.slice(0, 2), 16) / 255,
+    parseInt(hex.slice(2, 4), 16) / 255,
+    parseInt(hex.slice(4, 6), 16) / 255
+  ];
+}
+
+function rgbToHex(r, g, b) {
+  return '#' + [r, g, b].map(c => {
+    const v = Math.max(0, Math.min(255, Math.round(c * 255)));
+    return v.toString(16).padStart(2, '0');
+  }).join('');
+}
+
+function hexToOklch(hex) {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return null;
+  const [r, g, b] = rgb.map(srgbToLinear);
+
+  // Linear sRGB → XYZ D65
+  const X = 0.4124564 * r + 0.3575761 * g + 0.1804375 * b;
+  const Y = 0.2126729 * r + 0.7151522 * g + 0.0721750 * b;
+  const Z = 0.0193339 * r + 0.1191920 * g + 0.9503041 * b;
+
+  // XYZ D65 → LMS (Oklab M1)
+  let l = 0.8189330101 * X + 0.3618667424 * Y - 0.1288597137 * Z;
+  let m = 0.0329845436 * X + 0.9293118715 * Y + 0.0361456387 * Z;
+  let s = 0.0482003018 * X + 0.2643662691 * Y + 0.6338517070 * Z;
+
+  l = Math.cbrt(l); m = Math.cbrt(m); s = Math.cbrt(s);
+
+  // LMS → OKLab (M2)
+  const L = 0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s;
+  const a = 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s;
+  const bv = 0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s;
+
+  const C = Math.sqrt(a * a + bv * bv);
+  let H = Math.atan2(bv, a) * 180 / Math.PI;
+  if (H < 0) H += 360;
+
+  return { L: +L.toFixed(4), C: +C.toFixed(4), H: +H.toFixed(1) };
+}
+
+function oklchToHex(L, C, H) {
+  const h = H * Math.PI / 180;
+  const a = C * Math.cos(h);
+  const b = C * Math.sin(h);
+
+  // OKLab → LMS (inverse M2)
+  const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
+  const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
+  const s_ = L - 0.0894841775 * a - 1.2914855480 * b;
+
+  const lv = l_ * l_ * l_;
+  const mv = m_ * m_ * m_;
+  const sv = s_ * s_ * s_;
+
+  // LMS → XYZ D65 (inverse M1)
+  const X =  1.2270138511 * lv - 0.5577999807 * mv + 0.2812561490 * sv;
+  const Y = -0.0405801784 * lv + 1.1122568696 * mv - 0.0716766787 * sv;
+  const Z = -0.0763812845 * lv - 0.4214819784 * mv + 1.5861632204 * sv;
+
+  // XYZ → Linear sRGB
+  let r =  3.2404542 * X - 1.5371385 * Y - 0.4985314 * Z;
+  let g = -0.9692660 * X + 1.8760108 * Y + 0.0415560 * Z;
+  let bv = 0.0556434 * X - 0.2040259 * Y + 1.0572252 * Z;
+
+  return rgbToHex(
+    linearToSrgb(Math.max(0, Math.min(1, r))),
+    linearToSrgb(Math.max(0, Math.min(1, g))),
+    linearToSrgb(Math.max(0, Math.min(1, bv)))
+  );
+}
+
+// ─── UI HANDLERS ─────────────────────────────────────────────────────────────
+
+function convertHexToOklch() {
+  const val = document.getElementById('hexInput').value.trim();
+  const err = document.getElementById('hexErr');
+  const hex = val.startsWith('#') ? val : '#' + val;
+  const result = hexToOklch(hex);
+  if (!result) { err.textContent = 'Invalid hex value'; return; }
+  err.textContent = '';
+  const text = `oklch(${result.L} ${result.C} ${result.H})`;
+  document.getElementById('hexResultText').textContent = text;
+  document.getElementById('hexSwatch').style.background = hex;
+}
+
+function convertOklchToHex() {
+  const L = parseFloat(document.getElementById('oklchL').value);
+  const C = parseFloat(document.getElementById('oklchC').value);
+  const H = parseFloat(document.getElementById('oklchH').value);
+  const err = document.getElementById('oklchErr');
+  if (isNaN(L) || isNaN(C) || isNaN(H)) { err.textContent = 'Enter L, C, and H values'; return; }
+  if (L < 0 || L > 1) { err.textContent = 'L must be between 0 and 1'; return; }
+  err.textContent = '';
+  const hex = oklchToHex(L, C, H);
+  document.getElementById('oklchResultText').textContent = hex;
+  document.getElementById('oklchSwatch').style.background = hex;
+}
+
+function loadHex(hex) {
+  document.getElementById('hexInput').value = hex;
+  convertHexToOklch();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function copyResult(id) {
+  const text = document.getElementById(id).textContent;
+  if (text === '—') return;
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1500);
+  });
+}
+
+document.getElementById('hexInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') convertHexToOklch();
+});
+
+// ─── PALETTE TABLE ───────────────────────────────────────────────────────────
+
+const palette = [
+  { section: 'Surfaces' },
+  { name: 'Abyss',    hex: '#0f1117', oklch: 'oklch(0.10 0.01 270)' },
+  { name: 'Base',     hex: '#161821', oklch: 'oklch(0.14 0.01 270)' },
+  { name: 'Surface',  hex: '#1c1f2b', oklch: 'oklch(0.17 0.02 270)' },
+  { name: 'Raised',   hex: '#252836', oklch: 'oklch(0.21 0.02 270)' },
+  { name: 'Elevated', hex: '#2e3142', oklch: 'oklch(0.25 0.02 270)' },
+  { name: 'Border',   hex: '#363a4f', oklch: 'oklch(0.29 0.03 270)' },
+  { section: 'Emerald' },
+  { name: 'Emerald Dim',   hex: '#0e4a38', oklch: 'oklch(0.30 0.06 168)' },
+  { name: 'Emerald',       hex: '#14664e', oklch: 'oklch(0.39 0.07 168)' },
+  { name: 'Emerald Lt',    hex: '#1a8a6a', oklch: 'oklch(0.50 0.09 168)' },
+  { section: 'Royal Blue' },
+  { name: 'Blue Dim',  hex: '#0c1a40', oklch: 'oklch(0.14 0.07 258)' },
+  { name: 'Blue',      hex: '#122858', oklch: 'oklch(0.22 0.08 258)' },
+  { name: 'Blue Lt',   hex: '#1c3d7a', oklch: 'oklch(0.30 0.10 258)' },
+  { section: 'Amethyst' },
+  { name: 'Amethyst Dim', hex: '#1e1040', oklch: 'oklch(0.14 0.08 305)' },
+  { name: 'Amethyst',     hex: '#3a2068', oklch: 'oklch(0.28 0.12 305)' },
+  { name: 'Amethyst Lt',  hex: '#583090', oklch: 'oklch(0.38 0.14 305)' },
+  { section: 'Teal' },
+  { name: 'Teal Dim', hex: '#0f4f54', oklch: 'oklch(0.34 0.07 196)' },
+  { name: 'Teal',     hex: '#197278', oklch: 'oklch(0.44 0.07 196)' },
+  { name: 'Teal Lt',  hex: '#20969c', oklch: 'oklch(0.54 0.07 196)' },
+  { section: 'Blonde' },
+  { name: 'Blonde Dim', hex: '#C4861C', oklch: 'oklch(0.67 0.15 68)' },
+  { name: 'Blonde',     hex: '#FBB13C', oklch: 'oklch(0.80 0.17 68)' },
+  { name: 'Blonde Lt',  hex: '#FCC96A', oklch: 'oklch(0.88 0.14 68)' },
+  { section: 'Error' },
+  { name: 'Error',      hex: '#8C2F39', oklch: 'oklch(0.32 0.12 15)' },
+  { name: 'Error Lt',   hex: '#b53f4a', oklch: 'oklch(0.42 0.12 15)' },
+  { section: 'Text' },
+  { name: 'Primary',   hex: '#e0e2ea', oklch: 'oklch(0.90 0.01 270)' },
+  { name: 'Secondary', hex: '#a0a4b8', oklch: 'oklch(0.72 0.02 270)' },
+  { name: 'Muted',     hex: '#6a6e82', oklch: 'oklch(0.54 0.02 270)' },
+  { name: 'Inverse',   hex: '#0f1117', oklch: 'oklch(0.10 0.01 270)' },
+];
+
+const tbody = document.querySelector('#paletteTable tbody');
+palette.forEach(entry => {
+  if (entry.section) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="3" class="section-label">${entry.section}</td>`;
+    tbody.appendChild(tr);
+    return;
+  }
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><span class="td-swatch" style="background:${entry.hex}"></span>${entry.name}</td>
+    <td><span class="hex-val" onclick="loadHex('${entry.hex}')" title="Click to convert">${entry.hex}</span></td>
+    <td><span class="oklch-val">${entry.oklch}</span></td>
+  `;
+  tbody.appendChild(tr);
+});
+</script>
+</body>
+</html>

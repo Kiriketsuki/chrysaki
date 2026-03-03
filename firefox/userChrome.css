@@ -8,39 +8,65 @@
    ========================================================== */
 :root {
     /* Surfaces */
-    --chrysaki-abyss: #0f1117;
-    --chrysaki-base: #161821;
-    --chrysaki-surface: #1c1f2b;
-    --chrysaki-raised: #252836;
-    --chrysaki-elevated: #2e3142;
-    --chrysaki-border: #363a4f;
+    --chrysaki-abyss: #0f1117;                                      /* hex fallback */
+    --chrysaki-abyss: oklch(0.10 0.01 270);                         /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-base: #161821;                                       /* hex fallback */
+    --chrysaki-base: oklch(0.14 0.01 270);                          /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-surface: #1c1f2b;                                    /* hex fallback */
+    --chrysaki-surface: oklch(0.17 0.02 270);                       /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-raised: #252836;                                     /* hex fallback */
+    --chrysaki-raised: oklch(0.21 0.02 270);                        /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-elevated: #2e3142;                                   /* hex fallback */
+    --chrysaki-elevated: oklch(0.25 0.02 270);                      /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-border: #363a4f;                                     /* hex fallback */
+    --chrysaki-border: oklch(0.29 0.03 270);                        /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
     --chrysaki-border-soft: rgba(54, 58, 79, 0.5);
 
     /* Primary Accents */
-    --chrysaki-emerald: #14664e;
-    --chrysaki-emerald-lt: #1a8a6a;
-    --chrysaki-emerald-dim: #0e4a38;
-    --chrysaki-blue: #122858;
-    --chrysaki-blue-lt: #1c3d7a;
-    --chrysaki-blue-dim: #0c1a40;
-    --chrysaki-amethyst: #3a2068;
-    --chrysaki-amethyst-lt: #583090;
-    --chrysaki-amethyst-dim: #1e1040;
+    --chrysaki-emerald: #14664e;                                    /* hex fallback */
+    --chrysaki-emerald: oklch(0.39 0.07 168);                       /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-emerald-lt: #1a8a6a;                                 /* hex fallback */
+    --chrysaki-emerald-lt: oklch(0.50 0.09 168);                    /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-emerald-dim: #0e4a38;                                /* hex fallback */
+    --chrysaki-emerald-dim: oklch(0.30 0.06 168);                   /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-blue: #122858;                                       /* hex fallback */
+    --chrysaki-blue: oklch(0.22 0.08 258);                          /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-blue-lt: #1c3d7a;                                    /* hex fallback */
+    --chrysaki-blue-lt: oklch(0.30 0.10 258);                       /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-blue-dim: #0c1a40;                                   /* hex fallback */
+    --chrysaki-blue-dim: oklch(0.14 0.07 258);                      /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-amethyst: #3a2068;                                   /* hex fallback */
+    --chrysaki-amethyst: oklch(0.28 0.12 305);                      /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-amethyst-lt: #583090;                                /* hex fallback */
+    --chrysaki-amethyst-lt: oklch(0.38 0.14 305);                   /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-amethyst-dim: #1e1040;                               /* hex fallback */
+    --chrysaki-amethyst-dim: oklch(0.14 0.08 305);                  /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
 
     /* Secondary Accents */
-    --chrysaki-teal: #1e8898;
-    --chrysaki-teal-lt: #2aaab8;
-    --chrysaki-teal-dim: #16687a;
-    --chrysaki-blonde: #b8a038;
-    --chrysaki-blonde-lt: #d0b850;
-    --chrysaki-blonde-dim: #8a7a30;
-    --chrysaki-error: #c04050;
+    --chrysaki-teal: #197278;                                       /* hex fallback */
+    --chrysaki-teal: oklch(0.44 0.07 196);                          /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-teal-lt: #20969c;                                    /* hex fallback */
+    --chrysaki-teal-lt: oklch(0.54 0.07 196);                       /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-teal-dim: #0f4f54;                                   /* hex fallback */
+    --chrysaki-teal-dim: oklch(0.34 0.07 196);                      /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-blonde: #FBB13C;                                     /* hex fallback */
+    --chrysaki-blonde: oklch(0.80 0.17 68);                         /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-blonde-lt: #FCC96A;                                  /* hex fallback */
+    --chrysaki-blonde-lt: oklch(0.88 0.14 68);                      /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-blonde-dim: #C4861C;                                 /* hex fallback */
+    --chrysaki-blonde-dim: oklch(0.67 0.15 68);                     /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-error: #8C2F39;                                      /* hex fallback */
+    --chrysaki-error: oklch(0.32 0.12 15);                          /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
 
     /* Text */
-    --chrysaki-text-primary: #e0e2ea;
-    --chrysaki-text-secondary: #a0a4b8;
-    --chrysaki-text-muted: #6a6e82;
-    --chrysaki-text-inverse: #0f1117;
+    --chrysaki-text-primary: #e0e2ea;                               /* hex fallback */
+    --chrysaki-text-primary: oklch(0.90 0.01 270);                  /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-text-secondary: #a0a4b8;                             /* hex fallback */
+    --chrysaki-text-secondary: oklch(0.72 0.02 270);                /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-text-muted: #6a6e82;                                 /* hex fallback */
+    --chrysaki-text-muted: oklch(0.54 0.02 270);                    /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --chrysaki-text-inverse: #0f1117;                               /* hex fallback */
+    --chrysaki-text-inverse: oklch(0.10 0.01 270);                  /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
 }
 
 /* ==========================================================
@@ -225,7 +251,7 @@
     border-bottom: 1px solid var(--chrysaki-border-soft) !important;
     color: var(--chrysaki-text-secondary) !important;
     /* Teal left accent bar */
-    border-left: 3px solid #1e8898 !important;
+    border-left: 3px solid #197278 !important;
     padding-left: 10px !important;
 }
 
@@ -277,7 +303,7 @@ findbar {
     color: var(--chrysaki-text-secondary) !important;
     border-top: 1px solid var(--chrysaki-border-soft) !important;
     /* Blonde left accent for search context */
-    border-left: 3px solid #b8a038 !important;
+    border-left: 3px solid #FBB13C !important;
 }
 
 findbar .findbar-textbox {

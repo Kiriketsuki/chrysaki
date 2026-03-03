@@ -28,8 +28,8 @@
     --text-muted: #6a6e82;                                   /* Muted Text */
     --text-link: #1a8a6a;                                    /* Emerald Light */
     --text-positive: #1a8a6a;                                /* Emerald Light */
-    --text-warning: #b8a038;                                 /* Blonde Base */
-    --text-danger: #c04050;                                  /* Error */
+    --text-warning: #FBB13C;                                 /* Blonde Base */
+    --text-danger: #8C2F39;                                  /* Error */
 
     /* Interactive elements */
     --interactive-normal: #a0a4b8;                           /* Secondary Text */
@@ -64,8 +64,8 @@
 
     /* Status colors */
     --green-360: #1a8a6a;                                    /* Emerald Light - Online */
-    --yellow-300: #d0b850;                                   /* Blonde Light - Idle */
-    --red-400: #c04050;                                      /* Error - DND */
+    --yellow-300: #FCC96A;                                   /* Blonde Light - Idle */
+    --red-400: #8C2F39;                                      /* Error - DND */
 
     /* Mention highlights */
     --mention-foreground: #1a8a6a;                           /* Emerald Light */
@@ -167,7 +167,7 @@ button[class*="lookFilled_"] {
 /* --- Embeds --- */
 [class*="embedFull_"] {
     background-color: #1c1f2b !important;                    /* Surface */
-    border-left: 4px solid #1e8898 !important;               /* Teal Base */
+    border-left: 4px solid #197278 !important;               /* Teal Base */
     border-radius: 0 !important;                             /* Geometric */
 }
 

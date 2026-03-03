@@ -23,21 +23,21 @@ function _ChrHexBg([string]$hex) {
 Set-PSReadLineOption -Colors @{
     # -- Syntax tokens --
     Command          = (_ChrHex "#1a8a6a")  # Emerald Lt
-    Parameter        = (_ChrHex "#1e8898")  # Teal
-    String           = (_ChrHex "#b8a038")  # Blonde
-    Operator         = (_ChrHex "#2aaab8")  # Teal Lt
+    Parameter        = (_ChrHex "#197278")  # Teal
+    String           = (_ChrHex "#FBB13C")  # Blonde
+    Operator         = (_ChrHex "#20969c")  # Teal Lt
     Variable         = (_ChrHex "#583090")  # Amethyst Lt
     Comment          = (_ChrHex "#6a6e82")  # Muted Text
-    Number           = (_ChrHex "#d0b850")  # Blonde Lt
-    Member           = (_ChrHex "#2aaab8")  # Teal Lt
-    Error            = (_ChrHex "#c04050")  # Error
+    Number           = (_ChrHex "#FCC96A")  # Blonde Lt
+    Member           = (_ChrHex "#20969c")  # Teal Lt
+    Error            = (_ChrHex "#8C2F39")  # Error
     Type             = (_ChrHex "#14664e")  # Emerald
     Keyword          = (_ChrHex "#1a8a6a")  # Emerald Lt
 
     # -- UI elements --
     Selection        = (_ChrHexBg "#252836") # Raised (bg)
     InlinePrediction = (_ChrHex "#6a6e82")  # Muted Text
-    ListPrediction   = (_ChrHex "#1e8898")  # Teal
+    ListPrediction   = (_ChrHex "#197278")  # Teal
     ListPredictionSelected =
         (_ChrHex "#1a8a6a")                 # Emerald Lt
     Default          = (_ChrHex "#e0e2ea")  # Primary Text

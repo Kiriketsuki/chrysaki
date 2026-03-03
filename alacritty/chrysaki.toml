@@ -15,20 +15,20 @@ background = "#252836"        # Raised
 
 [colors.normal]
 black   = "#0f1117"           # Abyss
-red     = "#c04050"           # Error
+red     = "#8C2F39"           # Error
 green   = "#14664e"           # Emerald
-yellow  = "#8a7a30"           # Blonde Dim
+yellow  = "#C4861C"           # Blonde Dim
 blue    = "#1c3d7a"           # Blue Lt (base too dark)
 magenta = "#3a2068"           # Amethyst
-cyan    = "#1e8898"           # Teal
+cyan    = "#197278"           # Teal
 white   = "#a0a4b8"           # Secondary Text
 
 [colors.bright]
 black   = "#1c1f2b"           # Surface
-red     = "#e05a6a"           # Error Lt (derived)
+red     = "#b53f4a"           # Error Lt (derived)
 green   = "#1a8a6a"           # Emerald Lt
-yellow  = "#b8a038"           # Blonde
-blue    = "#2aaab8"           # Teal Lt (vivid blue-ish)
+yellow  = "#FBB13C"           # Blonde
+blue    = "#20969c"           # Teal Lt (vivid blue-ish)
 magenta = "#583090"           # Amethyst Lt
-cyan    = "#2aaab8"           # Teal Lt
+cyan    = "#20969c"           # Teal Lt
 white   = "#e0e2ea"           # Primary Text

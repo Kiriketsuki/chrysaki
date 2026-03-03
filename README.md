@@ -31,9 +31,9 @@ Ports for 16 applications across terminal, editor, desktop, and web categories.
 
 | Name | Base | Light | Dim | Domain |
 |:-----|:-----|:------|:----|:-------|
-| Teal | `#1e8898` | `#2aaab8` | `#16687a` | Transitional, metadata, tags |
-| Blonde | `#b8a038` | `#d0b850` | `#8a7a30` | Emphasis, numbers, highlights |
-| Error | `#c04050` | — | — | Errors, danger |
+| Teal | `#197278` | `#20969c` | `#0f4f54` | Transitional, metadata, tags |
+| Blonde | `#FBB13C` | `#FCC96A` | `#C4861C` | Emphasis, numbers, highlights |
+| Error | `#8C2F39` | `#b53f4a` | `#5e1f25` | Errors, danger |
 
 ### Text
 
@@ -132,13 +132,15 @@ spicetify apply
 --chrysaki-amethyst:     #3a2068;
 --chrysaki-amethyst-lt:  #583090;
 --chrysaki-amethyst-dim: #1e1040;
---chrysaki-teal:         #1e8898;
---chrysaki-teal-lt:      #2aaab8;
---chrysaki-teal-dim:     #16687a;
---chrysaki-blonde:       #b8a038;
---chrysaki-blonde-lt:    #d0b850;
---chrysaki-blonde-dim:   #8a7a30;
---chrysaki-error:        #c04050;
+--chrysaki-teal:         #197278;
+--chrysaki-teal-lt:      #20969c;
+--chrysaki-teal-dim:     #0f4f54;
+--chrysaki-blonde:       #FBB13C;
+--chrysaki-blonde-lt:    #FCC96A;
+--chrysaki-blonde-dim:   #C4861C;
+--chrysaki-error:        #8C2F39;
+--chrysaki-error-lt:     #b53f4a;
+--chrysaki-error-dim:    #5e1f25;
 --chrysaki-text:         #e0e2ea;
 --chrysaki-text-sec:     #a0a4b8;
 --chrysaki-text-muted:   #6a6e82;
