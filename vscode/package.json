@@ -1,0 +1,17 @@
+{
+  "name": "chrysaki-theme",
+  "displayName": "Chrysaki",
+  "description": "Chrysaki dark colour theme -- jewel-toned, geometric",
+  "version": "1.0.0",
+  "engines": { "vscode": "^1.60.0" },
+  "categories": ["Themes"],
+  "contributes": {
+    "themes": [
+      {
+        "label": "Chrysaki",
+        "uiTheme": "vs-dark",
+        "path": "./chrysaki-color-theme.json"
+      }
+    ]
+  }
+}

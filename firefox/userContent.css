@@ -1,0 +1,142 @@
+/* Chrysaki Firefox Theme — userContent.css */
+/* Version: 1.0.0 */
+/* Overrides for about:newtab, about:home, about:blank */
+/* Place in: <profile>/chrome/userContent.css */
+
+/* ==========================================================
+   NEW TAB PAGE (about:newtab, about:home)
+   ========================================================== */
+
+@-moz-document url("about:newtab"), url("about:home") {
+
+    /* Page background — Base */
+    body,
+    .outer-wrapper {
+        background-color: #161821 !important;                 /* Base */
+        color: #e0e2ea !important;                            /* Primary Text */
+    }
+
+    /* Activity Stream container */
+    .activity-stream {
+        background-color: #161821 !important;                 /* Base */
+    }
+
+    /* Search bar */
+    .search-wrapper input,
+    .search-handoff-button,
+    .fake-textbox {
+        background-color: #1c1f2b !important;                 /* Surface */
+        color: #e0e2ea !important;                            /* Primary Text */
+        border: 1px solid #363a4f !important;                 /* Border */
+        border-radius: 0 !important;
+    }
+
+    .search-wrapper input:focus,
+    .search-handoff-button:focus {
+        border-color: #1a8a6a !important;                     /* Emerald Lt */
+        box-shadow: 0 0 0 2px rgba(26, 138, 106, 0.3) !important;
+    }
+
+    /* Top sites tiles */
+    .top-site-outer .tile,
+    .top-site-outer .top-site-inner {
+        background-color: #1c1f2b !important;                 /* Surface */
+        border: 1px solid #363a4f !important;                 /* Border */
+        border-radius: 0 !important;
+    }
+
+    .top-site-outer:hover .tile,
+    .top-site-outer:hover .top-site-inner {
+        background-color: #252836 !important;                 /* Raised */
+    }
+
+    /* Top sites title text */
+    .top-site-outer .title span {
+        color: #a0a4b8 !important;                            /* Secondary Text */
+    }
+
+    /* Section titles (Top Sites, Highlights, etc.) */
+    .section-title span,
+    .section-title .section-title-text {
+        color: #a0a4b8 !important;                            /* Secondary Text */
+    }
+
+    /* Card components (Highlights, Pocket) */
+    .card-outer {
+        background-color: #1c1f2b !important;                 /* Surface */
+        border: 1px solid #363a4f !important;                 /* Border */
+        border-radius: 0 !important;
+    }
+
+    .card-outer:hover {
+        background-color: #252836 !important;                 /* Raised */
+    }
+
+    .card-outer .card-title {
+        color: #e0e2ea !important;                            /* Primary Text */
+    }
+
+    .card-outer .card-host-name,
+    .card-outer .card-context {
+        color: #6a6e82 !important;                            /* Muted Text */
+    }
+
+    /* Context menu on new tab page */
+    .context-menu {
+        background-color: #252836 !important;                 /* Raised */
+        border: 1px solid #363a4f !important;                 /* Border */
+    }
+
+    .context-menu-item:hover {
+        background-color: #2e3142 !important;                 /* Elevated */
+    }
+
+    /* Customize button */
+    .customize-menu {
+        background-color: #252836 !important;                 /* Raised */
+        border: 1px solid #363a4f !important;                 /* Border */
+    }
+
+    /* Links */
+    a {
+        color: #1a8a6a !important;                            /* Emerald Lt */
+    }
+
+    a:hover {
+        color: #2aaab8 !important;                            /* Teal Lt */
+    }
+}
+
+/* ==========================================================
+   BLANK PAGE (about:blank)
+   ========================================================== */
+
+@-moz-document url("about:blank") {
+    body {
+        background-color: #161821 !important;                 /* Base */
+    }
+}
+
+/* ==========================================================
+   GLOBAL DARK PREFERENCE TWEAKS
+   ========================================================== */
+
+@media (prefers-color-scheme: dark) {
+    @-moz-document url("about:newtab"),
+                    url("about:home"),
+                    url("about:blank"),
+                    url("about:privatebrowsing") {
+
+        /* Ensure scrollbar blends with dark background */
+        * {
+            scrollbar-color: #363a4f #161821 !important;     /* Border / Base */
+            border-radius: 0 !important;
+        }
+
+        /* Selection colors */
+        ::selection {
+            background-color: #252836 !important;             /* Raised */
+            color: #e0e2ea !important;                        /* Primary Text */
+        }
+    }
+}

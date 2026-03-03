@@ -1,0 +1,196 @@
+/* Chrysaki user.css for Spicetify
+ * Layout and component overrides with geometric styling
+ * Pairs with color.ini for full theme
+ */
+
+/* --- Global geometric overrides --- */
+* {
+    border-radius: 0 !important;                             /* Geometric: hard corners everywhere */
+}
+
+/* --- Sidebar --- */
+.Root__nav-bar,
+.main-navBar-navBar {
+    background-color: var(--spice-sidebar-color) !important; /* Surface */
+    border-right: 1px solid var(--spice-border-active) !important; /* Border */
+}
+
+/* Navigation pills / tabs */
+.main-navBar-navBarLink,
+.main-yourLibraryX-navLink {
+    border-radius: 0 !important;                             /* Geometric */
+    padding: 8px 16px;
+}
+
+.main-navBar-navBarLink:hover,
+.main-yourLibraryX-navLink:hover {
+    background-color: var(--spice-highlight) !important;     /* Raised */
+}
+
+.main-navBar-navBarLinkActive,
+.main-yourLibraryX-navLinkActive {
+    background-color: var(--spice-tab-active) !important;    /* Raised */
+    border-left: 3px solid var(--spice-accent) !important;   /* Emerald Base accent bar */
+}
+
+/* --- Now playing bar (bottom) --- */
+.Root__now-playing-bar,
+.main-nowPlayingBar-nowPlayingBar {
+    background-color: var(--spice-main) !important;          /* Base */
+    border-top: 1px solid var(--spice-border-active) !important; /* Border */
+}
+
+/* --- Progress bar --- */
+.playback-progressbar-progressBarContainer .progress-bar__slider {
+    border-radius: 0 !important;                             /* Geometric */
+}
+
+.progress-bar [class*="progressBar_"] {
+    background-color: var(--spice-accent-inactive) !important; /* Emerald Dim — track */
+    border-radius: 0 !important;                             /* Geometric */
+}
+
+.progress-bar [class*="progressBarFg"] {
+    background-color: var(--spice-accent-active) !important; /* Emerald Light — filled */
+    border-radius: 0 !important;                             /* Geometric */
+}
+
+/* --- Play button --- */
+.main-playButton-PlayButton,
+button[data-testid="play-button"],
+button[data-testid="pause-button"] {
+    background-color: var(--spice-play-btn-bg) !important;   /* Emerald Dim */
+    color: var(--spice-text) !important;                     /* Primary Text */
+    border-radius: 0 !important;                             /* Geometric */
+    clip-path: polygon(
+        8px 0%, calc(100% - 8px) 0%,
+        100% 8px, 100% calc(100% - 8px),
+        calc(100% - 8px) 100%, 8px 100%,
+        0% calc(100% - 8px), 0% 8px
+    );                                                       /* Hexagonal chamfer */
+}
+
+.main-playButton-PlayButton:hover,
+button[data-testid="play-button"]:hover,
+button[data-testid="pause-button"]:hover {
+    background-color: var(--spice-play-btn-active) !important; /* Emerald Base */
+    transform: scale(1.05);
+}
+
+/* --- Playlist headers --- */
+.main-entityHeader-container {
+    background: linear-gradient(
+        180deg,
+        var(--spice-banner) 0%,                              /* Blue Base — fill only */
+        var(--spice-main) 100%                               /* Base — fade to canvas */
+    ) !important;
+}
+
+.main-entityHeader-title {
+    color: var(--spice-header) !important;                   /* Primary Text */
+}
+
+.main-entityHeader-subtitle {
+    color: var(--spice-subtext) !important;                  /* Secondary Text */
+}
+
+/* --- Search bar --- */
+.main-search-searchInput,
+.x-searchInput-searchInputInput {
+    background-color: var(--spice-highlight) !important;     /* Raised */
+    color: var(--spice-text) !important;                     /* Primary Text */
+    border: 1px solid var(--spice-border-active) !important; /* Border */
+    border-radius: 0 !important;                             /* Geometric */
+}
+
+.main-search-searchInput:focus-within,
+.x-searchInput-searchInputInput:focus-within {
+    border-color: var(--spice-accent) !important;            /* Emerald Base */
+}
+
+/* --- Cards (album, playlist, artist) --- */
+.main-card-card {
+    background-color: var(--spice-highlight) !important;     /* Raised */
+    border-radius: 0 !important;                             /* Geometric */
+    border: 1px solid var(--spice-border-inactive) !important; /* Surface */
+}
+
+.main-card-card:hover {
+    background-color: var(--spice-highlight-elevated) !important; /* Elevated */
+    border-color: var(--spice-border-active) !important;     /* Border */
+}
+
+/* --- Context menus --- */
+.main-contextMenu-menu {
+    background-color: var(--spice-highlight) !important;     /* Raised */
+    border: 1px solid var(--spice-border-active) !important; /* Border */
+    border-radius: 0 !important;                             /* Geometric */
+    box-shadow: 0 4px 12px rgba(15, 17, 23, 0.6);           /* Abyss shadow */
+}
+
+.main-contextMenu-menuItem:hover {
+    background-color: var(--spice-accent) !important;        /* Emerald Base */
+    color: #0f1117 !important;                               /* Inverse Text */
+}
+
+/* --- Tooltips --- */
+.Tooltip-sc-1wn4m5g-0,
+[class*="tooltip"] {
+    background-color: var(--spice-highlight-elevated) !important; /* Elevated */
+    color: var(--spice-text) !important;                     /* Primary Text */
+    border: 1px solid var(--spice-border-active) !important; /* Border */
+    border-radius: 0 !important;                             /* Geometric */
+}
+
+/* --- Track list rows --- */
+.main-trackList-trackListRow:hover {
+    background-color: var(--spice-highlight) !important;     /* Raised */
+}
+
+.main-trackList-trackListRow[aria-selected="true"] {
+    background-color: var(--spice-highlight-elevated) !important; /* Elevated */
+}
+
+/* --- Notification toasts --- */
+.main-toast-container {
+    background-color: var(--spice-notification) !important;  /* Amethyst Base */
+    color: var(--spice-text) !important;                     /* Primary Text */
+    border-radius: 0 !important;                             /* Geometric */
+}
+
+/* --- Scrollbar --- */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--spice-main);                           /* Base */
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--spice-border-active);                  /* Border */
+    border-radius: 0;                                        /* Geometric */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #6a6e82;                                     /* Muted Text */
+}
+
+/* --- Top bar (header) --- */
+.main-topBar-container {
+    background-color: transparent !important;
+}
+
+.main-topBar-container::after {
+    background: linear-gradient(
+        180deg,
+        var(--spice-main),                                   /* Base */
+        transparent
+    ) !important;
+}
+
+/* --- Friend activity sidebar (if enabled) --- */
+.main-buddyFeed-buddyFeedRoot {
+    background-color: var(--spice-sidebar-color) !important; /* Surface */
+    border-left: 1px solid var(--spice-border-active) !important; /* Border */
+}

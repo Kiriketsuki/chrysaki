@@ -1,0 +1,34 @@
+# Chrysaki Alacritty Theme
+# Import in alacritty.toml: import = ["~/.config/alacritty/themes/chrysaki.toml"]
+
+[colors.primary]
+background = "#161821"        # Base
+foreground = "#e0e2ea"        # Primary Text
+
+[colors.cursor]
+text       = "#161821"        # Base (inverse on cursor)
+cursor     = "#1a8a6a"        # Emerald Lt
+
+[colors.selection]
+text       = "#e0e2ea"        # Primary Text
+background = "#252836"        # Raised
+
+[colors.normal]
+black   = "#0f1117"           # Abyss
+red     = "#c04050"           # Error
+green   = "#14664e"           # Emerald
+yellow  = "#8a7a30"           # Blonde Dim
+blue    = "#1c3d7a"           # Blue Lt (base too dark)
+magenta = "#3a2068"           # Amethyst
+cyan    = "#1e8898"           # Teal
+white   = "#a0a4b8"           # Secondary Text
+
+[colors.bright]
+black   = "#1c1f2b"           # Surface
+red     = "#e05a6a"           # Error Lt (derived)
+green   = "#1a8a6a"           # Emerald Lt
+yellow  = "#b8a038"           # Blonde
+blue    = "#2aaab8"           # Teal Lt (vivid blue-ish)
+magenta = "#583090"           # Amethyst Lt
+cyan    = "#2aaab8"           # Teal Lt
+white   = "#e0e2ea"           # Primary Text

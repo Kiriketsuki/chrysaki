@@ -1,0 +1,191 @@
+/**
+ * @name Chrysaki
+ * @version 1.0.0
+ * @description Dark geometric theme built on the Chrysaki color palette
+ * @author Jovian (Lim Zhe Hong)
+ * @source https://github.com/Kidriel/chrysaki-themes
+ */
+
+/* --- Core variable overrides --- */
+:root,
+[data-theme="dark"] {
+    /* Backgrounds */
+    --background-primary: #161821;                           /* Base */
+    --background-secondary: #1c1f2b;                         /* Surface */
+    --background-secondary-alt: #0f1117;                     /* Abyss */
+    --background-tertiary: #0f1117;                          /* Abyss */
+    --background-accent: #14664e;                            /* Emerald Base */
+    --background-floating: #2e3142;                          /* Elevated */
+
+    /* Background modifiers */
+    --background-modifier-hover: #252836;                    /* Raised */
+    --background-modifier-selected: #0e4a38;                 /* Emerald Dim */
+    --background-modifier-active: #14664e;                   /* Emerald Base */
+    --background-modifier-accent: rgba(54, 58, 79, 0.48);   /* Border @ 48% */
+
+    /* Text */
+    --text-normal: #e0e2ea;                                  /* Primary Text */
+    --text-muted: #6a6e82;                                   /* Muted Text */
+    --text-link: #1a8a6a;                                    /* Emerald Light */
+    --text-positive: #1a8a6a;                                /* Emerald Light */
+    --text-warning: #b8a038;                                 /* Blonde Base */
+    --text-danger: #c04050;                                  /* Error */
+
+    /* Interactive elements */
+    --interactive-normal: #a0a4b8;                           /* Secondary Text */
+    --interactive-hover: #e0e2ea;                            /* Primary Text */
+    --interactive-active: #1a8a6a;                           /* Emerald Light */
+    --interactive-muted: #6a6e82;                            /* Muted Text */
+
+    /* Headers */
+    --header-primary: #e0e2ea;                               /* Primary Text */
+    --header-secondary: #a0a4b8;                             /* Secondary Text */
+
+    /* Message input */
+    --channeltextarea-background: #0f1117;                   /* Abyss */
+
+    /* Focus and brand */
+    --focus-primary: #14664e;                                /* Emerald Base */
+    --brand-experiment: #14664e;                             /* Emerald Base */
+    --brand-experiment-560: #1a8a6a;                         /* Emerald Light */
+    --brand-experiment-600: #14664e;                         /* Emerald Base */
+
+    /* Misc */
+    --input-background: #0f1117;                             /* Abyss */
+    --deprecated-card-bg: #1c1f2b;                           /* Surface */
+    --deprecated-card-editable-bg: #1c1f2b;                  /* Surface */
+    --activity-card-background: #1c1f2b;                     /* Surface */
+    --scrollbar-thin-thumb: #363a4f;                         /* Border */
+    --scrollbar-thin-track: transparent;
+    --scrollbar-auto-thumb: #363a4f;                         /* Border */
+    --scrollbar-auto-track: #0f1117;                         /* Abyss */
+    --modal-background: #161821;                             /* Base */
+    --modal-footer-background: #1c1f2b;                      /* Surface */
+
+    /* Status colors */
+    --green-360: #1a8a6a;                                    /* Emerald Light - Online */
+    --yellow-300: #d0b850;                                   /* Blonde Light - Idle */
+    --red-400: #c04050;                                      /* Error - DND */
+
+    /* Mention highlights */
+    --mention-foreground: #1a8a6a;                           /* Emerald Light */
+    --mention-background: rgba(20, 102, 78, 0.15);          /* Emerald Base @ 15% */
+
+    /* Radius overrides for geometric aesthetic */
+    --radius-xs: 0px;
+    --radius-sm: 0px;
+    --radius-md: 0px;
+    --radius-lg: 0px;
+    --radius-xl: 0px;
+    --radius-xxl: 0px;
+    --radius-round: 0px;
+}
+
+/* --- Server list (guild sidebar) --- */
+nav[aria-label="Servers sidebar"] {
+    background-color: #0f1117 !important;                    /* Abyss */
+}
+
+nav[aria-label="Servers sidebar"] [data-list-item-id] {
+    border-radius: 0 !important;                             /* Geometric */
+}
+
+/* --- Channel list sidebar --- */
+[class*="sidebar_"] {
+    background-color: #1c1f2b !important;                    /* Surface */
+}
+
+[class*="containerDefault_"] [class*="link_"]:hover {
+    background-color: #252836 !important;                    /* Raised */
+    border-radius: 0 !important;                             /* Geometric */
+}
+
+[class*="containerDefault_"] [class*="link_"][class*="modeSelected_"] {
+    background-color: #0e4a38 !important;                    /* Emerald Dim */
+    border-radius: 0 !important;                             /* Geometric */
+}
+
+/* --- Members list --- */
+[class*="members_"] {
+    background-color: #1c1f2b !important;                    /* Surface */
+}
+
+[class*="member_"]:hover {
+    background-color: #252836 !important;                    /* Raised */
+    border-radius: 0 !important;                             /* Geometric */
+}
+
+/* --- Message input area --- */
+[class*="channelTextArea_"] [class*="scrollableContainer_"] {
+    background-color: #0f1117 !important;                    /* Abyss */
+    border-radius: 0 !important;                             /* Geometric */
+    border: 1px solid #363a4f !important;                    /* Border */
+}
+
+/* --- Voice connected indicator --- */
+[class*="rtcConnectionStatus_"] {
+    background-color: #1c1f2b !important;                    /* Surface */
+    border-top: 1px solid #363a4f !important;                /* Border */
+}
+
+[class*="rtcConnectionStatus_"] [class*="buttonContents_"] {
+    color: #1a8a6a !important;                               /* Emerald Light */
+}
+
+/* --- User area (bottom left) --- */
+[class*="panels_"] {
+    background-color: #0f1117 !important;                    /* Abyss */
+    border-top: 1px solid #363a4f !important;                /* Border */
+}
+
+/* --- Context menus --- */
+[class*="menu_"] {
+    background-color: #1c1f2b !important;                    /* Surface */
+    border: 1px solid #363a4f !important;                    /* Border */
+    border-radius: 0 !important;                             /* Geometric */
+}
+
+[class*="menu_"] [class*="item_"]:hover {
+    background-color: #14664e !important;                    /* Emerald Base */
+    color: #0f1117 !important;                               /* Inverse Text */
+    border-radius: 0 !important;                             /* Geometric */
+}
+
+/* --- Buttons (general) --- */
+button[class*="button_"],
+button[class*="lookFilled_"] {
+    border-radius: 0 !important;                             /* Geometric */
+}
+
+/* --- Popouts and modals --- */
+[class*="popout_"],
+[class*="modal_"],
+[class*="root_"] {
+    border-radius: 0 !important;                             /* Geometric */
+}
+
+/* --- Embeds --- */
+[class*="embedFull_"] {
+    background-color: #1c1f2b !important;                    /* Surface */
+    border-left: 4px solid #1e8898 !important;               /* Teal Base */
+    border-radius: 0 !important;                             /* Geometric */
+}
+
+/* --- Search bar --- */
+[class*="search_"] [class*="searchBar_"] {
+    background-color: #0f1117 !important;                    /* Abyss */
+    border-radius: 0 !important;                             /* Geometric */
+}
+
+/* --- Role tags --- */
+[class*="role_"] {
+    border-radius: 0 !important;                             /* Geometric */
+}
+
+/* --- Code blocks --- */
+code,
+[class*="codeBlockText_"] {
+    background-color: #0f1117 !important;                    /* Abyss */
+    border: 1px solid #363a4f !important;                    /* Border */
+    border-radius: 0 !important;                             /* Geometric */
+}

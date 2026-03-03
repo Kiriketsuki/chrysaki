@@ -1,0 +1,342 @@
+/* Chrysaki Firefox Theme -- userChrome.css */
+/* Version: 1.1.0 */
+/* Compatibility: Firefox 128+ / Nightly 130+ */
+/* Place in: <profile>/chrome/userChrome.css */
+
+/* ==========================================================
+   ROOT VARIABLES
+   ========================================================== */
+:root {
+    /* Surfaces */
+    --chrysaki-abyss: #0f1117;
+    --chrysaki-base: #161821;
+    --chrysaki-surface: #1c1f2b;
+    --chrysaki-raised: #252836;
+    --chrysaki-elevated: #2e3142;
+    --chrysaki-border: #363a4f;
+    --chrysaki-border-soft: rgba(54, 58, 79, 0.5);
+
+    /* Primary Accents */
+    --chrysaki-emerald: #14664e;
+    --chrysaki-emerald-lt: #1a8a6a;
+    --chrysaki-emerald-dim: #0e4a38;
+    --chrysaki-blue: #122858;
+    --chrysaki-blue-lt: #1c3d7a;
+    --chrysaki-blue-dim: #0c1a40;
+    --chrysaki-amethyst: #3a2068;
+    --chrysaki-amethyst-lt: #583090;
+    --chrysaki-amethyst-dim: #1e1040;
+
+    /* Secondary Accents */
+    --chrysaki-teal: #1e8898;
+    --chrysaki-teal-lt: #2aaab8;
+    --chrysaki-teal-dim: #16687a;
+    --chrysaki-blonde: #b8a038;
+    --chrysaki-blonde-lt: #d0b850;
+    --chrysaki-blonde-dim: #8a7a30;
+    --chrysaki-error: #c04050;
+
+    /* Text */
+    --chrysaki-text-primary: #e0e2ea;
+    --chrysaki-text-secondary: #a0a4b8;
+    --chrysaki-text-muted: #6a6e82;
+    --chrysaki-text-inverse: #0f1117;
+}
+
+/* ==========================================================
+   GLOBAL OVERRIDES -- sharp corners everywhere
+   ========================================================== */
+* {
+    border-radius: 0 !important;
+}
+
+/* ==========================================================
+   TOOLBAR & NAVIGATION BAR
+   ========================================================== */
+
+/* Menu bar */
+#toolbar-menubar {
+    background-color: var(--chrysaki-surface) !important;
+    color: var(--chrysaki-text-secondary) !important;
+}
+
+/* Navigation bar (address bar row) -- Surface for softer contrast */
+#nav-bar {
+    background-color: var(--chrysaki-surface) !important;
+    border-bottom: 1px solid var(--chrysaki-border-soft) !important;
+    /* Jewel gradient accent strip along the top */
+    border-top: 1px solid transparent !important;
+    border-image: linear-gradient(90deg, #1a8a6a, #1c3d7a, #583090) 1 !important;
+    /* Subtle tri-primary colour wash texture */
+    background-image: linear-gradient(90deg,
+        rgba(14, 74, 56, 0.08) 0%,
+        rgba(12, 26, 64, 0.08) 50%,
+        rgba(30, 16, 64, 0.08) 100%) !important;
+}
+
+/* Tab strip background -- Abyss (one step darker than nav bar) */
+#TabsToolbar {
+    background-color: var(--chrysaki-abyss) !important;
+    /* Radial jewel pool texture */
+    background-image:
+        radial-gradient(ellipse at 20% 50%, rgba(20, 102, 78, 0.06), transparent 50%),
+        radial-gradient(ellipse at 80% 50%, rgba(58, 32, 104, 0.06), transparent 50%) !important;
+}
+
+/* Title bar */
+#titlebar {
+    background-color: var(--chrysaki-abyss) !important;
+}
+
+/* ==========================================================
+   TAB STYLING
+   ========================================================== */
+
+/* All tabs base */
+.tabbrowser-tab {
+    color: var(--chrysaki-text-muted) !important;
+    background-color: transparent !important;
+}
+
+/* Active/selected tab */
+.tabbrowser-tab[selected="true"] {
+    color: var(--chrysaki-text-primary) !important;
+    background-color: var(--chrysaki-surface) !important;
+}
+
+/* Active tab -- gradient bottom indicator (Emerald -> Blue -> Amethyst) */
+.tabbrowser-tab[selected="true"] .tab-line {
+    background: linear-gradient(90deg, #1a8a6a, #1c3d7a, #583090) !important;
+    height: 2px !important;
+    display: block !important;
+}
+
+/* Inactive tab -- no indicator */
+.tabbrowser-tab:not([selected="true"]) .tab-line {
+    display: none !important;
+}
+
+/* Tab hover state */
+.tabbrowser-tab:not([selected="true"]):hover {
+    background-color: var(--chrysaki-raised) !important;
+    color: var(--chrysaki-text-secondary) !important;
+}
+
+/* Tab close button */
+.tab-close-button:hover {
+    background-color: var(--chrysaki-error) !important;
+    color: var(--chrysaki-text-primary) !important;
+}
+
+/* New tab button -- Teal accent */
+#tabs-newtab-button,
+#new-tab-button {
+    color: var(--chrysaki-teal) !important;
+    fill: var(--chrysaki-teal) !important;
+}
+
+#tabs-newtab-button:hover,
+#new-tab-button:hover {
+    background-color: var(--chrysaki-raised) !important;
+    color: var(--chrysaki-teal-lt) !important;
+    fill: var(--chrysaki-teal-lt) !important;
+}
+
+/* ==========================================================
+   URL BAR (URLBAR)
+   ========================================================== */
+
+#urlbar {
+    background-color: var(--chrysaki-raised) !important;
+    color: var(--chrysaki-text-secondary) !important;
+    border: 1px solid var(--chrysaki-border-soft) !important;
+}
+
+/* URL bar focused -- Emerald glow with spread */
+#urlbar[focused="true"],
+#urlbar:focus-within {
+    border-color: var(--chrysaki-emerald-lt) !important;
+    box-shadow: 0 0 0 1px #1a8a6a, 0 0 8px rgba(26, 138, 106, 0.2) !important;
+    color: var(--chrysaki-text-primary) !important;
+}
+
+/* URL bar input text */
+#urlbar-input {
+    color: var(--chrysaki-text-secondary) !important;
+}
+
+/* URL bar input text -- focused */
+#urlbar[focused="true"] #urlbar-input,
+#urlbar:focus-within #urlbar-input {
+    color: var(--chrysaki-text-primary) !important;
+}
+
+/* URL bar results dropdown */
+.urlbarView {
+    background-color: var(--chrysaki-raised) !important;
+    color: var(--chrysaki-text-secondary) !important;
+    border: 1px solid var(--chrysaki-border-soft) !important;
+}
+
+.urlbarView-row:hover,
+.urlbarView-row[selected] {
+    background-color: var(--chrysaki-elevated) !important;
+    color: var(--chrysaki-text-primary) !important;
+}
+
+/* Search bar */
+#searchbar {
+    background-color: var(--chrysaki-raised) !important;
+    border: 1px solid var(--chrysaki-border-soft) !important;
+}
+
+/* ==========================================================
+   BOOKMARK TOOLBAR
+   ========================================================== */
+
+#PersonalToolbar {
+    background-color: var(--chrysaki-surface) !important;
+    border-bottom: 1px solid var(--chrysaki-border-soft) !important;
+}
+
+#PersonalToolbar .bookmark-item {
+    color: var(--chrysaki-text-secondary) !important;
+}
+
+#PersonalToolbar .bookmark-item:hover {
+    background-color: var(--chrysaki-raised) !important;
+    color: var(--chrysaki-text-primary) !important;
+}
+
+/* ==========================================================
+   SIDEBAR
+   ========================================================== */
+
+#sidebar-box {
+    background-color: var(--chrysaki-surface) !important;
+    color: var(--chrysaki-text-secondary) !important;
+    /* Subtle dot grid texture */
+    background-image: radial-gradient(rgba(54, 58, 79, 0.35) 1px, transparent 1px) !important;
+    background-size: 20px 20px !important;
+}
+
+#sidebar-header {
+    background-color: var(--chrysaki-base) !important;
+    border-bottom: 1px solid var(--chrysaki-border-soft) !important;
+    color: var(--chrysaki-text-secondary) !important;
+    /* Teal left accent bar */
+    border-left: 3px solid #1e8898 !important;
+    padding-left: 10px !important;
+}
+
+#sidebar {
+    background-color: var(--chrysaki-surface) !important;
+    color: var(--chrysaki-text-secondary) !important;
+}
+
+/* ==========================================================
+   CONTEXT MENUS & DROPDOWN MENUS
+   ========================================================== */
+
+menupopup,
+panel {
+    background-color: var(--chrysaki-raised) !important;
+    color: var(--chrysaki-text-secondary) !important;
+    border: 1px solid var(--chrysaki-border-soft) !important;
+}
+
+menuitem,
+menu {
+    color: var(--chrysaki-text-secondary) !important;
+}
+
+menuitem:hover,
+menuitem[_moz-menuactive="true"],
+menu:hover,
+menu[_moz-menuactive="true"] {
+    background-color: var(--chrysaki-elevated) !important;
+    color: var(--chrysaki-text-primary) !important;
+}
+
+menuseparator {
+    border-color: var(--chrysaki-border-soft) !important;
+}
+
+/* Disabled menu items */
+menuitem[disabled="true"],
+menu[disabled="true"] {
+    color: var(--chrysaki-text-muted) !important;
+}
+
+/* ==========================================================
+   FINDBAR
+   ========================================================== */
+
+findbar {
+    background-color: var(--chrysaki-surface) !important;
+    color: var(--chrysaki-text-secondary) !important;
+    border-top: 1px solid var(--chrysaki-border-soft) !important;
+    /* Blonde left accent for search context */
+    border-left: 3px solid #b8a038 !important;
+}
+
+findbar .findbar-textbox {
+    background-color: var(--chrysaki-raised) !important;
+    color: var(--chrysaki-text-primary) !important;
+    border: 1px solid var(--chrysaki-border-soft) !important;
+}
+
+findbar .findbar-textbox:focus {
+    border-color: var(--chrysaki-emerald-lt) !important;
+}
+
+/* Findbar highlight match count */
+findbar .found-matches {
+    color: var(--chrysaki-teal-lt) !important;
+}
+
+/* ==========================================================
+   DEVTOOLS PANEL TABS
+   ========================================================== */
+
+/* DevTools use a separate document, but overrides can be
+   attempted via userChrome. Results may vary by version. */
+.devtools-tab {
+    color: var(--chrysaki-text-secondary) !important;
+    background-color: var(--chrysaki-base) !important;
+}
+
+.devtools-tab[selected],
+.devtools-tab.selected {
+    color: var(--chrysaki-text-primary) !important;
+    border-bottom: 2px solid var(--chrysaki-emerald-lt) !important;
+}
+
+.devtools-tab:hover:not([selected]) {
+    background-color: var(--chrysaki-raised) !important;
+}
+
+/* ==========================================================
+   SCROLLBAR STYLING
+   ========================================================== */
+
+scrollbar {
+    -moz-appearance: none !important;
+    background-color: var(--chrysaki-base) !important;
+}
+
+scrollbar thumb {
+    background-color: var(--chrysaki-border) !important;
+}
+
+scrollbar thumb:hover {
+    background-color: var(--chrysaki-elevated) !important;
+}
+
+/* ==========================================================
+   FOCUS RING GLOBAL OVERRIDE
+   ========================================================== */
+
+*:focus-visible {
+    outline-color: var(--chrysaki-emerald-lt) !important;
+}
