@@ -1,0 +1,476 @@
+/* @theme chrysaki */
+
+/* ==========================================================
+   Chrysaki Marp Theme — v1.1.0
+   A dark presentation theme built on the Chrysaki palette.
+   ========================================================== */
+
+/* ==========================================================
+   CSS CUSTOM PROPERTIES
+   ========================================================== */
+:root {
+    /* Surfaces */
+    --chrysaki-abyss: #0f1117;
+    --chrysaki-base: #161821;
+    --chrysaki-surface: #1c1f2b;
+    --chrysaki-raised: #252836;
+    --chrysaki-elevated: #2e3142;
+    --chrysaki-border: #363a4f;
+
+    /* Primary Accents */
+    --chrysaki-emerald: #14664e;
+    --chrysaki-emerald-lt: #1a8a6a;
+    --chrysaki-emerald-dim: #0e4a38;
+    --chrysaki-blue: #122858;
+    --chrysaki-blue-lt: #1c3d7a;
+    --chrysaki-blue-dim: #0c1a40;
+    --chrysaki-amethyst: #3a2068;
+    --chrysaki-amethyst-lt: #583090;
+    --chrysaki-amethyst-dim: #1e1040;
+
+    /* Secondary Accents */
+    --chrysaki-teal: #197278;
+    --chrysaki-teal-lt: #20969c;
+    --chrysaki-teal-dim: #0f4f54;
+    --chrysaki-blonde: #FBB13C;
+    --chrysaki-blonde-lt: #FCC96A;
+    --chrysaki-blonde-dim: #C4861C;
+    --chrysaki-error: #8C2F39;
+
+    /* Text */
+    --chrysaki-text-primary: #e0e2ea;
+    --chrysaki-text-secondary: #a0a4b8;
+    --chrysaki-text-muted: #6a6e82;
+    --chrysaki-text-inverse: #0f1117;
+}
+
+/* ==========================================================
+   BASE SLIDE STYLES
+   ========================================================== */
+section {
+    background-color: var(--chrysaki-base);
+    color: var(--chrysaki-text-primary);
+    font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 28px;
+    padding: 40px 60px;
+    line-height: 1.6;
+    justify-content: flex-start;
+}
+
+/* ==========================================================
+   HEADINGS
+   ========================================================== */
+
+/* H1 — Emerald Lt, solid color
+   Gradient text (background-clip) is unreliable across
+   Marp renderers, so we use solid Emerald Lt for H1. */
+section h1 {
+    color: var(--chrysaki-emerald-lt);
+    font-size: 2em;
+    font-weight: 700;
+    margin-bottom: 0.4em;
+    border: none;
+}
+
+/* H2 — Teal Lt with Border underline */
+section h2 {
+    color: var(--chrysaki-teal-lt);
+    font-size: 1.5em;
+    font-weight: 600;
+    border-bottom: 2px solid var(--chrysaki-border);
+    padding-bottom: 0.2em;
+    margin-bottom: 0.5em;
+}
+
+/* H3 — Blonde */
+section h3 {
+    color: var(--chrysaki-blonde);
+    font-size: 1.1em;
+    font-weight: 600;
+    margin-bottom: 0.3em;
+}
+
+/* H4-H6 fallback */
+section h4, section h5, section h6 {
+    color: var(--chrysaki-text-secondary);
+}
+
+/* ==========================================================
+   PARAGRAPHS AND LIST ITEMS
+   ========================================================== */
+section p {
+    color: var(--chrysaki-text-primary);
+    margin-bottom: 0.6em;
+}
+
+section li {
+    color: var(--chrysaki-text-primary);
+    margin-bottom: 0.3em;
+}
+
+section ul, section ol {
+    margin-left: 1.2em;
+}
+
+/* List markers */
+section ul li::marker {
+    color: var(--chrysaki-emerald-lt);
+}
+
+section ol li::marker {
+    color: var(--chrysaki-teal-lt);
+}
+
+/* ==========================================================
+   INLINE CODE
+   ========================================================== */
+section code {
+    background-color: var(--chrysaki-amethyst-dim);
+    border: 1px solid var(--chrysaki-elevated);
+    color: var(--chrysaki-text-primary);
+    padding: 0.1em 0.4em;
+    font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+    font-size: 0.85em;
+}
+
+/* ==========================================================
+   CODE BLOCKS
+   ========================================================== */
+section pre {
+    background-color: var(--chrysaki-surface);
+    border: 1px solid var(--chrysaki-border);
+    /* Jewel Border gradient as top accent bar */
+    border-top: 3px solid var(--chrysaki-emerald-lt);
+    border-image: linear-gradient(
+        90deg,
+        var(--chrysaki-emerald-lt),
+        var(--chrysaki-blue-lt),
+        var(--chrysaki-amethyst-lt)
+    ) 1;
+    padding: 1em;
+    overflow-x: auto;
+}
+
+section pre code {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+    font-size: 0.8em;
+    color: var(--chrysaki-text-primary);
+    line-height: 1.5;
+}
+
+/* ==========================================================
+   BLOCKQUOTES
+   ========================================================== */
+section blockquote {
+    /* Jewel border-left gradient: Emerald to Blue */
+    border-left: 4px solid var(--chrysaki-emerald-lt);
+    background-color: var(--chrysaki-blue-dim);
+    padding: 0.8em 1.2em;
+    margin: 0.8em 0;
+    color: var(--chrysaki-text-primary);
+}
+
+section blockquote p {
+    color: var(--chrysaki-text-primary);
+    margin: 0;
+}
+
+/* ==========================================================
+   TABLES
+   ========================================================== */
+section table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85em;
+}
+
+/* Table header — Blue fill */
+section table thead th {
+    background-color: var(--chrysaki-blue);
+    color: var(--chrysaki-text-primary);
+    padding: 0.6em 0.8em;
+    text-align: left;
+    font-weight: 600;
+    border: 1px solid var(--chrysaki-border);
+}
+
+/* Table cells — alternating Surface/Base rows */
+section table tbody td {
+    padding: 0.5em 0.8em;
+    border: 1px solid var(--chrysaki-border);
+    color: var(--chrysaki-text-primary);
+}
+
+section table tbody tr:nth-child(odd) {
+    background-color: var(--chrysaki-surface);
+}
+
+section table tbody tr:nth-child(even) {
+    background-color: var(--chrysaki-base);
+}
+
+section table tbody tr:hover {
+    background-color: var(--chrysaki-raised);
+}
+
+/* ==========================================================
+   LINKS
+   ========================================================== */
+section a {
+    color: var(--chrysaki-emerald-lt);
+    text-decoration: underline;
+    text-decoration-color: var(--chrysaki-emerald-dim);
+    text-underline-offset: 2px;
+}
+
+section a:hover {
+    color: var(--chrysaki-teal-lt);
+    text-decoration-color: var(--chrysaki-teal);
+}
+
+/* ==========================================================
+   INLINE FORMATTING
+   ========================================================== */
+
+/* Bold — Blonde */
+section strong {
+    color: var(--chrysaki-blonde);
+    font-weight: 700;
+}
+
+/* Emphasis — Secondary Text */
+section em {
+    color: var(--chrysaki-text-secondary);
+    font-style: italic;
+}
+
+/* ==========================================================
+   HORIZONTAL RULE
+   ========================================================== */
+section hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(
+        90deg,
+        var(--chrysaki-emerald-lt),
+        var(--chrysaki-blue-lt),
+        var(--chrysaki-amethyst-lt)
+    );
+    margin: 1.5em 0;
+}
+
+/* ==========================================================
+   IMAGES
+   ========================================================== */
+section img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Image alt text as caption */
+section img + em,
+section figure figcaption {
+    display: block;
+    text-align: center;
+    color: var(--chrysaki-text-muted);
+    font-size: 0.75em;
+    margin-top: 0.3em;
+}
+
+/* ==========================================================
+   HEADER AND FOOTER
+   ========================================================== */
+section header,
+section footer {
+    color: var(--chrysaki-text-secondary);
+    font-size: 0.6em;
+}
+
+header {
+    font-weight: 600;
+}
+
+/* ==========================================================
+   SLIDE NUMBER (PAGINATION)
+   ========================================================== */
+section::after {
+    color: var(--chrysaki-text-muted);
+    font-size: 0.6em;
+}
+
+/* ==========================================================
+   LAYOUT VARIANT: TITLE SLIDE
+   Use with: <!-- _class: title -->
+   ========================================================== */
+section.title {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    /* Tri-Primary gradient top bar */
+    border-top: 4px solid transparent;
+    border-image: linear-gradient(
+        90deg,
+        var(--chrysaki-emerald),
+        var(--chrysaki-blue),
+        var(--chrysaki-amethyst)
+    ) 1;
+}
+
+section.title h1 {
+    font-size: 2.5em;
+    color: var(--chrysaki-emerald-lt);
+    margin-bottom: 0.2em;
+}
+
+section.title h2 {
+    font-size: 1.2em;
+    color: var(--chrysaki-text-secondary);
+    border: none;
+    font-weight: 400;
+}
+
+section.title p {
+    color: var(--chrysaki-text-muted);
+    font-size: 0.9em;
+}
+
+/* ==========================================================
+   LAYOUT VARIANT: INVERT (LIGHT THEME)
+   Use with: <!-- _class: invert -->
+   ========================================================== */
+section.invert {
+    background-color: var(--chrysaki-text-primary);
+    color: var(--chrysaki-base);
+}
+
+section.invert h1 {
+    color: var(--chrysaki-emerald);
+}
+
+section.invert h2 {
+    color: var(--chrysaki-teal-dim);
+    border-bottom-color: #c0c2ca;
+}
+
+section.invert h3 {
+    color: var(--chrysaki-blonde-dim);
+}
+
+section.invert p,
+section.invert li {
+    color: var(--chrysaki-base);
+}
+
+section.invert code {
+    background-color: #d0d2da;
+    border-color: #c0c2ca;
+    color: var(--chrysaki-amethyst);
+}
+
+section.invert pre {
+    background-color: var(--chrysaki-base);
+    color: var(--chrysaki-text-primary);
+}
+
+section.invert pre code {
+    color: var(--chrysaki-text-primary);
+}
+
+section.invert a {
+    color: var(--chrysaki-emerald);
+}
+
+section.invert strong {
+    color: var(--chrysaki-blonde-dim);
+}
+
+section.invert em {
+    color: var(--chrysaki-text-muted);
+}
+
+section.invert blockquote {
+    background-color: #d0d2da;
+    border-left-color: var(--chrysaki-emerald);
+}
+
+section.invert table thead th {
+    background-color: var(--chrysaki-blue);
+    color: var(--chrysaki-text-primary);
+}
+
+section.invert table tbody tr:nth-child(odd) {
+    background-color: #d0d2da;
+}
+
+section.invert table tbody tr:nth-child(even) {
+    background-color: var(--chrysaki-text-primary);
+}
+
+/* ==========================================================
+   LAYOUT VARIANT: SPLIT (TWO COLUMNS)
+   Use with: <!-- _class: split -->
+   Content is split by <hr> (---) into left/right columns.
+   ========================================================== */
+section.split {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 40px 30px;
+    gap: 30px;
+}
+
+section.split h1,
+section.split h2,
+section.split h3 {
+    width: 100%;
+    flex-shrink: 0;
+}
+
+section.split hr {
+    display: none;
+}
+
+/* Each content block between headings and <hr> becomes a column */
+section.split > *:not(h1):not(h2):not(h3):not(hr):not(header):not(footer) {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ==========================================================
+   PRINT / PDF EXPORT
+   ========================================================== */
+@media print {
+    section {
+        background-color: var(--chrysaki-base) !important;
+        color: var(--chrysaki-text-primary) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    section pre {
+        background-color: var(--chrysaki-surface) !important;
+    }
+
+    section table thead th {
+        background-color: var(--chrysaki-blue) !important;
+    }
+
+    section.title {
+        border-image: linear-gradient(
+            90deg,
+            var(--chrysaki-emerald),
+            var(--chrysaki-blue),
+            var(--chrysaki-amethyst)
+        ) 1 !important;
+    }
+
+    section.invert {
+        background-color: var(--chrysaki-text-primary) !important;
+        color: var(--chrysaki-base) !important;
+    }
+}

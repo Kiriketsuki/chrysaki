@@ -1,0 +1,213 @@
+/* Chrysaki GTK Override
+ * Apply over Adwaita-dark or any dark GTK theme.
+ * All values map to Chrysaki palette tokens.
+ * Place at: ~/.config/gtk-3.0/gtk.css AND ~/.config/gtk-4.0/gtk.css
+ */
+
+/* --- Named color definitions --- */
+@define-color theme_bg_color #161821;            /* Base */
+@define-color theme_fg_color #e0e2ea;            /* Primary Text */
+@define-color theme_selected_bg_color #14664e;   /* Emerald Base */
+@define-color theme_selected_fg_color #0f1117;   /* Inverse Text */
+@define-color theme_base_color #0f1117;          /* Abyss */
+@define-color theme_text_color #e0e2ea;          /* Primary Text */
+@define-color insensitive_fg_color #6a6e82;      /* Muted Text */
+@define-color borders #363a4f;                   /* Border */
+@define-color unfocused_borders #1c1f2b;         /* Surface */
+@define-color warning_color #FBB13C;             /* Blonde Base */
+@define-color error_color #8C2F39;               /* Error */
+@define-color success_color #1a8a6a;             /* Emerald Light */
+
+/* --- Window and general background --- */
+window,
+.background {
+    background-color: @theme_bg_color;           /* Base */
+    color: @theme_fg_color;                      /* Primary Text */
+}
+
+/* --- Headerbar (title bar) --- */
+headerbar,
+.titlebar,
+headerbar.default-decoration {
+    background-color: #0f1117;                   /* Abyss */
+    color: #e0e2ea;                              /* Primary Text */
+    border-bottom: 1px solid #363a4f;            /* Border */
+    border-radius: 0;                            /* Geometric: no rounding */
+    box-shadow: none;
+}
+
+/* --- Sidebar --- */
+.sidebar,
+placessidebar,
+.sidebar row,
+placessidebar row {
+    background-color: #1c1f2b;                   /* Surface */
+    color: #e0e2ea;                              /* Primary Text */
+    border-radius: 0;                            /* Geometric */
+}
+
+.sidebar row:selected,
+placessidebar row:selected {
+    background-color: #14664e;                   /* Emerald Base */
+    color: #0f1117;                              /* Inverse Text */
+}
+
+.sidebar row:hover,
+placessidebar row:hover {
+    background-color: #252836;                   /* Raised */
+}
+
+/* --- Buttons --- */
+button {
+    background-color: #252836;                   /* Raised */
+    color: #e0e2ea;                              /* Primary Text */
+    border: 1px solid #363a4f;                   /* Border */
+    border-radius: 0;                            /* Geometric */
+    box-shadow: none;
+}
+
+button:hover {
+    background-color: #2e3142;                   /* Elevated */
+}
+
+button:active,
+button:checked {
+    background-color: #14664e;                   /* Emerald Base */
+    color: #0f1117;                              /* Inverse Text */
+}
+
+button:disabled {
+    background-color: #1c1f2b;                   /* Surface */
+    color: #6a6e82;                              /* Muted Text */
+}
+
+/* --- Suggested action (primary) buttons --- */
+button.suggested-action {
+    background-color: #14664e;                   /* Emerald Base */
+    color: #0f1117;                              /* Inverse Text */
+}
+
+button.suggested-action:hover {
+    background-color: #1a8a6a;                   /* Emerald Light */
+}
+
+/* --- Destructive action buttons --- */
+button.destructive-action {
+    background-color: #8C2F39;                   /* Error */
+    color: #e0e2ea;                              /* Primary Text */
+}
+
+/* --- Entry widgets (text inputs) --- */
+entry {
+    background-color: #0f1117;                   /* Abyss */
+    color: #e0e2ea;                              /* Primary Text */
+    border: 1px solid #363a4f;                   /* Border */
+    border-radius: 0;                            /* Geometric */
+    caret-color: #1a8a6a;                        /* Emerald Light */
+}
+
+entry:focus {
+    border-color: #14664e;                       /* Emerald Base */
+}
+
+/* --- Popovers and menus --- */
+popover,
+popover.background,
+.popup,
+menu {
+    background-color: #1c1f2b;                   /* Surface */
+    color: #e0e2ea;                              /* Primary Text */
+    border: 1px solid #363a4f;                   /* Border */
+    border-radius: 0;                            /* Geometric */
+}
+
+popover modelbutton:hover,
+menu menuitem:hover {
+    background-color: #252836;                   /* Raised */
+}
+
+/* --- Treeview and list rows --- */
+treeview,
+.view {
+    background-color: #0f1117;                   /* Abyss */
+    color: #e0e2ea;                              /* Primary Text */
+}
+
+treeview:selected,
+.view:selected,
+row:selected {
+    background-color: #14664e;                   /* Emerald Base */
+    color: #0f1117;                              /* Inverse Text */
+}
+
+treeview:hover,
+row:hover {
+    background-color: #252836;                   /* Raised */
+}
+
+/* --- Tooltips --- */
+tooltip,
+tooltip.background {
+    background-color: #2e3142;                   /* Elevated */
+    color: #e0e2ea;                              /* Primary Text */
+    border: 1px solid #363a4f;                   /* Border */
+    border-radius: 0;                            /* Geometric */
+}
+
+/* --- Scrollbars --- */
+scrollbar slider {
+    background-color: #363a4f;                   /* Border */
+    border-radius: 0;                            /* Geometric */
+}
+
+scrollbar slider:hover {
+    background-color: #6a6e82;                   /* Muted Text */
+}
+
+/* --- Notebook tabs --- */
+notebook > header > tabs > tab {
+    background-color: #1c1f2b;                   /* Surface */
+    color: #a0a4b8;                              /* Secondary Text */
+    border-radius: 0;                            /* Geometric */
+}
+
+notebook > header > tabs > tab:checked {
+    background-color: #161821;                   /* Base */
+    color: #e0e2ea;                              /* Primary Text */
+    border-bottom: 2px solid #14664e;            /* Emerald Base accent */
+}
+
+/* --- Links --- */
+*:link,
+*:visited {
+    color: #1a8a6a;                              /* Emerald Light */
+}
+
+/* --- Selection highlight --- */
+selection,
+*::selection {
+    background-color: #14664e;                   /* Emerald Base */
+    color: #0f1117;                              /* Inverse Text */
+}
+
+/* --- Switch toggles --- */
+switch {
+    border-radius: 0;                            /* Geometric */
+    background-color: #252836;                   /* Raised */
+    border: 1px solid #363a4f;                   /* Border */
+}
+
+switch:checked {
+    background-color: #14664e;                   /* Emerald Base */
+}
+
+/* --- Progress bars --- */
+progressbar progress {
+    background-color: #1a8a6a;                   /* Emerald Light */
+    border-radius: 0;                            /* Geometric */
+}
+
+progressbar trough {
+    background-color: #1c1f2b;                   /* Surface */
+    border-radius: 0;                            /* Geometric */
+}

@@ -1,0 +1,46 @@
+// Chrysaki theme for Gitui
+// Hard geometric dark palette — all values from Chrysaki token system
+(
+    // Tab bar: active tab indicator
+    selected_tab: Rgb(26, 138, 106),            // Emerald Lt — growth, creation
+
+    // Command bar foreground text
+    command_fg: Rgb(224, 226, 234),              // Primary Text
+
+    // Selection highlight
+    selection_bg: Rgb(37, 40, 54),               // Raised
+    selection_fg: Rgb(224, 226, 234),            // Primary Text
+
+    // Command bar backgrounds
+    cmdbar_bg: Rgb(15, 17, 23),                  // Abyss
+    cmdbar_extra_lines_bg: Rgb(15, 17, 23),      // Abyss
+
+    // Disabled / inactive elements
+    disabled_fg: Rgb(106, 110, 130),             // Muted Text
+
+    // Diff: line-level
+    diff_line_add: Rgb(26, 138, 106),            // Emerald Lt
+    diff_line_delete: Rgb(140, 47, 57),          // Error
+
+    // Diff: file-level status
+    diff_file_added: Rgb(26, 138, 106),          // Emerald Lt
+    diff_file_removed: Rgb(140, 47, 57),         // Error
+    diff_file_moved: Rgb(32, 150, 156),          // Teal Lt — transitional
+    diff_file_modified: Rgb(251, 177, 60),       // Blonde — emphasis
+
+    // Commit log
+    commit_hash: Rgb(252, 201, 106),              // Blonde Lt — bright metric
+    commit_time: Rgb(251, 177, 60),              // Blonde
+    commit_author: Rgb(160, 164, 184),           // Secondary Text
+
+    // Destructive / error actions
+    danger_fg: Rgb(140, 47, 57),                 // Error
+
+    // Push gauge
+    push_gauge_bg: Rgb(28, 61, 122),             // Blue Lt — depth
+    push_gauge_fg: Rgb(26, 138, 106),            // Emerald Lt — progress
+
+    // Tags and branches
+    tag_fg: Rgb(32, 150, 156),                   // Teal Lt — metadata
+    branch_fg: Rgb(88, 48, 144),                 // Amethyst Lt — identity
+)

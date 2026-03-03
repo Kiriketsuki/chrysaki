@@ -1,0 +1,126 @@
+/* Chrysaki Theme for Steam Client
+ * Method: Direct CSS injection via libraryroot.custom.css
+ * Placement: steamui/libraryroot.custom.css in Steam install directory
+ *   Linux/SteamOS: ~/.steam/steam/steamui/libraryroot.custom.css
+ *   Windows: C:/Program Files (x86)/Steam/steamui/libraryroot.custom.css
+ */
+
+:root {
+    /* --- Backgrounds --- */
+    --gpColor-Store-Bg: #0f1117 !important;                 /* Abyss */
+    --gpColor-Store-BgDarker: #0f1117 !important;           /* Abyss */
+    --gpColor-Library-Bg: #161821 !important;                /* Base */
+    --gpColor-Library-Header: #0f1117 !important;            /* Abyss */
+
+    /* --- Text --- */
+    --gpColor-Store-Fg: #e0e2ea !important;                  /* Primary Text */
+    --gpColor-Store-FgLighter: #a0a4b8 !important;           /* Secondary Text */
+    --gpColor-Store-FgMuted: #6a6e82 !important;             /* Muted Text */
+
+    /* --- Accent --- */
+    --gpColor-Store-Link: #1a8a6a !important;                /* Emerald Light */
+    --gpColor-Store-LinkHover: #14664e !important;            /* Emerald Base */
+    --gpColor-Blue: #122858 !important;                       /* Blue Base (fill only) */
+    --gpColor-Green: #14664e !important;                      /* Emerald Base */
+    --gpColor-DarkGreen: #0e4a38 !important;                  /* Emerald Dim */
+    --gpColor-Red: #8C2F39 !important;                        /* Error */
+    --gpColor-Yellow: #FBB13C !important;                     /* Blonde Base */
+}
+
+/* --- Library sidebar --- */
+.libraryhome_LibraryShell_2t1g9,
+.gamelistbar_GameListBarContainer_1HRi3 {
+    background-color: #1c1f2b !important;                    /* Surface */
+}
+
+/* --- Game list items --- */
+.gamelistentry_Container_2Rr5z {
+    border-radius: 0 !important;                             /* Geometric */
+}
+
+.gamelistentry_Container_2Rr5z:hover {
+    background-color: #252836 !important;                    /* Raised */
+}
+
+.gamelistentry_Container_2Rr5z.gamelistentry_Selected_1FisO {
+    background-color: #14664e !important;                    /* Emerald Base */
+}
+
+/* --- Header bar --- */
+.supernav_Container_2WHn4 {
+    background-color: #0f1117 !important;                    /* Abyss */
+    border-bottom: 1px solid #363a4f !important;             /* Border */
+}
+
+/* --- Navigation tabs --- */
+.supernav_Active_1CkMq {
+    border-bottom-color: #1a8a6a !important;                 /* Emerald Light */
+}
+
+/* --- Game detail page --- */
+.appdetails_GameDetailsBody_13UE6 {
+    background-color: #161821 !important;                    /* Base */
+}
+
+/* --- Install / Play button --- */
+.appactionbutton_Green_3tQ2S {
+    background: linear-gradient(
+        135deg,
+        #14664e,                                              /* Emerald Base */
+        #1a8a6a                                               /* Emerald Light */
+    ) !important;
+    border-radius: 0 !important;                             /* Geometric */
+    color: #0f1117 !important;                               /* Inverse Text */
+}
+
+/* --- Card backgrounds --- */
+.libraryhome_GameCard_1Ri0Y,
+.libraryhome_Card_2rE1V {
+    background-color: #1c1f2b !important;                    /* Surface */
+    border-radius: 0 !important;                             /* Geometric */
+    border: 1px solid #363a4f !important;                    /* Border */
+}
+
+.libraryhome_GameCard_1Ri0Y:hover,
+.libraryhome_Card_2rE1V:hover {
+    background-color: #252836 !important;                    /* Raised */
+}
+
+/* --- Dropdown menus --- */
+.DialogDropDown_CurrentDisplay_2k4aK,
+.contextmenu_ContextMenu_3_-JB {
+    background-color: #1c1f2b !important;                    /* Surface */
+    border: 1px solid #363a4f !important;                    /* Border */
+    border-radius: 0 !important;                             /* Geometric */
+}
+
+/* --- Tooltips --- */
+.Tooltip_Default_1Tmkf {
+    background-color: #2e3142 !important;                    /* Elevated */
+    color: #e0e2ea !important;                               /* Primary Text */
+    border-radius: 0 !important;                             /* Geometric */
+}
+
+/* --- Scrollbar --- */
+::-webkit-scrollbar {
+    width: 8px;
+    background-color: #161821;                               /* Base */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #363a4f;                               /* Border */
+    border-radius: 0;                                        /* Geometric */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #6a6e82;                               /* Muted Text */
+}
+
+/* --- Price highlights --- */
+.salepreviewwidgets_StoreSalePriceBox_Wh0L8 {
+    color: #FBB13C !important;                               /* Blonde Base */
+}
+
+.salepreviewwidgets_StoreOriginalPrice_1EKGZ {
+    color: #6a6e82 !important;                               /* Muted Text */
+}
