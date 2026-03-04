@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chrysaki Texture Explorer</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #141414;
+    --surface: #1c1c1c;
+    --surface2: #222222;
+    --surface3: #2a2a2a;
+    --border: #333333;
+    --text: #e0e2ea;
+    --text-dim: #888898;
+    --emerald: #1a8a6a;
+    --teal: #20969c;
+    --blue: #4a82c4;
+    --purple: #7a52b3;
+    --accent: #1a8a6a;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    grid-template-rows: 48px 1fr;
+    overflow: hidden;
+  }
+
+  /* ── Header ── */
+  header {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); }
+  header span { font-size: 13px; color: var(--emerald); font-weight: 500; }
+
+  /* ── Controls ── */
+  .controls {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .section {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+
+  /* Texture cards */
+  .texture-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .texture-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    background: var(--surface2);
+  }
+  .texture-card:hover { border-color: var(--emerald); }
+  .texture-card.active {
+    border-color: var(--emerald);
+    background: rgba(26,138,106,0.08);
+  }
+  .texture-card input[type=radio] { display: none; }
+  .card-swatch {
+    width: 44px;
+    height: 32px;
+    background-color: var(--surface);
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+  .card-info { flex: 1; min-width: 0; }
+  .card-name { font-size: 12px; font-weight: 500; color: var(--text); }
+  .card-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+  /* Sliders */
+  .slider-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .slider-row:last-child { margin-bottom: 0; }
+  .slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .slider-name { font-size: 12px; color: var(--text-dim); }
+  .slider-val { font-size: 12px; font-family: monospace; color: var(--text); }
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 3px;
+    background: var(--border);
+    outline: none;
+    border-radius: 0;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    background: var(--emerald);
+    cursor: pointer;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  }
+
+  /* Color inputs */
+  .color-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .color-row:last-child { margin-bottom: 0; }
+  .color-row label { font-size: 12px; color: var(--text-dim); flex: 1; }
+  .color-row input[type=color] {
+    width: 32px;
+    height: 24px;
+    border: 1px solid var(--border);
+    background: none;
+    padding: 1px;
+    cursor: pointer;
+  }
+  .color-hex {
+    font-size: 11px;
+    font-family: monospace;
+    color: var(--text-dim);
+    width: 60px;
+  }
+
+  /* Presets */
+  .presets { display: flex; gap: 6px; flex-wrap: wrap; }
+  .preset-btn {
+    font-size: 11px;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .preset-btn:hover { border-color: var(--teal); color: var(--text); }
+
+  /* ── Right panel ── */
+  .right {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    overflow: hidden;
+  }
+
+  /* Preview */
+  .preview-wrap {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .preview-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .preview-toolbar span { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  .vscode-mock {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 48px 220px 1fr;
+    grid-template-rows: 1fr 28px;
+    overflow: hidden;
+    font-size: 12px;
+  }
+
+  /* Activity bar */
+  .mock-activitybar {
+    background: #161616;
+    border-right: 1px solid var(--border);
+    grid-row: 1 / 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 0;
+    gap: 6px;
+  }
+  .mock-icon {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+    font-size: 16px;
+  }
+  .mock-icon.active { color: var(--emerald); background: rgba(26,138,106,0.15); }
+
+  /* Sidebar */
+  .mock-sidebar {
+    border-right: 1px solid var(--border);
+    overflow: hidden;
+    position: relative;
+  }
+  .mock-sidebar-header {
+    padding: 6px 10px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+  .mock-file { padding: 7px 10px 7px 24px; color: var(--text-dim); white-space: nowrap; }
+  .mock-file.sel { background: rgba(26,138,106,0.12); color: var(--text); box-shadow: inset 3px 0 0 var(--emerald); }
+
+  /* Editor */
+  .mock-editor {
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .mock-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: #171717;
+    flex-shrink: 0;
+  }
+  .mock-tab {
+    padding: 5px 16px;
+    font-size: 12px;
+    color: var(--text-dim);
+    border-right: 1px solid var(--border);
+  }
+  .mock-tab.active { color: var(--text); background: var(--surface); border-top: 1px solid var(--emerald); }
+  .mock-code {
+    flex: 1;
+    padding: 12px 16px;
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    overflow: hidden;
+    position: relative;
+  }
+  .mock-code .kw { color: #7a52b3; }
+  .mock-code .fn { color: #4a82c4; }
+  .mock-code .str { color: #1a8a6a; }
+  .mock-code .cm { color: #555; }
+  .mock-code .num { color: #20969c; }
+
+  /* Status bar */
+  .mock-statusbar {
+    grid-column: 2 / 4;
+    background: #1a8a6a;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 16px;
+    font-size: 11px;
+  }
+
+  /* Texture overlay target — applied to sidebar */
+  .texture-target {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .mock-sidebar > *:not(.texture-target) { position: relative; z-index: 1; }
+
+  /* ── Code output ── */
+  .code-output {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 200px;
+  }
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .code-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; }
+  .copy-btn {
+    font-size: 11px;
+    padding: 3px 12px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-dim);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { border-color: var(--emerald); color: var(--text); }
+  .copy-btn.copied { border-color: var(--emerald); color: var(--emerald); }
+  pre#css-output {
+    font-family: monospace;
+    font-size: 11px;
+    color: var(--text);
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 130px;
+    line-height: 1.6;
+    white-space: pre;
+  }
+  pre#css-output .prop { color: #4a82c4; }
+  pre#css-output .val  { color: #1a8a6a; }
+  pre#css-output .num  { color: #20969c; }
+  pre#css-output .cm   { color: #555; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Chrysaki</h1>
+  <span>/ Texture Explorer</span>
+</header>
+
+<!-- Controls -->
+<aside class="controls">
+
+  <div class="section">
+    <div class="section-label">Texture</div>
+    <div class="texture-cards" id="texture-cards"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Presets</div>
+    <div class="presets">
+      <button class="preset-btn" data-preset="subtle">Subtle</button>
+      <button class="preset-btn" data-preset="visible">Visible</button>
+      <button class="preset-btn" data-preset="dense">Dense</button>
+      <button class="preset-btn" data-preset="ghost">Ghost</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Controls</div>
+
+    <div class="slider-row">
+      <div class="slider-header">
+        <span class="slider-name">Opacity</span>
+        <span class="slider-val" id="val-opacity">0.40</span>
+      </div>
+      <input type="range" id="ctrl-opacity" min="0.02" max="1" step="0.01" value="0.40">
+    </div>
+
+    <div class="slider-row">
+      <div class="slider-header">
+        <span class="slider-name">Scale / Density</span>
+        <span class="slider-val" id="val-scale">1.00×</span>
+      </div>
+      <input type="range" id="ctrl-scale" min="0.3" max="3" step="0.05" value="1">
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Colors</div>
+
+    <div class="color-row">
+      <label>--color-panel (bg)</label>
+      <input type="color" id="ctrl-panel" value="#1c1c1c">
+      <span class="color-hex" id="hex-panel">#1c1c1c</span>
+    </div>
+    <div class="color-row">
+      <label>--color-vector (lines)</label>
+      <input type="color" id="ctrl-vector" value="#525252">
+      <span class="color-hex" id="hex-vector">#525252</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Apply To</div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <label style="font-size:12px;color:var(--text-dim);display:flex;align-items:center;gap:8px;cursor:pointer;">
+        <input type="checkbox" id="apply-sidebar" checked style="accent-color:var(--emerald)"> Sidebar
+      </label>
+      <label style="font-size:12px;color:var(--text-dim);display:flex;align-items:center;gap:8px;cursor:pointer;">
+        <input type="checkbox" id="apply-editor" style="accent-color:var(--emerald)"> Editor
+      </label>
+      <label style="font-size:12px;color:var(--text-dim);display:flex;align-items:center;gap:8px;cursor:pointer;">
+        <input type="checkbox" id="apply-activitybar" style="accent-color:var(--emerald)"> Activity Bar
+      </label>
+    </div>
+  </div>
+
+</aside>
+
+<!-- Right -->
+<div class="right">
+
+  <div class="preview-wrap">
+    <div class="preview-toolbar">
+      <span>Preview</span>
+    </div>
+
+    <div class="vscode-mock">
+      <!-- Activity bar -->
+      <div class="mock-activitybar" id="mock-activitybar">
+        <div class="texture-target" id="tex-activitybar"></div>
+        <div class="mock-icon active">&#9632;</div>
+        <div class="mock-icon">&#9670;</div>
+        <div class="mock-icon">&#9651;</div>
+        <div class="mock-icon">&#8942;</div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="mock-sidebar" id="mock-sidebar">
+        <div class="texture-target" id="tex-sidebar"></div>
+        <div class="mock-sidebar-header">Explorer</div>
+        <div class="mock-file">&#128193; src</div>
+        <div class="mock-file sel">&#128196; workbench.css</div>
+        <div class="mock-file">&#128196; theme.json</div>
+        <div class="mock-file">&#128193; vscode</div>
+        <div class="mock-file">&#128196; package.json</div>
+        <div class="mock-file">&#128196; CHANGELOG.md</div>
+        <div class="mock-file">&#128196; README.md</div>
+      </div>
+
+      <!-- Editor -->
+      <div class="mock-editor" id="mock-editor">
+        <div class="texture-target" id="tex-editor"></div>
+        <div class="mock-tabs">
+          <div class="mock-tab active">workbench.css</div>
+          <div class="mock-tab">theme.json</div>
+        </div>
+        <div class="mock-code">
+<span class="cm">/* Chrysaki Workbench CSS */</span>
+<span class="kw">.activitybar</span> <span class="cm">.action-item.checked</span> {
+  <span class="fn">clip-path</span>: <span class="str">polygon</span>(<span class="num">5px</span> <span class="num">0%</span>, <span class="num">100%</span> <span class="num">0%</span>...);
+  <span class="fn">background</span>: <span class="str">rgba</span>(<span class="num">26</span>, <span class="num">138</span>, <span class="num">106</span>, <span class="num">0.22</span>);
+}
+
+<span class="kw">.tab.active</span>::<span class="fn">before</span> {
+  <span class="fn">clip-path</span>: <span class="str">polygon</span>(<span class="num">6px</span> <span class="num">0%</span>...);
+  <span class="fn">background</span>: <span class="str">rgba</span>(<span class="num">224</span>, <span class="num">226</span>, <span class="num">234</span>, <span class="num">0.06</span>);
+}
+
+<span class="kw">.monaco-list-row</span> {
+  <span class="fn">height</span>: <span class="num">22px</span>;
+  <span class="fn">isolation</span>: <span class="str">isolate</span>;
+}
+        </div>
+      </div>
+
+      <!-- Status bar -->
+      <div class="mock-statusbar">
+        <span>&#9670; main</span>
+        <span>Chrysaki v2.0</span>
+        <span style="margin-left:auto">Ln 42, Col 18</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CSS output -->
+  <div class="code-output">
+    <div class="code-header">
+      <span class="code-label">Generated CSS</span>
+      <button class="copy-btn" id="copy-btn">Copy</button>
+    </div>
+    <pre id="css-output"></pre>
+  </div>
+
+</div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+const state = {
+  texture: 'pcb-traces',
+  opacity: 0.40,
+  scale: 1.0,
+  panelColor: '#1c1c1c',
+  vectorColor: '#525252',
+  applySidebar: true,
+  applyEditor: false,
+  applyActivitybar: false,
+};
+
+const DEFAULTS = { opacity: 0.40, scale: 1.0 };
+
+// ── Texture definitions ───────────────────────────────────────────────────────
+const TEXTURES = [
+  {
+    id: 'angled-hatch',
+    name: 'Angled Hatching',
+    desc: 'Three-layer diagonal lines',
+    buildBg: (v, s) => `
+      repeating-linear-gradient(-55deg, ${v} 0 1px, transparent 1px ${px(25,s)}),
+      repeating-linear-gradient( 35deg, ${v} 0 1px, transparent 1px ${px(41,s)}),
+      repeating-linear-gradient(-15deg, ${v} 0 1px, transparent 1px ${px(61,s)})`,
+    css: (v, p, o, s) => `.your-element::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(-55deg, ${v} 0 1px, transparent 1px ${px(25,s)}),
+    repeating-linear-gradient( 35deg, ${v} 0 1px, transparent 1px ${px(41,s)}),
+    repeating-linear-gradient(-15deg, ${v} 0 1px, transparent 1px ${px(61,s)});
+  opacity: ${o};
+  pointer-events: none;
+  z-index: -1;
+}`,
+  },
+  {
+    id: 'tech-grid',
+    name: 'Tech Grid',
+    desc: 'Broken grid lines interrupted by node dots',
+    // Technique: draw continuous grid lines, then punch them out with a
+    // panel-color disc at each intersection, then draw the smaller node dot
+    // on top. Result: lines appear to stop at each node (.-.-. pattern).
+    // Tile size 40px for generous spacing between lines and dots.
+    // circle at 50% 50% — full disc centered in tile, not a quarter-circle at corner.
+    // Lines are offset by half a tile so they cross exactly at each dot center.
+    buildBg: (v, s, p) => `
+      radial-gradient(circle at 50% 50%, ${v} ${px(3,s)}, transparent ${px(3,s)}),
+      radial-gradient(circle at 50% 50%, ${p} ${px(6,s)}, transparent ${px(6,s)}),
+      linear-gradient(${v} 1px, transparent 1px),
+      linear-gradient(90deg, ${v} 1px, transparent 1px)`,
+    buildBgSize: (s) => Array(4).fill(`${px(40,s)} ${px(40,s)}`).join(', '),
+    buildBgPos:  (s) => `0 0, 0 0, 0 ${px(20,s)}, ${px(20,s)} 0`,
+    css: (v, p, o, s) => `.your-element::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Layer order (top→bottom):
+     1. node dot  — full circle, centered in tile via at 50% 50%
+     2. knock-out — full circle, same center, panel bg color
+     3+4. H+V grid lines offset by half-tile so they cross at each dot center */
+  background-image:
+    radial-gradient(circle at 50% 50%, ${v} ${px(3,s)}, transparent ${px(3,s)}),
+    radial-gradient(circle at 50% 50%, ${p} ${px(6,s)}, transparent ${px(6,s)}),
+    linear-gradient(${v} 1px, transparent 1px),
+    linear-gradient(90deg, ${v} 1px, transparent 1px);
+  background-size: ${px(40,s)} ${px(40,s)};
+  background-position: 0 0, 0 0, 0 ${px(20,s)}, ${px(20,s)} 0;
+  opacity: ${o};
+  pointer-events: none;
+  z-index: -1;
+}`,
+  },
+  {
+    id: 'hex-grid',
+    name: 'Hex Grid',
+    desc: 'Triangular grid + flat-top hexagon junction markers',
+    // Tile math: for line spacing sp = 28*s, all three gradient families
+    // (0°, 60°, 120°) share the same triple-junction positions.
+    // Minimal rectangular tile: W = 2sp/√3, H = 2sp.
+    // Two junctions per tile:
+    //   P1 = (0, 0)      — tile corners; each tile shows 1/4 hexagon, four tiles assemble it.
+    //   P2 = (W/2, H/2)  — tile center row; full hexagon sits here.
+    // Verified: x√3-y = 0 and x√3+y = 0 both hold at P1; x√3-y = 0 and x√3+y = 56s both hold at P2.
+    // SVG layer (top) holds knockout discs + flat-top hexagons.
+    // Three gradient layers (below) draw the lines, showing through where SVG is transparent.
+    buildBg(v, s, p) {
+      // sp must be the SAME integer the gradient stops use (Math.round),
+      // otherwise tile W/H drift from the gradient period and hexagons drift off-junction.
+      const sp = Math.round(28 * s);
+      const W  = 2 * sp / Math.sqrt(3);  // irrational width — keep full precision
+      const H  = 2 * sp;                 // exact integer height
+      const r  = 4   * s;
+      const ko = 6.5 * s;
+      // Flat-top hexagon: vertices at 0°, 60°, 120°, 180°, 240°, 300°
+      function hexPts(cx, cy) {
+        return Array.from({length: 6}, (_, i) => {
+          const a = i * Math.PI / 3;
+          return `${(cx + r * Math.cos(a)).toFixed(2)},${(cy + r * Math.sin(a)).toFixed(2)}`;
+        }).join(' ');
+      }
+      const W3 = W.toFixed(3), H0 = H.toFixed(0);
+      const Wh = (W / 2).toFixed(3), Hh = (H / 2).toFixed(0);
+      const k  = ko.toFixed(2);
+      const svg =
+        `<svg xmlns='http://www.w3.org/2000/svg' width='${W3}' height='${H0}'>` +
+        // Knockout discs at all 4 corners (P1 split across tiles)
+        `<circle cx='0' cy='0' r='${k}' fill='${p}'/>` +
+        `<circle cx='${W3}' cy='0' r='${k}' fill='${p}'/>` +
+        `<circle cx='0' cy='${H0}' r='${k}' fill='${p}'/>` +
+        `<circle cx='${W3}' cy='${H0}' r='${k}' fill='${p}'/>` +
+        // Hexagons at corners (quarter per tile — four tiles assemble the full hexagon)
+        `<polygon points='${hexPts(0, 0)}' fill='${v}'/>` +
+        `<polygon points='${hexPts(W, 0)}' fill='${v}'/>` +
+        `<polygon points='${hexPts(0, H)}' fill='${v}'/>` +
+        `<polygon points='${hexPts(W, H)}' fill='${v}'/>` +
+        // Knockout disc + full hexagon at center junction P2
+        `<circle cx='${Wh}' cy='${Hh}' r='${k}' fill='${p}'/>` +
+        `<polygon points='${hexPts(W / 2, H / 2)}' fill='${v}'/>` +
+        `</svg>`;
+      const url = `url("data:image/svg+xml;base64,${btoa(svg)}")`;
+      return `${url},
+      repeating-linear-gradient(  0deg, ${v} 0 1px, transparent 1px ${px(28,s)}),
+      repeating-linear-gradient( 60deg, ${v} 0 1px, transparent 1px ${px(28,s)}),
+      repeating-linear-gradient(120deg, ${v} 0 1px, transparent 1px ${px(28,s)})`;
+    },
+    buildBgSize(s) {
+      const sp = Math.round(28 * s);
+      return `${(2 * sp / Math.sqrt(3)).toFixed(3)}px ${2 * sp}px, auto, auto, auto`;
+    },
+    css(v, p, o, s) {
+      const sp = Math.round(28 * s);
+      const W  = 2 * sp / Math.sqrt(3);
+      const H  = 2 * sp;
+      const r  = 4   * s;
+      const ko = 6.5 * s;
+      function hexPts(cx, cy) {
+        return Array.from({length: 6}, (_, i) => {
+          const a = i * Math.PI / 3;
+          return `${(cx + r * Math.cos(a)).toFixed(2)},${(cy + r * Math.sin(a)).toFixed(2)}`;
+        }).join(' ');
+      }
+      const W3 = W.toFixed(3), H0 = H.toFixed(0);
+      const Wh = (W / 2).toFixed(3), Hh = (H / 2).toFixed(0);
+      const k  = ko.toFixed(2);
+      const svg =
+        `<svg xmlns='http://www.w3.org/2000/svg' width='${W3}' height='${H0}'>` +
+        `<circle cx='0' cy='0' r='${k}' fill='${p}'/>` +
+        `<circle cx='${W3}' cy='0' r='${k}' fill='${p}'/>` +
+        `<circle cx='0' cy='${H0}' r='${k}' fill='${p}'/>` +
+        `<circle cx='${W3}' cy='${H0}' r='${k}' fill='${p}'/>` +
+        `<polygon points='${hexPts(0, 0)}' fill='${v}'/>` +
+        `<polygon points='${hexPts(W, 0)}' fill='${v}'/>` +
+        `<polygon points='${hexPts(0, H)}' fill='${v}'/>` +
+        `<polygon points='${hexPts(W, H)}' fill='${v}'/>` +
+        `<circle cx='${Wh}' cy='${Hh}' r='${k}' fill='${p}'/>` +
+        `<polygon points='${hexPts(W / 2, H / 2)}' fill='${v}'/>` +
+        `</svg>`;
+      const url = `url("data:image/svg+xml;base64,${btoa(svg)}")`;
+      const sz  = `${W.toFixed(3)}px ${H.toFixed(0)}px`;
+      return `.your-element::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* SVG layer: knockout discs + flat-top hexagon markers at every triple junction.
+     Tile W=${W.toFixed(3)}px H=${H.toFixed(0)}px — junctions at (0,0) corners and (W/2,H/2) center. */
+  background-image:
+    ${url},
+    repeating-linear-gradient(  0deg, ${v} 0 1px, transparent 1px ${px(28,s)}),
+    repeating-linear-gradient( 60deg, ${v} 0 1px, transparent 1px ${px(28,s)}),
+    repeating-linear-gradient(120deg, ${v} 0 1px, transparent 1px ${px(28,s)});
+  background-size: ${sz}, auto, auto, auto;
+  opacity: ${o};
+  pointer-events: none;
+  z-index: -1;
+}`;
+    },
+  },
+  {
+    id: 'pcb-traces',
+    name: 'PCB Traces',
+    desc: 'Organic routing bundles + scattered via rings (image 8/9)',
+    // Strategy (image 8/9 style):
+    //   - 4 hollow via rings at incommensurable tile sizes, centered at 50% 50%
+    //     so rings scatter naturally rather than stacking at tile corners
+    //   - Via sizes vary: 2/4px, 2.5/4.5px, 3/5.5px, 3.5/6px — mixed scale
+    //   - 45° main bundles: 4 traces spaced 4px apart + 73px clear channel (88px cycle)
+    //   - -45° counter bundles: 3 traces + 87px clear channel (97px cycle)
+    //   - 0° horizontal segments: 2 traces + sparse 111px clear channel (120px cycle)
+    //   Tile sizes (83,97,67,113,73) are pairwise coprime → LCM >> viewport
+    buildBg: (v, s) => `
+      radial-gradient(circle at 50% 50%, transparent ${px(3,s)},   ${v} ${px(3,s)}   ${px(5.5,s)}, transparent ${px(5.5,s)}),
+      radial-gradient(circle at 50% 50%, transparent ${px(2,s)},   ${v} ${px(2,s)}   ${px(4,s)},   transparent ${px(4,s)}),
+      radial-gradient(circle at 50% 50%, transparent ${px(3.5,s)}, ${v} ${px(3.5,s)} ${px(6,s)},   transparent ${px(6,s)}),
+      radial-gradient(circle at 50% 50%, transparent ${px(2.5,s)}, ${v} ${px(2.5,s)} ${px(4.5,s)}, transparent ${px(4.5,s)}),
+      repeating-linear-gradient(45deg,
+        ${v}  0px  1px, transparent  1px  ${px(4,s)},
+        ${v} ${px(4,s)}  ${px(5,s)}, transparent  ${px(5,s)}  ${px(9,s)},
+        ${v} ${px(9,s)} ${px(10,s)}, transparent ${px(10,s)} ${px(14,s)},
+        ${v} ${px(14,s)} ${px(15,s)}, transparent ${px(15,s)} ${px(88,s)}
+      ),
+      repeating-linear-gradient(-45deg,
+        ${v}  0px  1px, transparent  1px  ${px(4,s)},
+        ${v} ${px(4,s)}  ${px(5,s)}, transparent  ${px(5,s)}  ${px(9,s)},
+        ${v} ${px(9,s)} ${px(10,s)}, transparent ${px(10,s)} ${px(97,s)}
+      ),
+      repeating-linear-gradient(0deg,
+        ${v}  0px  1px, transparent  1px  ${px(4,s)},
+        ${v} ${px(4,s)}  ${px(5,s)}, transparent  ${px(5,s)} ${px(120,s)}
+      )`,
+    buildBgSize: (s) => [
+      `${px(83,s)} ${px(97,s)}`,   // via ring A (large, centered)
+      `${px(97,s)} ${px(67,s)}`,   // via ring B (small, centered)
+      `${px(67,s)} ${px(83,s)}`,   // via ring C (large, centered)
+      `${px(113,s)} ${px(73,s)}`,  // via ring D (medium, centered)
+      `auto`, `auto`, `auto`,
+    ].join(', '),
+    css: (v, p, o, s) => `.your-element::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    /* 4 hollow via rings — centered in tile (50% 50%), mixed radii → scattered organic look */
+    radial-gradient(circle at 50% 50%, transparent ${px(3,s)},   ${v} ${px(3,s)}   ${px(5.5,s)}, transparent ${px(5.5,s)}),
+    radial-gradient(circle at 50% 50%, transparent ${px(2,s)},   ${v} ${px(2,s)}   ${px(4,s)},   transparent ${px(4,s)}),
+    radial-gradient(circle at 50% 50%, transparent ${px(3.5,s)}, ${v} ${px(3.5,s)} ${px(6,s)},   transparent ${px(6,s)}),
+    radial-gradient(circle at 50% 50%, transparent ${px(2.5,s)}, ${v} ${px(2.5,s)} ${px(4.5,s)}, transparent ${px(4.5,s)}),
+    /* 45° main bundles: 4 traces (0,4,9,14px) + 73px clear channel, 88px cycle */
+    repeating-linear-gradient(45deg,
+      ${v}  0px  1px, transparent  1px  ${px(4,s)},
+      ${v} ${px(4,s)}  ${px(5,s)}, transparent  ${px(5,s)}  ${px(9,s)},
+      ${v} ${px(9,s)} ${px(10,s)}, transparent ${px(10,s)} ${px(14,s)},
+      ${v} ${px(14,s)} ${px(15,s)}, transparent ${px(15,s)} ${px(88,s)}
+    ),
+    /* -45° counter-routing: 3 traces (0,4,9px) + 87px clear channel, 97px cycle */
+    repeating-linear-gradient(-45deg,
+      ${v}  0px  1px, transparent  1px  ${px(4,s)},
+      ${v} ${px(4,s)}  ${px(5,s)}, transparent  ${px(5,s)}  ${px(9,s)},
+      ${v} ${px(9,s)} ${px(10,s)}, transparent ${px(10,s)} ${px(97,s)}
+    ),
+    /* 0° horizontal: 2 traces (0,4px) + sparse 111px clear channel, 120px cycle */
+    repeating-linear-gradient(0deg,
+      ${v}  0px  1px, transparent  1px  ${px(4,s)},
+      ${v} ${px(4,s)}  ${px(5,s)}, transparent  ${px(5,s)} ${px(120,s)}
+    );
+  background-size:
+    ${px(83,s)} ${px(97,s)},
+    ${px(97,s)} ${px(67,s)},
+    ${px(67,s)} ${px(83,s)},
+    ${px(113,s)} ${px(73,s)},
+    auto, auto, auto;
+  opacity: ${o};
+  pointer-events: none;
+  z-index: -1;
+}`,
+  },
+  {
+    id: 'circuit-mesh',
+    name: 'Circuit Mesh',
+    desc: 'Dense crosshatch + 45° diagonals + junction dots',
+    buildBg: (v, s) => `
+      radial-gradient(circle ${px(2,s)} at ${px(16,s)} ${px(16,s)}, ${v} 100%, transparent 100%),
+      radial-gradient(circle ${px(2,s)} at 0px 0px, ${v} 100%, transparent 100%),
+      repeating-linear-gradient( 45deg, ${v} 0 1px, transparent 1px ${px(16,s)}),
+      repeating-linear-gradient(-45deg, ${v} 0 1px, transparent 1px ${px(16,s)}),
+      repeating-linear-gradient(  0deg, ${v} 0 1px, transparent 1px ${px(16,s)}),
+      repeating-linear-gradient( 90deg, ${v} 0 1px, transparent 1px ${px(16,s)})`,
+    buildBgSize: (s) => Array(6).fill(`${px(16,s)} ${px(16,s)}`).join(', '),
+    css: (v, p, o, s) => {
+      const sz = `${px(16,s)} ${px(16,s)}`;
+      return `.your-element::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle ${px(2,s)} at ${px(16,s)} ${px(16,s)}, ${v} 100%, transparent 100%),
+    radial-gradient(circle ${px(2,s)} at 0px 0px, ${v} 100%, transparent 100%),
+    repeating-linear-gradient( 45deg, ${v} 0 1px, transparent 1px ${px(16,s)}),
+    repeating-linear-gradient(-45deg, ${v} 0 1px, transparent 1px ${px(16,s)}),
+    repeating-linear-gradient(  0deg, ${v} 0 1px, transparent 1px ${px(16,s)}),
+    repeating-linear-gradient( 90deg, ${v} 0 1px, transparent 1px ${px(16,s)});
+  background-size: ${sz}, ${sz}, ${sz}, ${sz}, ${sz}, ${sz};
+  opacity: ${o};
+  pointer-events: none;
+  z-index: -1;
+}`;
+    },
+  },
+];
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function px(base, scale) { return Math.round(base * scale) + 'px'; }
+
+function getTexture() {
+  return TEXTURES.find(t => t.id === state.texture);
+}
+
+function buildStyle(t) {
+  const v = state.vectorColor;
+  const s = state.scale;
+  const p = state.panelColor;
+  const bg  = t.buildBg(v, s, p).trim();
+  const sz  = t.buildBgSize ? t.buildBgSize(s) : 'auto';
+  const pos = t.buildBgPos  ? t.buildBgPos(s)  : '0 0';
+  return { backgroundImage: bg, backgroundSize: sz, backgroundPosition: pos, opacity: state.opacity };
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function applyTextureToEl(el, active) {
+  const texTarget = el.querySelector('.texture-target');
+  if (!texTarget) return;
+  if (!active) {
+    texTarget.style.backgroundImage = 'none';
+    texTarget.style.opacity = 0;
+    el.style.backgroundColor = '';
+    return;
+  }
+  const t = getTexture();
+  const st = buildStyle(t);
+  texTarget.style.backgroundImage    = st.backgroundImage;
+  texTarget.style.backgroundSize     = st.backgroundSize;
+  texTarget.style.backgroundPosition = st.backgroundPosition;
+  texTarget.style.opacity = st.opacity;
+  el.style.backgroundColor = state.panelColor;
+}
+
+function renderPreview() {
+  applyTextureToEl(document.getElementById('mock-sidebar'),     state.applySidebar);
+  applyTextureToEl(document.getElementById('mock-editor'),      state.applyEditor);
+  applyTextureToEl(document.getElementById('mock-activitybar'), state.applyActivitybar);
+
+  // Swatch mini-previews in cards
+  TEXTURES.forEach(t => {
+    const swatch = document.querySelector(`[data-swatch="${t.id}"]`);
+    if (!swatch) return;
+    const fakeState = { ...state, opacity: Math.min(state.opacity * 1.5, 1), texture: t.id };
+    const st = buildStyle(t);
+    swatch.style.backgroundColor    = state.panelColor;
+    swatch.style.backgroundImage    = st.backgroundImage;
+    swatch.style.backgroundSize     = st.backgroundSize;
+    swatch.style.backgroundPosition = st.backgroundPosition;
+    swatch.style.opacity = 1;
+    swatch.style.position = 'relative';
+    // overlay opacity on a pseudo — just use a wrapper div trick
+    swatch.style.filter = `opacity(1)`;
+  });
+}
+
+function renderCssOutput() {
+  const t = getTexture();
+  const raw = t.css(state.vectorColor, state.panelColor, state.opacity, state.scale);
+  const out = document.getElementById('css-output');
+  // Syntax highlight
+  out.innerHTML = raw
+    .replace(/\/\*.*?\*\//g, m => `<span class="cm">${m}</span>`)
+    .replace(/(background-image|background-size|background-position|opacity|content|position|inset|pointer-events|z-index):/g,
+             m => `<span class="prop">${m}</span>`)
+    .replace(/(repeating-linear-gradient|linear-gradient|radial-gradient)/g,
+             m => `<span class="val">${m}</span>`)
+    .replace(/(\d+(?:\.\d+)?)(px|deg|%)/g,
+             (m, n, u) => `<span class="num">${n}${u}</span>`);
+}
+
+function updateAll() {
+  renderPreview();
+  renderCssOutput();
+}
+
+// ── Build texture cards ───────────────────────────────────────────────────────
+function buildCards() {
+  const container = document.getElementById('texture-cards');
+  TEXTURES.forEach(t => {
+    const card = document.createElement('label');
+    card.className = 'texture-card' + (t.id === state.texture ? ' active' : '');
+    card.dataset.id = t.id;
+    card.innerHTML = `
+      <input type="radio" name="texture" value="${t.id}" ${t.id === state.texture ? 'checked' : ''}>
+      <div class="card-swatch" data-swatch="${t.id}"></div>
+      <div class="card-info">
+        <div class="card-name">${t.name}</div>
+        <div class="card-desc">${t.desc}</div>
+      </div>`;
+    card.addEventListener('click', () => {
+      state.texture = t.id;
+      document.querySelectorAll('.texture-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      updateAll();
+    });
+    container.appendChild(card);
+  });
+}
+
+// ── Wire controls ─────────────────────────────────────────────────────────────
+document.getElementById('ctrl-opacity').addEventListener('input', e => {
+  state.opacity = parseFloat(e.target.value);
+  document.getElementById('val-opacity').textContent = state.opacity.toFixed(2);
+  updateAll();
+});
+
+document.getElementById('ctrl-scale').addEventListener('input', e => {
+  state.scale = parseFloat(e.target.value);
+  document.getElementById('val-scale').textContent = state.scale.toFixed(2) + '×';
+  updateAll();
+});
+
+document.getElementById('ctrl-panel').addEventListener('input', e => {
+  state.panelColor = e.target.value;
+  document.getElementById('hex-panel').textContent = e.target.value;
+  updateAll();
+});
+
+document.getElementById('ctrl-vector').addEventListener('input', e => {
+  state.vectorColor = e.target.value;
+  document.getElementById('hex-vector').textContent = e.target.value;
+  updateAll();
+});
+
+document.getElementById('apply-sidebar').addEventListener('change', e => {
+  state.applySidebar = e.target.checked; updateAll();
+});
+document.getElementById('apply-editor').addEventListener('change', e => {
+  state.applyEditor = e.target.checked; updateAll();
+});
+document.getElementById('apply-activitybar').addEventListener('change', e => {
+  state.applyActivitybar = e.target.checked; updateAll();
+});
+
+// Presets
+const PRESETS = {
+  subtle:  { opacity: 0.25, scale: 1.0 },
+  visible: { opacity: 0.50, scale: 1.0 },
+  dense:   { opacity: 0.40, scale: 0.5 },
+  ghost:   { opacity: 0.10, scale: 1.5 },
+};
+document.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const p = PRESETS[btn.dataset.preset];
+    state.opacity = p.opacity;
+    state.scale   = p.scale;
+    document.getElementById('ctrl-opacity').value = p.opacity;
+    document.getElementById('ctrl-scale').value   = p.scale;
+    document.getElementById('val-opacity').textContent = p.opacity.toFixed(2);
+    document.getElementById('val-scale').textContent   = p.scale.toFixed(2) + '×';
+    updateAll();
+  });
+});
+
+// Copy button
+document.getElementById('copy-btn').addEventListener('click', () => {
+  const t = getTexture();
+  const raw = t.css(state.vectorColor, state.panelColor, state.opacity, state.scale);
+  navigator.clipboard.writeText(raw).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+  });
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+buildCards();
+updateAll();
+</script>
+</body>
+</html>

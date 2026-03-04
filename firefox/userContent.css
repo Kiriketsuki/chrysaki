@@ -1,5 +1,5 @@
 /* Chrysaki Firefox Theme — userContent.css */
-/* Version: 1.0.0 */
+/* Version: 2.0.0 */
 /* Overrides for about:newtab, about:home, about:blank */
 /* Place in: <profile>/chrome/userContent.css */
 
@@ -9,16 +9,25 @@
 
 @-moz-document url("about:newtab"), url("about:home") {
 
-    /* Page background — Base */
+    /* Page background — Base + hex dot lattice (2x tile for spacious grid on large canvas) */
     body,
     .outer-wrapper {
         background-color: #161821 !important;                 /* Base */
         color: #e0e2ea !important;                            /* Primary Text */
+        background-image:
+            radial-gradient(circle at 50% 50%, rgba(26,138,106,0.4) 0 2.5px, transparent 2.5px),
+            radial-gradient(circle at 50% 50%, rgba(26,138,106,0.2) 0 2.5px, transparent 2.5px),
+            repeating-linear-gradient(0deg,   rgba(26,138,106,0.06) 0 1px, transparent 1px 40px),
+            repeating-linear-gradient(60deg,  rgba(26,138,106,0.04) 0 1px, transparent 1px 40px),
+            repeating-linear-gradient(-60deg, rgba(26,138,106,0.04) 0 1px, transparent 1px 40px) !important;
+        background-size: 46.188px 80px, 46.188px 80px, auto, auto, auto !important;
+        background-position: 0 0, 23.094px 40px, 0 0, 0 0, 0 0 !important;
+        background-attachment: fixed !important;
     }
 
-    /* Activity Stream container */
+    /* Activity Stream container — transparent so body texture shows through */
     .activity-stream {
-        background-color: #161821 !important;                 /* Base */
+        background-color: transparent !important;
     }
 
     /* Search bar */
@@ -37,17 +46,19 @@
         box-shadow: 0 0 0 2px rgba(26, 138, 106, 0.3) !important;
     }
 
-    /* Top sites tiles */
+    /* Top sites tiles — hexagonal clip instead of square */
     .top-site-outer .tile,
     .top-site-outer .top-site-inner {
         background-color: #1c1f2b !important;                 /* Surface */
-        border: 1px solid #363a4f !important;                 /* Border */
-        border-radius: 0 !important;
+        border: none !important;
+        /* flat-top hexagon: 6 vertices at 0°,60°,120°,180°,240°,300° */
+        clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%) !important;
     }
 
     .top-site-outer:hover .tile,
     .top-site-outer:hover .top-site-inner {
-        background-color: #252836 !important;                 /* Raised */
+        background-color: #1a8a6a !important;                 /* Emerald — hex glows on hover */
+        clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%) !important;
     }
 
     /* Top sites title text */
