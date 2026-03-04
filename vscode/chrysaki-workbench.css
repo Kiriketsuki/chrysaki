@@ -19,19 +19,28 @@
   background: transparent !important;
 }
 
-/* Hexagonal clip on the active action label container */
-.activitybar .action-item.checked .action-label::before,
-.activitybar .action-item.active .action-label::before {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  background: rgba(26, 138, 106, 0.18);
-  z-index: -1;
+/* Establish stacking context on item — hexagon sits in ::after, icon stays on top */
+.activitybar .action-item {
+  position: relative !important;
+  isolation: isolate !important;
 }
 
+/* Hexagonal background behind the icon — ::after on the item, not on action-label */
+.activitybar .action-item.checked::after,
+.activitybar .action-item.active::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: rgba(26, 138, 106, 0.22);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Icon above the hex background */
 .activitybar .action-item .action-label {
-  position: relative;
+  position: relative !important;
+  z-index: 1 !important;
 }
 
 /* Activity bar badge — hexagonal */
@@ -48,19 +57,19 @@
   justify-content: center !important;
 }
 
-/* Emerald active indicator stripe (left edge, triangle pointing right) */
+/* Emerald active indicator — triangle pointing right, left edge */
 .activitybar .action-item.checked::before {
   content: '';
   position: absolute;
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 0;
-  height: 0;
-  border-top: 6px solid transparent;
-  border-bottom: 6px solid transparent;
-  border-left: 6px solid #1a8a6acc;
-  z-index: 10;
+  width: 5px;
+  height: 12px;
+  background: #1a8a6acc;
+  clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
+  z-index: 2;
+  pointer-events: none;
 }
 
 /* ==========================================================
@@ -97,7 +106,7 @@
   left: 6px;
   right: 6px;
   height: 2px;
-  background: linear-gradient(90deg, #1a8a6acc, #1c3d7acc, #7a52b3cc);
+  background: linear-gradient(90deg, #1a8a6acc, #4a82c4cc, #7a52b3cc);
   z-index: 1;
   pointer-events: none;
   clip-path: polygon(0% 0%, 100% 0%, calc(100% - 2px) 100%, 2px 100%);
