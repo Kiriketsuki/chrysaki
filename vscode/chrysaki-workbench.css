@@ -19,28 +19,22 @@
   background: transparent !important;
 }
 
-/* Establish stacking context on item — hexagon sits in ::after, icon stays on top */
-.activitybar .action-item {
-  position: relative !important;
-  isolation: isolate !important;
+/* Active icon: clip the entire action-label to hexagon — icon renders inside the hex shape */
+.activitybar .action-item.checked .action-label,
+.activitybar .action-item.active .action-label {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%) !important;
+  background: rgba(26, 138, 106, 0.22) !important;
 }
 
-/* Hexagonal background behind the icon — ::after on the item, not on action-label */
-.activitybar .action-item.checked::after,
-.activitybar .action-item.active::after {
-  content: '';
-  position: absolute;
-  inset: 6px;
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  background: rgba(26, 138, 106, 0.22);
-  z-index: 0;
-  pointer-events: none;
+/* Inactive icons — no clip, no background */
+.activitybar .action-item:not(.checked):not(.active) .action-label {
+  clip-path: none !important;
+  background: transparent !important;
 }
 
-/* Icon above the hex background */
+/* Icon element itself */
 .activitybar .action-item .action-label {
   position: relative !important;
-  z-index: 1 !important;
 }
 
 /* Activity bar badge — hexagonal */
@@ -217,6 +211,41 @@
 
 .monaco-tl-row {
   height: 22px !important;
+}
+
+/* ==========================================================
+   STATUS DOTS — circles → diamonds
+   ========================================================== */
+
+/* codicon-circle-filled (green session dots, status indicators) → diamond */
+.codicon-circle-filled,
+.codicon-circle-small-filled,
+.codicon-primitive-dot,
+[class*="status-badge"],
+[class*="notification-dot"] {
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%) !important;
+  border-radius: 0 !important;
+  transform: scale(0.85) !important;
+}
+
+/* ==========================================================
+   FILE/FOLDER ICONS — trapezoid clip on icon container
+   ========================================================== */
+
+/* The icon pseudo-element container in the file tree */
+.monaco-list-row .monaco-icon-label-container {
+  position: relative !important;
+}
+
+/* Clip the file/folder icon element to an upright trapezoid */
+.monaco-list-row .monaco-icon-label::before {
+  clip-path: polygon(0% 0%, 100% 0%, 88% 100%, 12% 100%) !important;
+}
+
+/* Flat-top hexagon for folder type icons specifically */
+.monaco-list-row .folder-icon::before,
+.monaco-list-row [class*="folder"]::before {
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%) !important;
 }
 
 /* ==========================================================
