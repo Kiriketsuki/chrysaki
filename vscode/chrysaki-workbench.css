@@ -217,35 +217,41 @@
    STATUS DOTS — circles → diamonds
    ========================================================== */
 
-/* codicon-circle-filled (green session dots, status indicators) → diamond */
-.codicon-circle-filled,
-.codicon-circle-small-filled,
-.codicon-primitive-dot,
-[class*="status-badge"],
-[class*="notification-dot"] {
+/* Status/indicator dots → diamond. Exclude notification subtrees (pointer events). */
+.codicon-circle-filled:not(.notification-list-item *),
+.codicon-circle-small-filled:not(.notification-list-item *),
+.codicon-primitive-dot:not(.notification-list-item *),
+.codicon-dot:not(.notification-list-item *) {
   clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%) !important;
   border-radius: 0 !important;
-  transform: scale(0.85) !important;
+}
+
+/* Git modified/added/untracked inline dots in explorer (the small coloured circles
+   that appear after folder names — these are .badge or inline background spans) */
+.monaco-list-row .monaco-icon-label-container .decorations .codicon,
+.monaco-list-row .decorations-container .codicon-circle-filled,
+.scm-provider .codicon-circle-filled,
+.source-control .codicon-circle-filled {
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%) !important;
+  border-radius: 0 !important;
 }
 
 /* ==========================================================
-   FILE/FOLDER ICONS — trapezoid clip on icon container
+   FILE/FOLDER ICONS — trapezoid clip, folder icons only
    ========================================================== */
 
-/* The icon pseudo-element container in the file tree */
-.monaco-list-row .monaco-icon-label-container {
-  position: relative !important;
+/* Target only elements that carry vscode-icons folder background-images.
+   These elements have inline width/height and a background-image set by the icon theme.
+   We clip them to a trapezoid (wider top, angled sides — classic folder-tab silhouette). */
+.monaco-list-row .file-icon.folder-icon,
+.monaco-list-row .file-icon[class*="folder"] {
+  clip-path: polygon(0% 0%, 100% 0%, 92% 100%, 8% 100%) !important;
 }
 
-/* Clip the file/folder icon element to an upright trapezoid */
-.monaco-list-row .monaco-icon-label::before {
-  clip-path: polygon(0% 0%, 100% 0%, 88% 100%, 12% 100%) !important;
-}
-
-/* Flat-top hexagon for folder type icons specifically */
-.monaco-list-row .folder-icon::before,
-.monaco-list-row [class*="folder"]::before {
-  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%) !important;
+/* Open folder variant */
+.monaco-list-row .file-icon.folder-open-icon,
+.monaco-list-row .file-icon[class*="folder-open"] {
+  clip-path: polygon(8% 0%, 92% 0%, 100% 100%, 0% 100%) !important;
 }
 
 /* ==========================================================
@@ -379,16 +385,26 @@
 }
 
 /* ==========================================================
-   NOTIFICATION TOASTS — chamfered
+   NOTIFICATIONS & DIALOGS — no clip-path anywhere in these subtrees
+   clip-path removes pointer events in clipped areas; action buttons must be fully hittable
    ========================================================== */
 
-.notifications-toasts .notification-toast {
-  clip-path: polygon(
-    0% 8px, 8px 0%,
-    calc(100% - 8px) 0%, 100% 8px,
-    100% calc(100% - 8px), calc(100% - 8px) 100%,
-    8px 100%, 0% calc(100% - 8px)
-  ) !important;
+.notifications-toasts,
+.notifications-toasts *,
+.notifications-center,
+.notifications-center *,
+.notification-toast,
+.notification-list-item,
+.notification-list-item-buttons-container,
+.notification-list-item-buttons-container *,
+.monaco-dialog-box,
+.monaco-dialog-box *,
+.dialog-message-row,
+.dialog-buttons-row,
+.dialog-buttons-row *,
+.context-view,
+.context-view * {
+  clip-path: none !important;
 }
 
 /* ==========================================================
