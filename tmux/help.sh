@@ -42,7 +42,7 @@ printf "${TL}${BD}  WINDOWS  ${MT}(tabs, each with their own pane layout)${RS}\n
 printf "${HR}\n"
 printf "  ${PR}Alt + 1-9${RS}          ${SC}Switch to window 1-9 directly (no prefix)${RS}\n"
 printf "  ${PR}Prefix + 1-9${RS}       ${SC}Switch to window by number${RS}\n"
-printf "  ${PR}Prefix + c${RS}         ${SC}New window (opens in current directory)${RS}\n"
+printf "  ${PR}Prefix + c / t${RS}     ${SC}New window (opens in current directory)${RS}\n"
 printf "  ${PR}Prefix + n${RS}         ${SC}Next window${RS}\n"
 printf "  ${PR}Prefix + p${RS}         ${SC}Previous window${RS}\n"
 printf "  ${PR}Prefix + Tab${RS}       ${SC}Toggle between last two windows${RS}\n"
