@@ -34,7 +34,7 @@ printf "  ${PR}Prefix + -${RS}         ${SC}Split pane below (horizontal split)$
 printf "  ${PR}Prefix + Arrow${RS}     ${SC}Move focus to pane in that direction${RS}\n"
 printf "  ${PR}Prefix + Ctrl+Arrow${RS} ${SC}Resize pane (hold Ctrl, tap arrow repeatedly)${RS}\n"
 printf "  ${PR}Prefix + z${RS}         ${SC}Zoom pane to fullscreen / restore${RS}\n"
-printf "  ${PR}Prefix + w${RS}         ${SC}Close pane (prompts for confirmation)${RS}\n"
+printf "  ${PR}Prefix + w${RS}         ${SC}Smart close: pane -> window -> session${RS}\n"
 printf "  ${PR}Prefix + q${RS}         ${SC}Show pane numbers briefly${RS}\n"
 printf "\n"
 
