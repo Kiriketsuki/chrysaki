@@ -66,7 +66,7 @@ Show tmux messages / log	show-messages
 Show environment variables	show-environment
 Open tmux command prompt	command-prompt
 Reload tmux config	source-file ~/.tmux.conf
-Help popup	display-popup -E -T " ⬢  Chrysaki tmux Help " -h 90% -w 62 "~/.tmux/help.sh"
+Help popup	display-popup -E -T " ⬢  Chrysaki tmux Help " -h 90% -w 62 "~/.config/tmux/help.sh"
 EOF
 )
 
@@ -84,8 +84,6 @@ fzf \
     --with-nth=1 \
     --layout=reverse \
     --border=sharp \
-    --border-label=" ⬢  Chrysaki Commands " \
-    --border-label-pos=3 \
     --height=100% \
     --padding=0,1 \
     --prompt=" ❯  " \
