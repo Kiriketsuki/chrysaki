@@ -1,0 +1,102 @@
+## 2026-03-04 Handoff
+
+### Decisions
+- Hex grid (s=0.7) on sidebar/activitybar, angled hatch on editor, both at 0.05 opacity
+- Flat-top hexagons at junctions via SVG data-URL (CSS gradients can't draw hexagons)
+- Tile dims from rounded gradient spacing (`sp = Math.round(28*s)`) to prevent drift
+- Tech grid dots centered at 50% 50% with background-position offset on lines
+- Activity bar indicator moved from ::before to ::after (::before now used for texture)
+- Chrysaki colors: emerald #1a8a6a for sidebar hex grid, blue #4a82c4 for editor hatch
+
+### Failed Approaches
+- `circle at 0 0` for tech grid = quarter-circle only, asymmetric spacing
+- Raw `56*s` for hex tile dimensions = cumulative drift at fractional scales
+- PCB traces rejected by user as not organic enough
+
+### Handoff Target
+- Plan file: 2026-03-04-13h00-vscode-texture-backgrounds.md
+- Branch: feat/vscode-v2-redesign
+
+---
+
+## 2026-03-04 Handoff (14h10)
+
+### Decisions
+- Single-SVG hex grid tile eliminates gradient drift (replaces multi-layer CSS gradient approach)
+- z-index layering: hex grid at -1 (deep bg), tech grid at +1 (overlay on file rows)
+- All geometric UI stripped -- textures and shadows only
+- Panel (terminal) skips isolation:isolate to avoid breaking terminal internals
+- Editor hatching opacity halved to 0.025; panel animation at 0.03
+
+### Failed Approaches
+- Multi-layer CSS gradients + separate SVG markers: drift due to element-height-dependent gradient origin
+- z-index:-1 everywhere: child backgrounds cover the texture, making it invisible
+- Heavy inset bottom shadows (12-24px spread, 0.45 opacity): dark vignette eating visible content
+
+### Handoff Target
+- Plan file: 2026-03-04-14h10-vscode-texture-layering.md
+- Branch: feat/vscode-v2-redesign
+
+---
+
+## 2026-03-04 Handoff (16h00)
+
+### Decisions
+- Firefox textures should use hex grid matching VSCode sidebar (23.094x40 tile, emerald #1a8a6a)
+- Trapezoid tabs in /-\ shape: clip-path polygon, 12px bottom inset, -10px margin overlap
+- New tab page top-site tiles should be hexagonal (clip-path polygon)
+- CSS gradients preferred over SVG data URIs for Firefox XUL elements
+
+### Failed Approaches
+- SVG data URI with `rgba()` in stroke/fill attributes: invalid SVG 1.1, Firefox silently ignores
+- SVG data URI with 0.15 opacity bump: still invisible (same syntax issue)
+- Pure CSS gradient hex pattern (radial-gradient + repeating-linear-gradient): also invisible
+- clip-path on .tab-background, .tab-stack: no visual change to tab shape
+- LIKELY ROOT CAUSE: the repo file (Chrysaki/firefox/userChrome.css) may NOT be the file Firefox reads from its profile -- user needs to verify `about:support` Profile Folder path
+
+### Handoff Target
+- Plan file: 2026-03-04-16h00-firefox-textures-tabs.md
+- Branch: main
+
+---
+
+## 2026-03-04 Handoff (20h29)
+
+### Decisions
+- Repo files != Firefox profile files. Deploy script required after every edit.
+- Texture opacity matched to VSCode levels (dots 0.08, grid 0.03, pools 0.06).
+- Alternating trapezoid tabs: /-\ (odd) and \_/ (even) with 16px inset, -16px overlap.
+- Pinned tabs always |_/ shape. Natural stacking handles multi-pin case.
+- nth-child(N of S) used for pin-count-agnostic alternation. Untested in chrome sheets.
+- :has() does NOT work in userChrome.css despite Firefox 148 supporting it in web content.
+
+### Failed Approaches
+- :has() in chrome sheets -- silently ignored, no error
+- Simple nth-child(odd/even) -- parity breaks with odd number of pins
+- SVG data URI rgba() -- invalid SVG 1.1, use CSS gradients
+- |_\ border pin -- wrong direction, needs |_/ to end with / for seamless junction
+
+### Handoff Target
+- Plan file: 2026-03-04-20h29-firefox-trapezoid-tabs.md
+- Branch: main (detached HEAD at f026d21)
+
+---
+## 2026-03-10 Handoff
+
+### Decisions
+- E0B0 (straight) not E0BC for session badge right edge -- E0BC overflows badge height
+- Even/odd: (window_index - 1) % 2 to normalise for base-index=1
+- is_last: window_index == session_windows (not -1) for base-index=1
+- Temp-file executor in palette.sh handles nested quotes in tmux commands
+- Symlinks ~/.tmux/* -> Chrysaki repo fixes source-file revert bug
+
+### Failed Approaches
+- E0BC for session badge: height overflow, reverted to E0B0
+- Raw window_index % 2: off-by-one with base-index=1
+- session_windows - 1 for is_last: wrong for base-index=1
+
+### Handoff Target
+- Plan file: .claude/handoffs/2026-03-10-09h40-tmux-rice-palette.md
+- Branch: feat/tmux-rice
+
+---

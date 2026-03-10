@@ -1,5 +1,5 @@
 /* Chrysaki Firefox Theme -- userChrome.css */
-/* Version: 2.7.2 */
+/* Version: 1.1.0 */
 /* Compatibility: Firefox 128+ / Nightly 130+ */
 /* Place in: <profile>/chrome/userChrome.css */
 
@@ -93,32 +93,20 @@
     /* Jewel gradient accent strip along the top */
     border-top: 1px solid transparent !important;
     border-image: linear-gradient(90deg, #1a8a6a, #1c3d7a, #583090) 1 !important;
-    /* Hex dot lattice + diagonal grid lines — VSCode-matched opacity (~6-8%) */
-    background-image:
-        radial-gradient(circle at 50% 50%, rgba(26,138,106,0.08) 0 2px, transparent 2px),
-        radial-gradient(circle at 50% 50%, rgba(26,138,106,0.04) 0 2px, transparent 2px),
-        repeating-linear-gradient(0deg,   rgba(26,138,106,0.03) 0 1px, transparent 1px 20px),
-        repeating-linear-gradient(60deg,  rgba(26,138,106,0.02) 0 1px, transparent 1px 20px),
-        repeating-linear-gradient(-60deg, rgba(26,138,106,0.02) 0 1px, transparent 1px 20px),
-        linear-gradient(90deg, rgba(14,74,56,0.06) 0%, rgba(12,26,64,0.06) 50%, rgba(30,16,64,0.06) 100%) !important;
-    background-size: 23.094px 40px, 23.094px 40px, auto, auto, auto, auto !important;
-    background-position: 0 0, 11.547px 20px, 0 0, 0 0, 0 0, 0 0 !important;
+    /* Subtle tri-primary colour wash texture */
+    background-image: linear-gradient(90deg,
+        rgba(14, 74, 56, 0.08) 0%,
+        rgba(12, 26, 64, 0.08) 50%,
+        rgba(30, 16, 64, 0.08) 100%) !important;
 }
 
 /* Tab strip background -- Abyss (one step darker than nav bar) */
 #TabsToolbar {
     background-color: var(--chrysaki-abyss) !important;
-    /* Hex dot lattice + jewel pools — VSCode-matched opacity (~6-8%) */
+    /* Radial jewel pool texture */
     background-image:
-        radial-gradient(circle at 50% 50%, rgba(26,138,106,0.08) 0 2px, transparent 2px),
-        radial-gradient(circle at 50% 50%, rgba(26,138,106,0.04) 0 2px, transparent 2px),
-        repeating-linear-gradient(0deg,   rgba(26,138,106,0.03) 0 1px, transparent 1px 20px),
-        repeating-linear-gradient(60deg,  rgba(26,138,106,0.02) 0 1px, transparent 1px 20px),
-        repeating-linear-gradient(-60deg, rgba(26,138,106,0.02) 0 1px, transparent 1px 20px),
         radial-gradient(ellipse at 20% 50%, rgba(20, 102, 78, 0.06), transparent 50%),
         radial-gradient(ellipse at 80% 50%, rgba(58, 32, 104, 0.06), transparent 50%) !important;
-    background-size: 23.094px 40px, 23.094px 40px, auto, auto, auto, auto, auto !important;
-    background-position: 0 0, 11.547px 20px, 0 0, 0 0, 0 0, 0 0, 0 0 !important;
 }
 
 /* Title bar */
@@ -127,175 +115,46 @@
 }
 
 /* ==========================================================
-   TAB STRIP
-   ========================================================== */
-
-#tabbrowser-tabs {
-    padding-inline: 0 !important;
-}
-
-/* ==========================================================
    TAB STYLING
-   Shape vocabulary:
-     /-\  polygon(0 0, 100% 0, calc(100% - 16px) 100%, 16px 100%)
-          full-width top, both sides angle inward going down
-     \_/  polygon(16px 0, calc(100% - 16px) 0, 100% 100%, 0 100%)
-          both sides angle outward going down, full-width bottom
-     |\   polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%)
-          straight left edge, angled right — first tab in strip
-     /|   polygon(0 0, 100% 0, 100% 100%, 16px 100%)  [odd last]
-          angled left (\), straight right — last odd tab in strip
-     /|   polygon(16px 0, 100% 0, 100% 100%, 0 100%) [even last]
-          angled left (/), straight right — last even tab in strip
-
-   Pinned tabs: rectangular (no clip-path), no overlap margin.
-   The strip outer edges are always | by design — explicit clip-paths
-   enforce this so no diagonal disappears into dead space at boundaries.
-
-   Regular tabs (counted within non-pinned set, using nth-child(N of S)):
-     1st, 3rd, 5th… : /-\   (\ left junction, / right junction)
-     2nd, 4th, 6th… : \_/   (/ left junction, \ right junction)
-     First tab override: |\ (straight left, / right)
-     Last tab override:  /| or \| (diagonal left, straight right)
-
-   Overlap: -16px end margin = clip inset, so adjacent edges meet flush.
    ========================================================== */
 
 /* All tabs base */
 .tabbrowser-tab {
     color: var(--chrysaki-text-muted) !important;
     background-color: transparent !important;
-    margin-inline-end: -16px !important;
-    margin-block-start: 0 !important;
-    padding-block: 0 !important;
-    position: relative !important;
-    overflow: visible !important;
-    z-index: 1 !important;
 }
 
-/* Active tab — highest layer */
+/* Active/selected tab */
 .tabbrowser-tab[selected="true"] {
     color: var(--chrysaki-text-primary) !important;
-    z-index: 10 !important;
-}
-
-/* Hovered inactive tab */
-.tabbrowser-tab:not([selected="true"]):hover {
-    color: var(--chrysaki-text-secondary) !important;
-    z-index: 5 !important;
-}
-
-/* Strip XUL default painting so background-color and clip-path apply */
-.tabbrowser-tab > .tab-stack,
-.tabbrowser-tab .tab-background,
-.tabbrowser-tab .tab-background-start,
-.tabbrowser-tab .tab-background-middle,
-.tabbrowser-tab .tab-background-end {
-    -moz-appearance: none !important;
-    width: 100% !important;
-    height: 100% !important;
-}
-
-/* --- PINNED TABS ---
-   Pinned tabs are narrow icon-only elements (~30px). A 16px trapezoid inset
-   at that width leaves only 14px across the top, distorting the favicon.
-   Use flat rectangular pinned tabs with zero overlap so the first regular
-   tab starts cleanly to the right with its own left-diagonal edge. */
-.tabbrowser-tab[pinned] {
-    margin-inline-end: 0 !important;
-}
-
-/* --- REGULAR TABS
-   Uses nth-child(N of S) (Firefox 113+) to count within the non-pinned
-   set only — correct alternation regardless of how many pins exist. --- */
-
-/* 1st, 3rd, 5th… regular tabs: /-\ (starts and ends correctly for / junction) */
-.tabbrowser-tab:nth-child(odd of .tabbrowser-tab:not([pinned])) > .tab-stack,
-.tabbrowser-tab:nth-child(odd of .tabbrowser-tab:not([pinned])) .tab-background {
-    clip-path: polygon(0 0, 100% 0, calc(100% - 16px) 100%, 16px 100%) !important;
-}
-
-/* 2nd, 4th, 6th… regular tabs: \_/ */
-.tabbrowser-tab:nth-child(even of .tabbrowser-tab:not([pinned])) > .tab-stack,
-.tabbrowser-tab:nth-child(even of .tabbrowser-tab:not([pinned])) .tab-background {
-    clip-path: polygon(16px 0, calc(100% - 16px) 0, 100% 100%, 0 100%) !important;
-}
-
-/* --- OUTER EDGE OVERRIDES — intentional | at strip boundaries ---
-   Without neighbors, the alternating diagonals create dead triangles at the
-   strip ends. Override the first and last regular tab to use straight outer
-   edges so no diagonal disappears into void.
-
-   First regular tab: left edge straight (|\)
-     Selector covers both cases: pinned tab before it, or no pinned tabs. */
-.tabbrowser-tab:not([pinned]):first-child > .tab-stack,
-.tabbrowser-tab:not([pinned]):first-child .tab-background,
-.tabbrowser-tab[pinned] + .tabbrowser-tab:not([pinned]) > .tab-stack,
-.tabbrowser-tab[pinned] + .tabbrowser-tab:not([pinned]) .tab-background {
-    clip-path: polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%) !important;
-}
-
-/* Last regular tab: right edge straight.
-   :last-of-type targets the last <tab> element — the new tab button is a
-   <toolbarbutton> so this correctly resolves to the last regular tab.
-   Parity determines which left-edge diagonal is preserved. */
-.tabbrowser-tab:nth-child(odd of .tabbrowser-tab:not([pinned])):last-of-type > .tab-stack,
-.tabbrowser-tab:nth-child(odd of .tabbrowser-tab:not([pinned])):last-of-type .tab-background {
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 16px 100%) !important;
-}
-.tabbrowser-tab:nth-child(even of .tabbrowser-tab:not([pinned])):last-of-type > .tab-stack,
-.tabbrowser-tab:nth-child(even of .tabbrowser-tab:not([pinned])):last-of-type .tab-background {
-    clip-path: polygon(16px 0, 100% 0, 100% 100%, 0 100%) !important;
-}
-
-/* --- BACKGROUNDS --- */
-
-/* Inactive tab */
-.tabbrowser-tab:not([selected="true"]) .tab-background {
     background-color: var(--chrysaki-surface) !important;
 }
 
-/* Active tab */
-.tabbrowser-tab[selected="true"] .tab-background {
-    background-color: var(--chrysaki-elevated) !important;
-}
-
-/* Hover */
-.tabbrowser-tab:not([selected="true"]):hover .tab-background {
-    background-color: var(--chrysaki-raised) !important;
-}
-
-/* --- TAB CONTENT — equal padding both sides --- */
-
-.tab-content {
-    padding-inline: 22px !important;
-}
-
-/* Close button: geometric parallelogram highlight matching VSCode style.
-   No margin offset needed — 22px padding keeps it clear of the 16px overlap zone. */
-.tab-close-button {
-    flex-shrink: 0 !important;
-    border-radius: 0 !important;
-}
-
-.tab-close-button:hover {
-    background-color: var(--chrysaki-error) !important;
-    clip-path: polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%) !important;
-    color: var(--chrysaki-text-primary) !important;
-}
-
-/* Active tab top indicator — Emerald -> Blue -> Amethyst */
+/* Active tab -- gradient bottom indicator (Emerald -> Blue -> Amethyst) */
 .tabbrowser-tab[selected="true"] .tab-line {
     background: linear-gradient(90deg, #1a8a6a, #1c3d7a, #583090) !important;
     height: 2px !important;
     display: block !important;
 }
 
+/* Inactive tab -- no indicator */
 .tabbrowser-tab:not([selected="true"]) .tab-line {
     display: none !important;
 }
 
-/* New tab button — teal accent */
+/* Tab hover state */
+.tabbrowser-tab:not([selected="true"]):hover {
+    background-color: var(--chrysaki-raised) !important;
+    color: var(--chrysaki-text-secondary) !important;
+}
+
+/* Tab close button */
+.tab-close-button:hover {
+    background-color: var(--chrysaki-error) !important;
+    color: var(--chrysaki-text-primary) !important;
+}
+
+/* New tab button -- Teal accent */
 #tabs-newtab-button,
 #new-tab-button {
     color: var(--chrysaki-teal) !important;
@@ -307,30 +166,6 @@
     background-color: var(--chrysaki-raised) !important;
     color: var(--chrysaki-teal-lt) !important;
     fill: var(--chrysaki-teal-lt) !important;
-}
-
-/* New tab button — integrate into the alternating trapezoid strip.
-   The last tab already has -16px end margin, so the button is already
-   positioned 16px inside the last tab's boundary — no extra margin needed.
-   Uses + (adjacent sibling) to read the last tab's shape and apply the
-   opposite shape, continuing the alternating sequence seamlessly.
-
-   Odd non-pinned tab (/-\) directly precedes → button is \_/
-   Even non-pinned tab (\_/) directly precedes → button is /-\           */
-#tabs-newtab-button {
-    -moz-appearance: none !important;
-    background-color: transparent !important;
-    min-width: 48px !important;
-    margin-block-start: 0 !important;
-    padding-block: 0 !important;
-}
-
-.tabbrowser-tab:nth-child(odd of .tabbrowser-tab:not([pinned])) + #tabs-newtab-button {
-    clip-path: polygon(16px 0, calc(100% - 16px) 0, 100% 100%, 0 100%) !important;
-}
-
-.tabbrowser-tab:nth-child(even of .tabbrowser-tab:not([pinned])) + #tabs-newtab-button {
-    clip-path: polygon(0 0, 100% 0, calc(100% - 16px) 100%, 16px 100%) !important;
 }
 
 /* ==========================================================
@@ -388,15 +223,6 @@
 #PersonalToolbar {
     background-color: var(--chrysaki-surface) !important;
     border-bottom: 1px solid var(--chrysaki-border-soft) !important;
-    /* Hex dot lattice + diagonal grid lines — VSCode-matched opacity */
-    background-image:
-        radial-gradient(circle at 50% 50%, rgba(26,138,106,0.08) 0 2px, transparent 2px),
-        radial-gradient(circle at 50% 50%, rgba(26,138,106,0.04) 0 2px, transparent 2px),
-        repeating-linear-gradient(0deg,   rgba(26,138,106,0.03) 0 1px, transparent 1px 20px),
-        repeating-linear-gradient(60deg,  rgba(26,138,106,0.02) 0 1px, transparent 1px 20px),
-        repeating-linear-gradient(-60deg, rgba(26,138,106,0.02) 0 1px, transparent 1px 20px) !important;
-    background-size: 23.094px 40px, 23.094px 40px, auto, auto, auto !important;
-    background-position: 0 0, 11.547px 20px, 0 0, 0 0, 0 0 !important;
 }
 
 #PersonalToolbar .bookmark-item {
@@ -415,15 +241,9 @@
 #sidebar-box {
     background-color: var(--chrysaki-surface) !important;
     color: var(--chrysaki-text-secondary) !important;
-    /* Hex dot lattice + diagonal grid lines — VSCode-matched opacity */
-    background-image:
-        radial-gradient(circle at 50% 50%, rgba(26,138,106,0.08) 0 2px, transparent 2px),
-        radial-gradient(circle at 50% 50%, rgba(26,138,106,0.04) 0 2px, transparent 2px),
-        repeating-linear-gradient(0deg,   rgba(26,138,106,0.03) 0 1px, transparent 1px 20px),
-        repeating-linear-gradient(60deg,  rgba(26,138,106,0.02) 0 1px, transparent 1px 20px),
-        repeating-linear-gradient(-60deg, rgba(26,138,106,0.02) 0 1px, transparent 1px 20px) !important;
-    background-size: 23.094px 40px, 23.094px 40px, auto, auto, auto !important;
-    background-position: 0 0, 11.547px 20px, 0 0, 0 0, 0 0 !important;
+    /* Subtle dot grid texture */
+    background-image: radial-gradient(rgba(54, 58, 79, 0.35) 1px, transparent 1px) !important;
+    background-size: 20px 20px !important;
 }
 
 #sidebar-header {

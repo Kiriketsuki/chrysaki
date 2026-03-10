@@ -1,6 +1,292 @@
 /* Chrysaki VSCode Workbench CSS */
 /* Inject via Custom CSS and JS Loader (be5invis.vscode-custom-css) */
-/* Version: 2.0.0 */
+/* Version: 2.1.0 — merged: texture system (main) + geometry (feat/vscode-v2-redesign) */
+
+
+/* ==========================================================
+   STACKING CONTEXT SETUP
+   ========================================================== */
+
+.part.sidebar,
+.activitybar,
+.part.editor,
+.part.auxiliarybar {
+  position: relative !important;
+  isolation: isolate !important;
+}
+
+/* Minimap: isolation so ::before texture stays behind minimap content */
+.minimap {
+  position: relative !important;
+  isolation: isolate !important;
+}
+
+/* Panel: position only — no isolation so terminal internals aren't broken */
+.part.panel {
+  position: relative !important;
+}
+
+/* Sidebar file list: isolation so z-index:-1 on ::before stays inside the list */
+.part.sidebar .monaco-list {
+  position: relative !important;
+  isolation: isolate !important;
+}
+
+/* ==========================================================
+   HEX GRID — SIDEBAR background
+   Tile: 23.094 × 40 px | sp=20px | flat-top hexagons
+   All lines + markers in one SVG (no gradient drift)
+   ========================================================== */
+
+.part.sidebar::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMy4wOTQnIGhlaWdodD0nNDAnPjxsaW5lIHgxPScwJyB5MT0nMCcgeDI9JzIzLjA5NCcgeTI9JzAnIHN0cm9rZT0nIzFhOGE2YScgc3Ryb2tlLXdpZHRoPScxJy8+PGxpbmUgeDE9JzAnIHkxPScyMCcgeDI9JzIzLjA5NCcgeTI9JzIwJyBzdHJva2U9JyMxYThhNmEnIHN0cm9rZS13aWR0aD0nMScvPjxsaW5lIHgxPScwJyB5MT0nMCcgeDI9JzIzLjA5NCcgeTI9JzQwJyBzdHJva2U9JyMxYThhNmEnIHN0cm9rZS13aWR0aD0nMScvPjxsaW5lIHgxPScyMy4wOTQnIHkxPScwJyB4Mj0nMCcgeTI9JzQwJyBzdHJva2U9JyMxYThhNmEnIHN0cm9rZS13aWR0aD0nMScvPjxjaXJjbGUgY3g9JzAnIGN5PScwJyByPSczLjUnIGZpbGw9JyMxYTFkMmEnLz48Y2lyY2xlIGN4PScyMy4wOTQnIGN5PScwJyByPSczLjUnIGZpbGw9JyMxYTFkMmEnLz48Y2lyY2xlIGN4PScwJyBjeT0nNDAnIHI9JzMuNScgZmlsbD0nIzFhMWQyYScvPjxjaXJjbGUgY3g9JzIzLjA5NCcgY3k9JzQwJyByPSczLjUnIGZpbGw9JyMxYTFkMmEnLz48Y2lyY2xlIGN4PScxMS41NDcnIGN5PScyMCcgcj0nMy41JyBmaWxsPScjMWExZDJhJy8+PHBvbHlnb24gcG9pbnRzPScyLjUsMCAxLjI1LDIuMTY1IC0xLjI1LDIuMTY1IC0yLjUsMCAtMS4yNSwtMi4xNjUgMS4yNSwtMi4xNjUnIGZpbGw9JyMxYThhNmEnLz48cG9seWdvbiBwb2ludHM9JzI1LjU5NCwwIDI0LjM0NCwyLjE2NSAyMS44NDQsMi4xNjUgMjAuNTk0LDAgMjEuODQ0LC0yLjE2NSAyNC4zNDQsLTIuMTY1JyBmaWxsPScjMWE4YTZhJy8+PHBvbHlnb24gcG9pbnRzPScyLjUsNDAgMS4yNSw0Mi4xNjUgLTEuMjUsNDIuMTY1IC0yLjUsNDAgLTEuMjUsMzcuODM1IDEuMjUsMzcuODM1JyBmaWxsPScjMWE4YTZhJy8+PHBvbHlnb24gcG9pbnRzPScyNS41OTQsNDAgMjQuMzQ0LDQyLjE2NSAyMS44NDQsNDIuMTY1IDIwLjU5NCw0MCAyMS44NDQsMzcuODM1IDI0LjM0NCwzNy44MzUnIGZpbGw9JyMxYThhNmEnLz48cG9seWdvbiBwb2ludHM9JzE0LjA0NywyMCAxMi43OTcsMjIuMTY1IDEwLjI5NywyMi4xNjUgOS4wNDcsMjAgMTAuMjk3LDE3LjgzNSAxMi43OTcsMTcuODM1JyBmaWxsPScjMWE4YTZhJy8+PC9zdmc+") !important;
+  background-size: 23.094px 40px !important;
+  opacity: 0.035 !important;
+  pointer-events: none !important;
+  z-index: -1 !important;
+}
+
+/* ==========================================================
+   TECH GRID — SIDEBAR file list (.monaco-list)
+   Square dot-and-line grid | 20px cell | dots at intersections
+   background-position offset: dots shifted -10px so they land on line crossings
+   ========================================================== */
+
+.part.sidebar .monaco-list::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background-image:
+    radial-gradient(circle at 50% 50%, #1a8a6a 0 1.5px, transparent 1.5px),
+    linear-gradient(0deg,  #1a8a6a 0 1px, transparent 1px),
+    linear-gradient(90deg, #1a8a6a 0 1px, transparent 1px) !important;
+  background-size: 20px 20px !important;
+  background-position: -10px -10px, 0 0, 0 0 !important;
+  opacity: 0.025 !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+}
+
+/* ==========================================================
+   HEX GRID — ACTIVITY BAR (knockout bg = #161922)
+   ========================================================== */
+
+.activitybar::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMy4wOTQnIGhlaWdodD0nNDAnPjxsaW5lIHgxPScwJyB5MT0nMCcgeDI9JzIzLjA5NCcgeTI9JzAnIHN0cm9rZT0nIzFhOGE2YScgc3Ryb2tlLXdpZHRoPScxJy8+PGxpbmUgeDE9JzAnIHkxPScyMCcgeDI9JzIzLjA5NCcgeTI9JzIwJyBzdHJva2U9JyMxYThhNmEnIHN0cm9rZS13aWR0aD0nMScvPjxsaW5lIHgxPScwJyB5MT0nMCcgeDI9JzIzLjA5NCcgeTI9JzQwJyBzdHJva2U9JyMxYThhNmEnIHN0cm9rZS13aWR0aD0nMScvPjxsaW5lIHgxPScyMy4wOTQnIHkxPScwJyB4Mj0nMCcgeTI9JzQwJyBzdHJva2U9JyMxYThhNmEnIHN0cm9rZS13aWR0aD0nMScvPjxjaXJjbGUgY3g9JzAnIGN5PScwJyByPSczLjUnIGZpbGw9JyMxNjE5MjInLz48Y2lyY2xlIGN4PScyMy4wOTQnIGN5PScwJyByPSczLjUnIGZpbGw9JyMxNjE5MjInLz48Y2lyY2xlIGN4PScwJyBjeT0nNDAnIHI9JzMuNScgZmlsbD0nIzE2MTkyMicvPjxjaXJjbGUgY3g9JzIzLjA5NCcgY3k9JzQwJyByPSczLjUnIGZpbGw9JyMxNjE5MjInLz48Y2lyY2xlIGN4PScxMS41NDcnIGN5PScyMCcgcj0nMy41JyBmaWxsPScjMTYxOTIyJy8+PHBvbHlnb24gcG9pbnRzPScyLjUsMCAxLjI1LDIuMTY1IC0xLjI1LDIuMTY1IC0yLjUsMCAtMS4yNSwtMi4xNjUgMS4yNSwtMi4xNjUnIGZpbGw9JyMxYThhNmEnLz48cG9seWdvbiBwb2ludHM9JzI1LjU5NCwwIDI0LjM0NCwyLjE2NSAyMS44NDQsMi4xNjUgMjAuNTk0LDAgMjEuODQ0LC0yLjE2NSAyNC4zNDQsLTIuMTY1JyBmaWxsPScjMWE4YTZhJy8+PHBvbHlnb24gcG9pbnRzPScyLjUsNDAgMS4yNSw0Mi4xNjUgLTEuMjUsNDIuMTY1IC0yLjUsNDAgLTEuMjUsMzcuODM1IDEuMjUsMzcuODM1JyBmaWxsPScjMWE4YTZhJy8+PHBvbHlnb24gcG9pbnRzPScyNS41OTQsNDAgMjQuMzQ0LDQyLjE2NSAyMS44NDQsNDIuMTY1IDIwLjU5NCw0MCAyMS44NDQsMzcuODM1IDI0LjM0NCwzNy44MzUnIGZpbGw9JyMxYThhNmEnLz48cG9seWdvbiBwb2ludHM9JzE0LjA0NywyMCAxMi43OTcsMjIuMTY1IDEwLjI5NywyMi4xNjUgOS4wNDcsMjAgMTAuMjk3LDE3LjgzNSAxMi43OTcsMTcuODM1JyBmaWxsPScjMWE4YTZhJy8+PC9zdmc+") !important;
+  background-size: 23.094px 40px !important;
+  opacity: 0.035 !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+}
+
+/* ==========================================================
+   ANGLED HATCHING — EDITOR (reduced, blue #4a82c4)
+   ========================================================== */
+
+.part.editor::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background-image:
+    repeating-linear-gradient(-55deg, #4a82c4 0 1px, transparent 1px 25px),
+    repeating-linear-gradient( 35deg, #4a82c4 0 1px, transparent 1px 41px),
+    repeating-linear-gradient(-15deg, #4a82c4 0 1px, transparent 1px 61px) !important;
+  opacity: 0.015 !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+}
+
+/* ==========================================================
+   ANGLED HATCHING — MINIMAP
+   Same hatching as editor, slightly higher opacity for the narrow strip
+   ========================================================== */
+
+.minimap::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background-image:
+    repeating-linear-gradient(-55deg, #4a82c4 0 1px, transparent 1px 25px),
+    repeating-linear-gradient( 35deg, #4a82c4 0 1px, transparent 1px 41px),
+    repeating-linear-gradient(-15deg, #4a82c4 0 1px, transparent 1px 61px),
+    linear-gradient(to bottom, transparent 0%, rgba(74, 130, 196, 0.06) 50%, transparent 100%) !important;
+  background-size: auto, auto, auto, 100% 30% !important;
+  opacity: 0.03 !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+}
+
+/* ==========================================================
+   ANIMATED TECH GRID — PANEL (integrated terminal + bottom bar)
+   Same dot-and-line grid as sidebar child, but animated.
+   Dots drift diagonally; horizontal lines scroll sideways;
+   vertical lines scroll downward — creates a living circuit feel.
+   ========================================================== */
+
+@keyframes panel-drift {
+  0%   { background-position: -10px -10px, 0 0,    0 0; }
+  100% { background-position:  10px  10px, 20px 0, 0 20px; }
+}
+
+.part.panel::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background-image:
+    radial-gradient(circle at 50% 50%, #00c8d8 0 1.5px, transparent 1.5px),
+    linear-gradient(0deg,  #00c8d8 0 1px, transparent 1px),
+    linear-gradient(90deg, #00c8d8 0 1px, transparent 1px) !important;
+  background-size: 20px 20px !important;
+  background-position: -10px -10px, 0 0, 0 0 !important;
+  opacity: 0.018 !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+  animation: panel-drift 15s linear infinite !important;
+}
+
+/* ==========================================================
+   DEPTH FADES — ::after gradient overlays
+   Each panel gets a unique colour tint at the top that fades to
+   transparent mid-panel, then darkens at the bottom.
+   Together these break the monotone navy by giving each region
+   a distinct chromatic identity.
+   ========================================================== */
+
+/* Shared scaffold for all panel fades */
+.part.sidebar::after,
+.activitybar::after,
+.part.panel::after,
+.part.auxiliarybar::after {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  z-index: 10 !important;
+}
+
+/* Sidebar: neutral — emerald textures already give it identity */
+.part.sidebar::after {
+  background-image: linear-gradient(to bottom,
+    transparent 65%,
+    rgba(0, 0, 0, 0.20) 100%) !important;
+}
+
+/* Activity bar: dark purple cast anchors the icon strip */
+.activitybar::after {
+  background-image: linear-gradient(to bottom,
+    rgba(70, 20, 110, 0.05) 0%,
+    transparent 45%,
+    rgba(0, 0, 0, 0.25) 100%) !important;
+}
+
+/* Panel / terminal: dark cyan tint matches the cyan grid */
+.part.panel::after {
+  background-image: linear-gradient(to bottom,
+    rgba(0, 160, 196, 0.035) 0%,
+    transparent 45%,
+    rgba(0, 0, 0, 0.20) 100%) !important;
+}
+
+/* Auxiliary bar: dark indigo — distinct from sidebar purple */
+.part.auxiliarybar::after {
+  background-image: linear-gradient(to bottom,
+    rgba(30, 20, 80, 0.05) 0%,
+    transparent 45%,
+    rgba(0, 0, 0, 0.22) 100%) !important;
+}
+
+/* Editor: blue → purple bottom fade */
+.part.editor::after {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background-image: linear-gradient(to bottom,
+    transparent 65%,
+    rgba(74, 130, 196, 0.06) 82%,
+    rgba(112, 64, 176, 0.08) 100%) !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+}
+
+/* ==========================================================
+   TAB DISTINCTION
+   Inactive tabs: deeper background (#11141d) so they clearly recede.
+   Active tab: editor background (#1a1d2a) + emerald top accent border.
+   Creates a "lifted" feel — active tab reads as connected to editor below.
+   ========================================================== */
+
+/* Inactive tabs: darker than editor bg */
+.tabs-container .tab {
+  background-color: #11141d !important;
+  border-top: 2px solid transparent !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Active/selected tab: rises to match editor + emerald accent */
+.tabs-container .tab.active,
+.tabs-container .tab.selected {
+  background-color: #1a1d2a !important;
+  border-top: 2px solid #1a8a6a !important;
+}
+
+/* Inactive tab hover: step between inactive and active */
+.tabs-container .tab:not(.active):not(.selected):hover {
+  background-color: #161922 !important;
+}
+
+/* ==========================================================
+   HEX GRID — AUXILIARY BAR (right chat / secondary sidebar)
+   Knockout bg matches sidebar (#1a1d2a) — same visual language
+   ========================================================== */
+
+.part.auxiliarybar::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMy4wOTQnIGhlaWdodD0nNDAnPjxsaW5lIHgxPScwJyB5MT0nMCcgeDI9JzIzLjA5NCcgeTI9JzAnIHN0cm9rZT0nIzFhOGE2YScgc3Ryb2tlLXdpZHRoPScxJy8+PGxpbmUgeDE9JzAnIHkxPScyMCcgeDI9JzIzLjA5NCcgeTI9JzIwJyBzdHJva2U9JyMxYThhNmEnIHN0cm9rZS13aWR0aD0nMScvPjxsaW5lIHgxPScwJyB5MT0nMCcgeDI9JzIzLjA5NCcgeTI9JzQwJyBzdHJva2U9JyMxYThhNmEnIHN0cm9rZS13aWR0aD0nMScvPjxsaW5lIHgxPScyMy4wOTQnIHkxPScwJyB4Mj0nMCcgeTI9JzQwJyBzdHJva2U9JyMxYThhNmEnIHN0cm9rZS13aWR0aD0nMScvPjxjaXJjbGUgY3g9JzAnIGN5PScwJyByPSczLjUnIGZpbGw9JyMxYTFkMmEnLz48Y2lyY2xlIGN4PScyMy4wOTQnIGN5PScwJyByPSczLjUnIGZpbGw9JyMxYTFkMmEnLz48Y2lyY2xlIGN4PScwJyBjeT0nNDAnIHI9JzMuNScgZmlsbD0nIzFhMWQyYScvPjxjaXJjbGUgY3g9JzIzLjA5NCcgY3k9JzQwJyByPSczLjUnIGZpbGw9JyMxYTFkMmEnLz48Y2lyY2xlIGN4PScxMS41NDcnIGN5PScyMCcgcj0nMy41JyBmaWxsPScjMWExZDJhJy8+PHBvbHlnb24gcG9pbnRzPScyLjUsMCAxLjI1LDIuMTY1IC0xLjI1LDIuMTY1IC0yLjUsMCAtMS4yNSwtMi4xNjUgMS4yNSwtMi4xNjUnIGZpbGw9JyMxYThhNmEnLz48cG9seWdvbiBwb2ludHM9JzI1LjU5NCwwIDI0LjM0NCwyLjE2NSAyMS44NDQsMi4xNjUgMjAuNTk0LDAgMjEuODQ0LC0yLjE2NSAyNC4zNDQsLTIuMTY1JyBmaWxsPScjMWE4YTZhJy8+PHBvbHlnb24gcG9pbnRzPScyLjUsNDAgMS4yNSw0Mi4xNjUgLTEuMjUsNDIuMTY1IC0yLjUsNDAgLTEuMjUsMzcuODM1IDEuMjUsMzcuODM1JyBmaWxsPScjMWE4YTZhJy8+PHBvbHlnb24gcG9pbnRzPScyNS41OTQsNDAgMjQuMzQ0LDQyLjE2NSAyMS44NDQsNDIuMTY1IDIwLjU5NCw0MCAyMS44NDQsMzcuODM1IDI0LjM0NCwzNy44MzUnIGZpbGw9JyMxYThhNmEnLz48cG9seWdvbiBwb2ludHM9JzE0LjA0NywyMCAxMi43OTcsMjIuMTY1IDEwLjI5NywyMi4xNjUgOS4wNDcsMjAgMTAuMjk3LDE3LjgzNSAxMi43OTcsMTcuODM1JyBmaWxsPScjMWE4YTZhJy8+PC9zdmc+") !important;
+  background-size: 23.094px 40px !important;
+  opacity: 0.035 !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+}
+
+/* ==========================================================
+   SIDEBAR SECTION DIFFERENTIATION
+   Left-border accents on collapsible pane headers so each
+   sidebar section has a distinct chromatic identity.
+   Uses aria-label attribute selectors (English locale).
+   ========================================================== */
+
+/* Outline: purple accent */
+.part.sidebar .pane-header[aria-label*="Outline"] {
+  border-left: 3px solid #7040b0 !important;
+}
+
+/* Timeline: cyan accent */
+.part.sidebar .pane-header[aria-label*="Timeline"] {
+  border-left: 3px solid #00c8d8 !important;
+}
+
+/* File Explorer (Folders): emerald accent */
+.part.sidebar .pane-header[aria-label*="Folders"] {
+  border-left: 3px solid #1a8a6a !important;
+}
+
+/* Open Editors: blue accent */
+.part.sidebar .pane-header[aria-label*="Open Editors"] {
+  border-left: 3px solid #4a82c4 !important;
+}
+
+/* ==========================================================
+   GEOMETRY — hexagonal icons, trapezoid tabs, diamonds, folder clips
+   ========================================================== */
+
 
 /* ==========================================================
    GLOBAL RESETS

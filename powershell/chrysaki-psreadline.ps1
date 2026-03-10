@@ -36,17 +36,11 @@ Set-PSReadLineOption -Colors @{
 
     # -- UI elements --
     Selection        = (_ChrHexBg "#252836") # Raised (bg)
+    InlinePrediction = (_ChrHex "#6a6e82")  # Muted Text
+    ListPrediction   = (_ChrHex "#197278")  # Teal
+    ListPredictionSelected =
+        (_ChrHex "#1a8a6a")                 # Emerald Lt
     Default          = (_ChrHex "#e0e2ea")  # Primary Text
-}
-
-# InlinePrediction, ListPrediction require PSReadLine 2.2.0+
-# To upgrade: Install-Module PSReadLine -Force -Scope CurrentUser
-if ((Get-Module PSReadLine).Version -ge [Version]"2.2.0") {
-    Set-PSReadLineOption -Colors @{
-        InlinePrediction       = (_ChrHex "#6a6e82")  # Muted Text
-        ListPrediction         = (_ChrHex "#197278")  # Teal
-        ListPredictionSelected = (_ChrHex "#1a8a6a")  # Emerald Lt
-    }
 }
 
 # Continuation prompt styling
