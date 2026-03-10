@@ -5,7 +5,8 @@
 #            On selection, command is written to a temp file and run
 #            via `tmux run-shell -b` so the popup closes first.
 
-set -euo pipefail
+# Ensure TERM is set — display-popup sometimes inherits a bare environment
+export TERM="${TERM:-xterm-256color}"
 
 if ! command -v fzf &>/dev/null; then
   tmux display-message " palette: fzf not found -- pacman -S fzf"
@@ -69,30 +70,50 @@ Help popup	display-popup -E -T " ⬢  Chrysaki tmux Help " -h 90% -w 62 "~/.tmux
 EOF
 )
 
-SELECTED=$(printf '%s\n' "$ENTRIES" \
-  | fzf \
-      --ansi \
-      --delimiter=$'\t' \
-      --with-nth=1 \
-      --layout=reverse \
-      --border=sharp \
-      --border-label=" \u2b22  Chrysaki Commands " \
-      --border-label-pos=3 \
-      --padding=0,1 \
-      --prompt=" \u276f  " \
-      --pointer="\u258c" \
-      --marker="  " \
-      --header=" \u2191\u2193 navigate  \u23ce execute  esc cancel" \
-      --header-first \
-      --color="dark" \
-      --color="bg:#0f1117,bg+:#252836" \
-      --color="fg:#a0a4b8,fg+:#e0e2ea" \
-      --color="hl:#1a8a6a,hl+:#1a8a6a" \
-      --color="border:#363a4f,label:#1a8a6a" \
-      --color="prompt:#FBB13C,pointer:#FBB13C" \
-      --color="header:#6a6e82,query:#e0e2ea,gutter:#0f1117" \
-      --no-sort \
-  2>/dev/null) || exit 0
+tmp_entries=$(mktemp /tmp/fzf-entries-XXXXXX)
+tmp_sel=$(mktemp /tmp/fzf-sel-XXXXXX)
+printf '%s\n' "$ENTRIES" > "$tmp_entries"
+
+# fzf reads entries from a file (< redirect, not a pipe subshell) so it stays
+# in the script's process group and can access the popup PTY for rendering.
+# stdout is not redirected — stays on the PTY.
+# Selection is written to tmp_sel via execute on Enter.
+fzf \
+    --ansi \
+    --delimiter=$'\t' \
+    --with-nth=1 \
+    --layout=reverse \
+    --border=sharp \
+    --border-label=" ⬢  Chrysaki Commands " \
+    --border-label-pos=3 \
+    --height=100% \
+    --padding=0,1 \
+    --prompt=" ❯  " \
+    --pointer="▸" \
+    --marker="  " \
+    --header=" ↑↓ navigate  ↵ execute  esc cancel" \
+    --header-first \
+    --color="dark" \
+    --color="bg:#0f1117,bg+:#252836" \
+    --color="fg:#a0a4b8,fg+:#e0e2ea" \
+    --color="hl:#1a8a6a,hl+:#1a8a6a" \
+    --color="border:#363a4f,label:#1a8a6a" \
+    --color="prompt:#FBB13C,pointer:#FBB13C" \
+    --color="header:#6a6e82,query:#e0e2ea,gutter:#0f1117" \
+    --no-sort \
+    --bind "enter:execute(printf '%s' {} > '$tmp_sel')+abort" \
+    --bind "esc:abort" \
+    < "$tmp_entries"
+
+rm -f "$tmp_entries"
+
+if [[ ! -s "$tmp_sel" ]]; then
+  rm -f "$tmp_sel"
+  exit 0
+fi
+
+SELECTED=$(cat "$tmp_sel")
+rm -f "$tmp_sel"
 
 COMMAND=$(printf '%s' "$SELECTED" | cut -f2-)
 [[ -z "$COMMAND" ]] && exit 0

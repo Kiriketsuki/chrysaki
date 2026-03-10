@@ -81,3 +81,22 @@
 - Branch: main (detached HEAD at f026d21)
 
 ---
+## 2026-03-10 Handoff
+
+### Decisions
+- E0B0 (straight) not E0BC for session badge right edge -- E0BC overflows badge height
+- Even/odd: (window_index - 1) % 2 to normalise for base-index=1
+- is_last: window_index == session_windows (not -1) for base-index=1
+- Temp-file executor in palette.sh handles nested quotes in tmux commands
+- Symlinks ~/.tmux/* -> Chrysaki repo fixes source-file revert bug
+
+### Failed Approaches
+- E0BC for session badge: height overflow, reverted to E0B0
+- Raw window_index % 2: off-by-one with base-index=1
+- session_windows - 1 for is_last: wrong for base-index=1
+
+### Handoff Target
+- Plan file: .claude/handoffs/2026-03-10-09h40-tmux-rice-palette.md
+- Branch: feat/tmux-rice
+
+---
