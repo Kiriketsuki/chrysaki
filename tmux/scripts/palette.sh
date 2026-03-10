@@ -66,7 +66,7 @@ Show tmux messages / log	show-messages
 Show environment variables	show-environment
 Open tmux command prompt	command-prompt
 Reload tmux config	source-file ~/.tmux.conf
-Help popup	display-popup -E -T " ⬢  Chrysaki tmux Help " -h 90% -w 62 "~/.tmux/help.sh | less -R"
+Help popup	display-popup -E -T " ⬢  Chrysaki tmux Help " -h 90% -w 62 "~/.tmux/help.sh"
 EOF
 )
 
