@@ -70,6 +70,29 @@ clip-path: polygon(15% 0%, 100% 0%, 85% 100%, 0% 100%);
 clip-path: polygon(0% 0%, 85% 0%, 100% 50%, 85% 100%, 0% 100%, 15% 50%);
 ```
 
+## Tiling System
+
+Trapezoid segments tile by edge-type propagation. Three edge types: `|` (straight), `/` (forward), `\` (back).
+
+```
+tile(first_left, first_right, N):
+  Element 1:   (first_left, first_right)          — or (first_left, |) if N=1
+  Element i:   (prev.right, opposite(prev.right))  — middle elements
+  Element N:   (prev.right, |)                    — last always terminates with |
+opposite(/) = \,  opposite(\) = /,  opposite(|) = |
+```
+
+Default preset: `zigzag-alt` `(|,\)` — used by tmux port. Other presets: `zigzag` `(|,/)`, `chevron` `(/,/)`, `flat` `(|,|)`.
+
+**Overlap defaults:**
+
+| Renderer | Inset | Overlap mechanism |
+|:---------|:------|:------------------|
+| CSS | 16px | `margin-left: -16px` on all except first |
+| Terminal | glyph-native | Nerd Font glyphs are single-cell |
+
+Full spec: [`TILING.md`](TILING.md) · Generator: [`tools/tiling.py`](tools/tiling.py)
+
 ## Glassmorphism (v2 direction)
 
 Standard dark-glass stack (use `saturate()` to preserve jewel tone saturation through blur):
@@ -93,6 +116,7 @@ White tint alpha range: **0.03–0.12**. Above 0.15 looks milky on dark backgrou
 - Requires **IosevkaTermSlab Nerd Font** for powerline glyphs (U+E0B0, U+E0B2) and `⬢` badge
 - Prefix feedback: session badge turns Blonde when `client_prefix` is active
 - Status bar: Abyss bg → Surface for right info shelf → Raised for time block
+- Window list uses `zigzag-alt` tiling preset (`|,\` lead); see `TILING.md` for the full edge algebra and `tools/tiling.py` to generate or validate sequences
 
 ### VSCode (`vscode/`)
 - Theme JSON: `vscode/chrysaki-color-theme.json`
@@ -129,3 +153,4 @@ White tint alpha range: **0.03–0.12**. Above 0.15 looks milky on dark backgrou
 | Web | Firefox | `firefox/userChrome.css` + `firefox/userContent.css` |
 | Docs | Marp | `marp/chrysaki.css` |
 | Tool | Color converter | `tools/color-converter.html` |
+| Tool | Tiling generator | `tools/tiling.py` |
