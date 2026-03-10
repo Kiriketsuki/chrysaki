@@ -94,14 +94,19 @@ render_help() {
   printf "  ${MT}Press ${PR}q${MT} or ${PR}Esc${MT} to close this help screen.${RS}\n\n"
 }
 
-# fzf as pager: supports ESC and q to close, arrow key navigation,
-# and ANSI color rendering. --disabled turns off fuzzy search.
-render_help | fzf \
-  --disabled \
+# Write rendered help to a temp file so fzf reads content from a file
+# redirect (not a pipe). Pipe stdin prevents fzf from opening /dev/tty
+# for keyboard input inside display-popup -- arrow keys stop working.
+_tmp=$(mktemp)
+render_help > "$_tmp"
+fzf \
   --ansi \
   --no-info \
-  --no-header \
+  --no-sort \
   --bind "q:abort,esc:abort,enter:ignore" \
   --height=100% \
   --reverse \
-  --color "bg:#161821,bg+:#161821,fg:#a0a4b8,fg+:#e0e2ea,gutter:#161821,pointer:#161821"
+  --pointer="▸" \
+  --color "bg:#161821,bg+:#252836,fg:#a0a4b8,fg+:#e0e2ea,gutter:#161821,pointer:#1a8a6a" \
+  < "$_tmp"
+rm -f "$_tmp"

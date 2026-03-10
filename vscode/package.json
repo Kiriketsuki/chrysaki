@@ -2,6 +2,7 @@
   "name": "chrysaki-theme",
   "displayName": "Chrysaki",
   "description": "Chrysaki dark colour theme -- jewel-toned, geometric",
+  "publisher": "kiriketsuki",
   "version": "2.0.0",
   "engines": { "vscode": "^1.60.0" },
   "categories": ["Themes"],
