@@ -66,4 +66,9 @@ git:
     showGraph: "always"
     # Replace ASCII graph chars with Unicode equivalents for a cleaner look
     branchLogCmd: >-
-      git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium {{branchName}} -- | sed 's/\*/●/g; s/|/│/g'
+      git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium {{branchName}} --
+      | sed 's/\*/●/g; s/|/┆/g; s/-/╌/g'
+    allBranchesLogCmds:
+      - >-
+        git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium --all
+        | sed 's/\*/●/g; s/|/┆/g; s/-/╌/g'
