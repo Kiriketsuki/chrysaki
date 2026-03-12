@@ -16,61 +16,54 @@ gui:
   showNumstatInFilesView: true
   commitHashLength: 8
   statusPanelView: "dashboard"
-
   # Hexagonal spinner — ⬡ (hollow) → ⬢ (solid)
   spinner:
     frames:
       - "⬡"
       - "⬢"
     rate: 100
-
   # Branch color patterns — Chrysaki token mapping
   branchColorPatterns:
-    "^(main|master)$": "#FBB13C"   # Blonde — canonical/stable
-    "^feat/": "#1a8a6a"             # Emerald Lt — new features
-    "^fix/": "#b53f4a"              # Error Lt — bug fixes
-    "^release/": "#20969c"          # Teal Lt — release branches
-
+    "^(main|master)$": "#FBB13C" # Blonde — canonical/stable
+    "^feat/": "#1a8a6a" # Emerald Lt — new features
+    "^fix/": "#b53f4a" # Error Lt — bug fixes
+    "^release/": "#20969c" # Teal Lt — release branches
   # Author color — Emerald Lt for all authors
   authorColors:
     "*": "#1a8a6a"
-
   # Static Chrysaki fallback theme (overridden by colors.yml from pipeline)
   theme:
     activeBorderColor:
-      - "#1a8a6a"   # Emerald Lt
+      - "#1a8a6a" # Emerald Lt
       - "bold"
     inactiveBorderColor:
-      - "#363a4f"   # Border
+      - "#363a4f" # Border
     searchingActiveBorderColor:
-      - "#FBB13C"   # Blonde
+      - "#FBB13C" # Blonde
       - "bold"
     optionsTextColor:
-      - "#20969c"   # Teal Lt
+      - "#20969c" # Teal Lt
     selectedLineBgColor:
-      - "#252836"   # Raised
+      - "#252836" # Raised
     inactiveViewSelectedLineBgColor:
-      - "#1c1f2b"   # Surface
+      - "#1c1f2b" # Surface
     cherryPickedCommitBgColor:
-      - "#1e1040"   # Amethyst Dim
+      - "#1e1040" # Amethyst Dim
     cherryPickedCommitFgColor:
-      - "#583090"   # Amethyst Lt
+      - "#583090" # Amethyst Lt
     markedBaseCommitBgColor:
-      - "#0c1a40"   # Royal Blue Dim
+      - "#0f4f54" # Teal Dim
     markedBaseCommitFgColor:
-      - "#1c3d7a"   # Royal Blue Lt
+      - "#20969c" # Teal Lt — Royal Blue is too dark to read
     unstagedChangesColor:
-      - "#FBB13C"   # Blonde
+      - "#FBB13C" # Blonde
     defaultFgColor:
-      - "#e0e2ea"   # Primary Text
-
+      - "#e0e2ea" # Primary Text
 git:
-  paging:
-    pager: "delta --dark --paging=never"
+  pagers:
+    - pager: "delta --dark --paging=never"
   log:
     showGraph: "always"
     # Replace ASCII graph chars with Unicode equivalents for a cleaner look
     branchLogCmd: >-
-      git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium
-      {{branchName}} --
-      | sed 's/\*/●/g; s/|/│/g'
+      git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium {{branchName}} -- | sed 's/\*/●/g; s/|/│/g'
