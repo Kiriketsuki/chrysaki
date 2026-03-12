@@ -146,6 +146,7 @@ White tint alpha range: **0.03–0.12**. Above 0.15 looks milky on dark backgrou
 | Editor | Neovim | `nvim/chrysaki.lua` |
 | Editor | VS Code | `vscode/chrysaki-color-theme.json` + `vscode/chrysaki-workbench.css` |
 | Editor | Gitui | `gitui/theme.ron` |
+| Editor | Lazygit | `lazygit/config.yml` |
 | Desktop | GTK 3/4 | `gtk/gtk.css` + `gtk/settings.ini` |
 | Desktop | Steam | `steam/libraryroot.custom.css` |
 | Desktop | Discord | `discord/Chrysaki.theme.css` |
