@@ -1,0 +1,76 @@
+# Lazygit — Chrysaki Theme
+# Part of the Chrysaki design system: zero border-radius, geometric shapes, jewel-tone palette.
+# Colors here are static fallbacks; the theme pipeline writes ~/.config/lazygit/colors.yml
+# which is loaded second via the lazygit alias and overrides these with live palette values.
+
+gui:
+  border: "double"
+  nerdFontsVersion: "3"
+  showFileIcons: true
+  showBranchCommitHash: true
+  showDivergenceFromBaseBranch: "arrowAndNumber"
+  showBottomLine: false
+  showCommandLog: false
+  showListFooter: false
+  expandFocusedSidePanel: true
+  showNumstatInFilesView: true
+  commitHashLength: 8
+  statusPanelView: "dashboard"
+
+  # Hexagonal spinner — ⬡ (hollow) → ⬢ (solid)
+  spinner:
+    frames:
+      - "⬡"
+      - "⬢"
+    rate: 100
+
+  # Branch color patterns — Chrysaki token mapping
+  branchColorPatterns:
+    "^(main|master)$": "#FBB13C"   # Blonde — canonical/stable
+    "^feat/": "#1a8a6a"             # Emerald Lt — new features
+    "^fix/": "#b53f4a"              # Error Lt — bug fixes
+    "^release/": "#20969c"          # Teal Lt — release branches
+
+  # Author color — Emerald Lt for all authors
+  authorColors:
+    "*": "#1a8a6a"
+
+  # Static Chrysaki fallback theme (overridden by colors.yml from pipeline)
+  theme:
+    activeBorderColor:
+      - "#1a8a6a"   # Emerald Lt
+      - "bold"
+    inactiveBorderColor:
+      - "#363a4f"   # Border
+    searchingActiveBorderColor:
+      - "#FBB13C"   # Blonde
+      - "bold"
+    optionsTextColor:
+      - "#20969c"   # Teal Lt
+    selectedLineBgColor:
+      - "#252836"   # Raised
+    inactiveViewSelectedLineBgColor:
+      - "#1c1f2b"   # Surface
+    cherryPickedCommitBgColor:
+      - "#1e1040"   # Amethyst Dim
+    cherryPickedCommitFgColor:
+      - "#583090"   # Amethyst Lt
+    markedBaseCommitBgColor:
+      - "#0c1a40"   # Royal Blue Dim
+    markedBaseCommitFgColor:
+      - "#1c3d7a"   # Royal Blue Lt
+    unstagedChangesColor:
+      - "#FBB13C"   # Blonde
+    defaultFgColor:
+      - "#e0e2ea"   # Primary Text
+
+git:
+  paging:
+    pager: "delta --dark --paging=never"
+  log:
+    showGraph: "always"
+    # Replace ASCII graph chars with Unicode equivalents for a cleaner look
+    branchLogCmd: >-
+      git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium
+      {{branchName}} --
+      | sed 's/\*/●/g; s/|/│/g'
