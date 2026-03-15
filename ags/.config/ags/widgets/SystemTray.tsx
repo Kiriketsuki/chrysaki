@@ -1,4 +1,4 @@
-import { createBinding, For } from "ags"
+import { createBinding } from "ags"
 import AstalTray from "gi://AstalTray"
 
 const tray = AstalTray.get_default()!
@@ -8,21 +8,13 @@ export function SystemTray() {
 
   return (
     <box class="segment-tray" spacing={4}>
-      <For each={items}>
-        {(item: AstalTray.TrayItem) => {
-          const menuModel = item.get_menu_model()
-          return (
-            <menubutton tooltipText={item.tooltipText ?? item.id}>
-              <image gicon={item.gicon} pixelSize={16} />
-              {menuModel ? (
-                <popover>
-                  <box />
-                </popover>
-              ) : null}
-            </menubutton>
-          )
-        }}
-      </For>
+      {items.as((its: AstalTray.TrayItem[]) =>
+        its.map((item: AstalTray.TrayItem) => (
+          <menubutton tooltipText={item.tooltipText ?? item.id}>
+            <image gicon={item.gicon} pixelSize={16} />
+          </menubutton>
+        ))
+      )}
     </box>
   )
 }
