@@ -8,7 +8,6 @@ import { SystemTray } from "./SystemTray"
 import { ServiceStatus } from "./ServiceStatus"
 import { NotificationToggle } from "./NotificationToggle"
 import { WallpaperButton } from "./WallpaperButton"
-import { ThemeButton } from "./ThemeButton"
 import { PowerMenu } from "./PowerMenu"
 
 export function BarRight(gdkmonitor: Gdk.Monitor) {
@@ -55,12 +54,6 @@ export function BarRight(gdkmonitor: Gdk.Monitor) {
       widget: <WallpaperButton />,
       cssClass: "segment-wallpaper",
       bgColor: "#0f4f54", // teal-dim
-      bgAlpha: 0.7,
-    },
-    {
-      widget: <ThemeButton />,
-      cssClass: "segment-theme",
-      bgColor: "#1e1040", // amethyst-dim
       bgAlpha: 0.7,
     },
     {
