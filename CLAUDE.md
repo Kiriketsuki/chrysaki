@@ -158,7 +158,7 @@ White tint alpha range: **0.03–0.12**. Above 0.15 looks milky on dark backgrou
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **chrysaki** (81 symbols, 101 relationships, 6 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **chrysaki** (85 symbols, 101 relationships, 6 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -233,3 +233,40 @@ Before completing any code modification task, verify:
 - Generate docs: `npx gitnexus wiki`
 
 <!-- gitnexus:end -->
+
+---
+
+## Design Context
+
+### Users
+Single power user (the author) running a Hyprland/Wayland desktop on Arch Linux. Every Chrysaki port — bar, editor, browser, terminal — is part of a unified desktop experience glanced at constantly while working across multiple workspaces. The job to be done is quick situational awareness and aesthetic cohesion across all applications.
+
+### Brand Personality
+**Jeweled · Modern · Geometric.**
+Chrysaki should feel like a precision instrument made of dark glass and gemstones. It is not minimal — it has visual presence — but it is never cluttered. Every element earns its place.
+
+### Anti-References
+- **Flat Material Design** — too sterile, no depth, no personality. Chrysaki has dimension and texture.
+- **Rounded corners** — the zero border-radius rule is non-negotiable. Use chamfered, hexagonal, or trapezoid shapes instead.
+
+### Aesthetic Direction (all ports)
+- Dark surfaces with jewel-tone accent segments that pop against the Abyss background
+- Icons precede every text label (Nerd Font glyphs) — bare text labels are not acceptable
+- Accent colors use **light variants** (`$emerald-light`, `$teal-light`, `$blonde-light`) for text — never dim variants as foreground
+- Segment backgrounds use higher alpha (0.6–0.8) so jewel tones are clearly distinguishable from each other
+- Geometric shapes rendered via the best available method per platform: CSS `clip-path` for web/browser, Cairo DrawingArea for GTK4/AGS, Nerd Font glyphs for terminal
+
+### Aesthetic Direction (bar — AGS/GTK4)
+- Three-island layout: **Left** (battery + clock + active window), **Center** (floating workspace island), **Right** (media + volume + network + tray + services + power)
+- Workspace island uses the **zigzag-alt `(|,\)`** tiling preset and shows **only occupied + active workspaces** (not all 10)
+- Workspace pips are **flat-top hexagons** via Cairo DrawingArea, matching the badge/status shape in the design system
+- Bar height: **40px** — enough room for hex pips and icons to breathe
+- Segment edges use Cairo-drawn trapezoid separators (GTK4 does not support CSS `clip-path`)
+
+### Design Principles
+1. **Jewel tones are the signal, not the noise** — accent segment backgrounds must be visibly distinct from each other and from the Abyss ground. Use 0.6+ alpha on dim-variant backgrounds, or switch to mid-variant.
+2. **Icons are mandatory** — every data label (clock, battery, network, media) must have a Nerd Font glyph prefix. Text-only is never finished.
+3. **Only show what exists** — workspace pips render only for occupied and active workspaces; empty workspaces are invisible. Presence implies activity.
+4. **Geometric shapes carry meaning** — hexagons for status indicators (pips, dots), parallelograms for tab/badge elements, trapezoids for segment boundaries. Shape consistency is part of the language.
+5. **Three islands, clear hierarchy** — Left anchors context (who am I, what time), Center anchors position (where am I), Right anchors environment (what's running). Never collapse these zones.
+6. **Dark glass, not flat panels** — where the platform supports it, use glassmorphism: `backdrop-filter: blur(16px) saturate(140%)` with white tint at 0.03–0.12 alpha. Surfaces should feel like tinted glass over a dark void, not opaque rectangles. Ports that cannot do backdrop-filter (terminal, GTK4) should approximate depth with layered surface tokens instead.

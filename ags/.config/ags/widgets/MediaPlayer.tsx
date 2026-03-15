@@ -14,8 +14,8 @@ export function MediaPlayer() {
   const text = createComputed(() => {
     const player = players()[0]
     if (!player) return "—"
-    const artist = truncate(player.artist, 12)
-    const title = truncate(player.title, 18)
+    const artist = truncate(player.artist, 8)
+    const title = truncate(player.title, 12)
     return artist ? `󰎆  ${artist} — ${title}` : `󰎆  ${title}`
   })
 

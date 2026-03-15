@@ -8,7 +8,10 @@ const hyprland = AstalHyprland.get_default()!
 // Active pip colors cycle by (workspaceId - 1) % 3
 const ACTIVE_COLORS = ["#1a8a6a", "#1c3d7a", "#583090"] as const  // emerald-lt, blue-lt, amethyst-lt
 const OCCUPIED_COLOR = "#0e4a38"  // emerald-dim
-const URGENT_COLOR = "#8C2F39"   // error
+
+const HEX_RADIUS = 10
+const PIP_WIDTH = 24
+const PIP_HEIGHT = 22
 
 interface PipProps {
   readonly id: number
@@ -18,7 +21,6 @@ function WorkspacePip({ id }: PipProps) {
   const focused = createBinding(hyprland, "focusedWorkspace")
   const workspaces = createBinding(hyprland, "workspaces")
 
-  // Only visible if this workspace is active or has clients
   const visible = createComputed(() => {
     const focusedId = focused()?.id ?? 1
     if (id === focusedId) return true
@@ -37,18 +39,32 @@ function WorkspacePip({ id }: PipProps) {
       vexpand={false}
     >
       <drawingarea
-        widthRequest={18}
-        heightRequest={16}
+        widthRequest={PIP_WIDTH}
+        heightRequest={PIP_HEIGHT}
         $={(da: any) => {
           da.set_draw_func((_area: any, cr: any, w: number, h: number) => {
             const focusedId = hyprland.focusedWorkspace?.id ?? 1
             const isActive = id === focusedId
             const colorHex = isActive ? ACTIVE_COLORS[(id - 1) % 3] : OCCUPIED_COLOR
             const alpha = isActive ? 1.0 : 0.8
-            drawHexFlat(cr, w / 2, h / 2, 7, hexToRgba(colorHex, alpha))
+
+            // Draw hex pip background
+            const cx = w / 2
+            const cy = h / 2
+            drawHexFlat(cr, cx, cy, HEX_RADIUS, hexToRgba(colorHex, alpha))
+
+            // Draw workspace number inside the hex
+            cr.selectFontFace("IosevkaTermSlab Nerd Font", 0, 1) // NORMAL, BOLD
+            cr.setFontSize(10)
+            const numStr = String(id)
+            const extents = cr.textExtents(numStr)
+            const tx = cx - extents.width / 2 - extents.xBearing
+            const ty = cy - extents.height / 2 - extents.yBearing
+            cr.moveTo(tx, ty)
+            cr.setSourceRGBA(0.88, 0.89, 0.92, 1.0) // text-primary #e0e2ea
+            cr.showText(numStr)
           })
 
-          // Trigger redraw when focus or workspaces change
           const hFocus = hyprland.connect("notify::focused-workspace", () => da.queue_draw())
           const hWs = hyprland.connect("notify::workspaces", () => da.queue_draw())
           da.connect("destroy", () => {
@@ -67,7 +83,7 @@ export function WorkspaceIndicator() {
   ))
 
   return (
-    <box class="workspace-pips" spacing={4}>
+    <box class="workspace-pips" spacing={0}>
       {pips}
     </box>
   )

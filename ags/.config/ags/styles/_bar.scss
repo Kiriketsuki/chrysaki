@@ -1,24 +1,21 @@
 @use "palette" as *;
 @use "glass" as *;
 
-.island {
-  @include glass;
-  min-height: 40px;
-}
-
+// Islands — ChamferedBar handles glass background via Cairo
+// CSS provides only min-height and outer drop shadow
 .island-left {
-  @include glass;
   min-height: 40px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.30);
 }
 
 .island-center {
-  @include glass;
   min-height: 40px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.30);
 }
 
 .island-right {
-  @include glass;
   min-height: 40px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.30);
 }
 
 .tiled-bar {
@@ -26,28 +23,46 @@
 }
 
 .segment {
-  padding: 0px 20px;
+  padding: 0px 8px;
   min-height: 40px;
+  color: $text-primary;
 }
 
-.segment-workspaces {
-  background: rgba(14, 74, 56, 0.7); // emerald-dim with alpha
+// System tray: hide menubutton dropdown arrows
+.segment-tray menubutton {
+  background: transparent;
+  border: none;
+  padding: 0px 2px;
+  min-width: 0px;
 }
 
-.segment-clock {
-  background: rgba(15, 79, 84, 0.7); // teal-dim with alpha
+.segment-tray menubutton > box > image:last-child {
+  min-width: 0px;
+  min-height: 0px;
 }
 
-.segment-battery {
-  background: rgba(196, 134, 28, 0.5); // blonde-dim with alpha
+// Service status hex dots
+.svc-dot {
+  font-size: 14px;
+  color: $text-muted;
 }
 
-.segment-power {
-  background: rgba(140, 47, 57, 0.6); // error with alpha
+.svc-emerald {
+  color: $emerald-light;
 }
 
-.separator {
-  // 16px wide diagonal separator — drawn via Cairo
-  min-width: 16px;
-  min-height: 40px;
+.svc-teal {
+  color: $teal-light;
+}
+
+.svc-amethyst {
+  color: $amethyst-light;
+}
+
+.svc-blonde {
+  color: $blonde-light;
+}
+
+.svc-error {
+  color: $error;
 }

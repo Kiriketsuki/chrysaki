@@ -100,3 +100,74 @@
 - Branch: feat/tmux-rice
 
 ---
+
+## 2026-03-15 Handoff
+
+### Decisions
+- Cairo separators (16px drawingarea) instead of CSS clip-path — GTK4 doesn't support clip-path
+- accessor() not .get() for dependency tracking in gnim reactive system
+- createState + hyprland.connect("urgent") for urgent workspace — no bindable property
+- ws.clients.length for occupancy — no get_client_count() method
+- item.get_menu_model() for tray — no create_menu() method
+- Segment bg colors use dim variants with alpha to avoid milky look
+- zigzag-alt (|,\) preset matches tmux port
+
+### Failed Approaches
+- {...children} JSX spread — spreads indices as props, use {children}
+- accessor.get() in createComputed — no dependency tracking
+- hyprland.urgentWorkspace property — doesn't exist
+- workspace.get_client_count() — doesn't exist
+- trayItem.create_menu() — doesn't exist
+- ags init without -d flag — created in wrong directory
+- npm install -g sass — permission denied, use --prefix ~/.local
+
+### Handoff Target
+- Plan file: .claude/handoffs/2026-03-15-15h19-ags-bar-implementation.md
+- Branch: main (no feature branch yet — needs branch + PR)
+
+---
+
+## 2026-03-15 Handoff (16h00) — Cleanup
+
+### Decisions
+- ThemeButton removed from BarRight (user: "do not need to show the palette anymore")
+- BarCenter EXCLUSIVE, BarLeft/BarRight NORMAL (don't steal screen space)
+- Workspace pips: occupied+active only via Cairo DrawingArea
+- All segment alpha 0.7, bar height 40px
+- waybar replaced by ags in hyprland.conf autostart
+
+### Failed Approaches
+- Bash tool completely blocked after worktree deletion (session CWD = deleted dir)
+- Spawning subagent to run bash commands also blocked by same CWD issue
+
+### Handoff Target
+- Plan file: .claude/handoffs/2026-03-15-16h00-ags-bar-cleanup.md
+- Branch: feat/ags-bar (chrysaki subrepo)
+
+---
+
+## 2026-03-15 Handoff (17h25) — Textures & Chamfer
+
+### Decisions
+- `Binding.as()` deprecated in AGS v3 — use `<For each={binding}>` for dynamic widget children
+- `createComputed` works for primitive props (label, visible, class) but NOT for widget children via `.as()`
+- BarLeft/BarRight exclusivity changed NORMAL → IGNORE (renders at true top edge, not pushed by EXCLUSIVE zones)
+- ServiceStatus (4 health dots) removed — too cryptic for glance bar
+- WallpaperButton removed — user requested
+- Waybar fully disabled: palette script restarts AGS instead
+- Hyprland layer rules added for chrysaki-bar-* blur
+- Diagonal crosshatch texture added to glass mixin (AutoConnect-inspired)
+- Border-radius used as chamfer approximation (GTK4 CSS lacks clip-path)
+- Segment padding reduced 20px → 8px, SSID truncated to 8 chars
+
+### Failed Approaches
+- `Binding.as()` for SystemTray: dumps Accessor toString() as visible text. Fixed with `<For>`.
+- `createComputed().as()` for ServiceStatus: same text dump. Fixed with createComputed for class prop.
+- Gtk.Overlay for chamfered island bg: DrawingArea main child collapses to 0x0. set_measure_overlay didn't help. Window shows 1x1px.
+- `status((s) => transform)` on createPoll Accessor: Accessor doesn't support Binding-style transform call.
+
+### Handoff Target
+- Plan file: .claude/handoffs/2026-03-15-17h25-ags-bar-textures-chamfer.md
+- Branch: feat/ags-bar (chrysaki subrepo)
+
+---

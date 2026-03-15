@@ -1,8 +1,22 @@
 // Chrysaki Glassmorphism mixin
 // backdrop-filter is applied via Hyprland layerrule, not CSS
+// Diagonal hatching texture inspired by AutoConnect HEX-GEO + Ghostty shader
 
 @mixin glass {
-  background: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.05);
+  background-image:
+    // Diagonal hatching — AutoConnect pattern-diagonal
+    repeating-linear-gradient(
+      45deg,
+      transparent, transparent 6px,
+      rgba(255, 255, 255, 0.035) 6px, rgba(255, 255, 255, 0.035) 7px
+    ),
+    // Crosshatch — AutoConnect pattern-crosshatch (second diagonal)
+    repeating-linear-gradient(
+      -45deg,
+      transparent, transparent 6px,
+      rgba(255, 255, 255, 0.02) 6px, rgba(255, 255, 255, 0.02) 7px
+    );
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.30);
 }

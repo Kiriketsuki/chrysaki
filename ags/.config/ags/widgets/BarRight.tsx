@@ -1,13 +1,13 @@
 import app from "ags/gtk4/app"
 import { Astal, Gdk } from "ags/gtk4"
 import { TiledBar, type SegmentDef } from "./TiledSegment"
+import { ChamferedBar } from "./ChamferedIsland"
 import { MediaPlayer } from "./MediaPlayer"
 import { PulseAudio } from "./PulseAudio"
 import { Network } from "./Network"
 import { SystemTray } from "./SystemTray"
 import { ServiceStatus } from "./ServiceStatus"
 import { NotificationToggle } from "./NotificationToggle"
-import { WallpaperButton } from "./WallpaperButton"
 import { PowerMenu } from "./PowerMenu"
 
 export function BarRight(gdkmonitor: Gdk.Monitor) {
@@ -41,26 +41,19 @@ export function BarRight(gdkmonitor: Gdk.Monitor) {
     {
       widget: <ServiceStatus />,
       cssClass: "segment-services",
-      bgColor: "#1c1f2b", // surface
+      bgColor: "#252836", // raised
       bgAlpha: 0.7,
     },
     {
-      widget: <NotificationToggle />,
-      cssClass: "segment-notifications",
+      widget: (
+        <box spacing={4} valign={3}>
+          <NotificationToggle />
+          <PowerMenu />
+        </box>
+      ),
+      cssClass: "segment-actions",
       bgColor: "#0e4a38", // emerald-dim
       bgAlpha: 0.7,
-    },
-    {
-      widget: <WallpaperButton />,
-      cssClass: "segment-wallpaper",
-      bgColor: "#0f4f54", // teal-dim
-      bgAlpha: 0.7,
-    },
-    {
-      widget: <PowerMenu />,
-      cssClass: "segment-power",
-      bgColor: "#8C2F39", // error
-      bgAlpha: 0.6,
     },
   ]
 
@@ -71,14 +64,21 @@ export function BarRight(gdkmonitor: Gdk.Monitor) {
       namespace="chrysaki-bar-right"
       gdkmonitor={gdkmonitor}
       anchor={TOP | RIGHT}
-      exclusivity={Astal.Exclusivity.NORMAL}
+      exclusivity={Astal.Exclusivity.IGNORE}
       marginTop={8}
       marginRight={8}
       application={app}
     >
-      <box class="island island-right" halign={2} valign={3}>
+      <ChamferedBar
+        class="island-right"
+        halign={2}
+        valign={3}
+        $={(self: any) =>
+          self.setChamfer({ tl: false, tr: true, bl: false, br: true })
+        }
+      >
         <TiledBar segments={segments} preset="zigzag-alt" barHeight={40} />
-      </box>
+      </ChamferedBar>
     </window>
   )
 }

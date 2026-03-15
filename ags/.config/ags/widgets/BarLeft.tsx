@@ -1,6 +1,7 @@
 import app from "ags/gtk4/app"
 import { Astal, Gdk } from "ags/gtk4"
 import { TiledBar, type SegmentDef } from "./TiledSegment"
+import { ChamferedBar } from "./ChamferedIsland"
 import { Battery } from "./Battery"
 import { Clock } from "./Clock"
 import { ActiveWindow } from "./ActiveWindow"
@@ -36,14 +37,21 @@ export function BarLeft(gdkmonitor: Gdk.Monitor) {
       namespace="chrysaki-bar-left"
       gdkmonitor={gdkmonitor}
       anchor={TOP | LEFT}
-      exclusivity={Astal.Exclusivity.NORMAL}
+      exclusivity={Astal.Exclusivity.IGNORE}
       marginTop={8}
       marginLeft={8}
       application={app}
     >
-      <box class="island island-left" halign={1} valign={3}>
-        <TiledBar segments={segments} preset="zigzag-alt" barHeight={40} />
-      </box>
+      <ChamferedBar
+        class="island-left"
+        halign={1}
+        valign={3}
+        $={(self: any) =>
+          self.setChamfer({ tl: true, tr: false, bl: true, br: false })
+        }
+      >
+        <TiledBar segments={segments} preset="zigzag" barHeight={40} />
+      </ChamferedBar>
     </window>
   )
 }

@@ -1,5 +1,6 @@
 import app from "ags/gtk4/app"
 import { Astal, Gdk } from "ags/gtk4"
+import { ChamferedBar } from "./ChamferedIsland"
 import { WorkspaceIndicator } from "./WorkspaceIndicator"
 
 export function BarCenter(gdkmonitor: Gdk.Monitor) {
@@ -16,9 +17,16 @@ export function BarCenter(gdkmonitor: Gdk.Monitor) {
       marginTop={8}
       application={app}
     >
-      <box class="island island-center" halign={3} valign={3}>
+      <ChamferedBar
+        class="island-center"
+        halign={3}
+        valign={3}
+        $={(self: any) =>
+          self.setChamfer({ tl: true, tr: true, bl: true, br: true })
+        }
+      >
         <WorkspaceIndicator />
-      </box>
+      </ChamferedBar>
     </window>
   )
 }

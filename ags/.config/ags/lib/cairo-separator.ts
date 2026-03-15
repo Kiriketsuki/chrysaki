@@ -55,8 +55,8 @@ export function drawSeparator(
   const [rr, rg, rb, ra] = rightColor
 
   if (edge === "\\") {
-    // BACK diagonal: top-left to bottom-right
-    // Lower-left triangle (left color)
+    // BACK diagonal: top-left → bottom-right
+    // Lower-left triangle = leftColor
     cr.newPath()
     cr.moveTo(0, 0)
     cr.lineTo(0, height)
@@ -65,7 +65,7 @@ export function drawSeparator(
     cr.setSourceRGBA(lr, lg, lb, la)
     cr.fill()
 
-    // Upper-right triangle (right color)
+    // Upper-right triangle = rightColor
     cr.newPath()
     cr.moveTo(0, 0)
     cr.lineTo(width, 0)
@@ -74,8 +74,8 @@ export function drawSeparator(
     cr.setSourceRGBA(rr, rg, rb, ra)
     cr.fill()
   } else {
-    // FORWARD diagonal: bottom-left to top-right
-    // Upper-left triangle (left color)
+    // FORWARD diagonal: bottom-left → top-right
+    // Upper-left triangle = leftColor
     cr.newPath()
     cr.moveTo(0, 0)
     cr.lineTo(0, height)
@@ -84,7 +84,7 @@ export function drawSeparator(
     cr.setSourceRGBA(lr, lg, lb, la)
     cr.fill()
 
-    // Lower-right triangle (right color)
+    // Lower-right triangle = rightColor
     cr.newPath()
     cr.moveTo(0, height)
     cr.lineTo(width, height)

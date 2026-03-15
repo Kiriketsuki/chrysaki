@@ -50,8 +50,11 @@ export function TiledBar({
   for (let i = 0; i < segments.length; i++) {
     const seg = segments[i]
 
+    const bgRgba = hexToRgba(seg.bgColor, seg.bgAlpha)
+    const bgCss = `background-color: rgba(${Math.round(bgRgba[0] * 255)}, ${Math.round(bgRgba[1] * 255)}, ${Math.round(bgRgba[2] * 255)}, ${bgRgba[3]});`
+
     children.push(
-      <box class={`segment ${seg.cssClass}`} valign={3}>
+      <box class={`segment ${seg.cssClass}`} valign={3} css={bgCss}>
         {seg.widget}
       </box>
     )
