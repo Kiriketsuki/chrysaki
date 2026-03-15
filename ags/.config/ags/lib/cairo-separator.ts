@@ -62,7 +62,7 @@ export function drawSeparator(
     cr.lineTo(0, height)
     cr.lineTo(width, height)
     cr.closePath()
-    cr.setSourceRgba(lr, lg, lb, la)
+    cr.setSourceRGBA(lr, lg, lb, la)
     cr.fill()
 
     // Upper-right triangle (right color)
@@ -71,7 +71,7 @@ export function drawSeparator(
     cr.lineTo(width, 0)
     cr.lineTo(width, height)
     cr.closePath()
-    cr.setSourceRgba(rr, rg, rb, ra)
+    cr.setSourceRGBA(rr, rg, rb, ra)
     cr.fill()
   } else {
     // FORWARD diagonal: bottom-left to top-right
@@ -81,7 +81,7 @@ export function drawSeparator(
     cr.lineTo(0, height)
     cr.lineTo(width, 0)
     cr.closePath()
-    cr.setSourceRgba(lr, lg, lb, la)
+    cr.setSourceRGBA(lr, lg, lb, la)
     cr.fill()
 
     // Lower-right triangle (right color)
@@ -90,7 +90,7 @@ export function drawSeparator(
     cr.lineTo(width, height)
     cr.lineTo(width, 0)
     cr.closePath()
-    cr.setSourceRgba(rr, rg, rb, ra)
+    cr.setSourceRGBA(rr, rg, rb, ra)
     cr.fill()
   }
 }
