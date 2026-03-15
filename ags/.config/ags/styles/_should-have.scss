@@ -2,12 +2,12 @@
 
 // SystemTray
 .segment-tray {
-  background: rgba(28, 31, 43, 0.4); // surface with alpha
+  background: rgba(28, 31, 43, 0.7); // surface with alpha
 }
 
 // MediaPlayer
 .segment-media {
-  background: rgba(30, 16, 64, 0.4); // amethyst-dim with alpha
+  background: rgba(30, 16, 64, 0.7); // amethyst-dim with alpha
 }
 
 .media-label {
@@ -17,7 +17,7 @@
 
 // Network
 .segment-network {
-  background: rgba(12, 26, 64, 0.4); // blue-dim with alpha
+  background: rgba(12, 26, 64, 0.7); // blue-dim with alpha
 }
 
 .network-label {

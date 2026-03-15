@@ -17,13 +17,12 @@ export interface SegmentDef {
 }
 
 const SEP_WIDTH = 16
-const BAR_HEIGHT = 36
 
-function makeSeparator(edge: Edge, leftColor: RGBA, rightColor: RGBA): JSX.Element {
+function makeSeparator(edge: Edge, leftColor: RGBA, rightColor: RGBA, barHeight: number): JSX.Element {
   return (
     <drawingarea
       widthRequest={SEP_WIDTH}
-      heightRequest={BAR_HEIGHT}
+      heightRequest={barHeight}
       $={(self: any) =>
         self.set_draw_func((_area: any, cr: any, w: number, h: number) => {
           drawSeparator(cr, w, h, edge, leftColor, rightColor)
@@ -33,8 +32,16 @@ function makeSeparator(edge: Edge, leftColor: RGBA, rightColor: RGBA): JSX.Eleme
   )
 }
 
-export function TiledBar({ segments }: { segments: readonly SegmentDef[] }) {
-  const { firstLeft, firstRight } = PRESETS["zigzag-alt"]
+export function TiledBar({
+  segments,
+  preset = "zigzag-alt",
+  barHeight = 40,
+}: {
+  segments: readonly SegmentDef[]
+  preset?: keyof typeof PRESETS
+  barHeight?: number
+}) {
+  const { firstLeft, firstRight } = PRESETS[preset]
   const elements = tile(firstLeft, firstRight, segments.length)
   const sepEdges = separatorEdges(elements)
 
@@ -54,7 +61,7 @@ export function TiledBar({ segments }: { segments: readonly SegmentDef[] }) {
       if (edge !== "|") {
         const leftRgba = hexToRgba(seg.bgColor, seg.bgAlpha)
         const rightRgba = hexToRgba(segments[i + 1].bgColor, segments[i + 1].bgAlpha)
-        children.push(makeSeparator(edge, leftRgba, rightRgba))
+        children.push(makeSeparator(edge, leftRgba, rightRgba, barHeight))
       }
     }
   }

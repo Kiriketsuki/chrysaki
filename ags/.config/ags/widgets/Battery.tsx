@@ -4,10 +4,10 @@ import AstalBattery from "gi://AstalBattery"
 const battery = AstalBattery.get_default()!
 
 function batteryIcon(pct: number, charging: boolean): string {
-  if (charging) return "⚡"
-  if (pct > 80) return ""
-  if (pct > 20) return ""
-  return "⚠"
+  if (charging) return "󰂄"
+  if (pct > 80) return "󰁹"
+  if (pct > 20) return "󰁾"
+  return "󰁺"
 }
 
 function batteryClass(pct: number, charging: boolean): string {
@@ -25,7 +25,7 @@ export function Battery() {
   const text = createComputed(() => {
     const p = Math.round(pct() * 100)
     const c = charging()
-    return `${batteryIcon(p, c)} ${p}%`
+    return `${batteryIcon(p, c)}  ${p}%`
   })
 
   const cssClass = createComputed(() =>

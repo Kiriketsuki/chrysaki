@@ -1,45 +1,70 @@
-import { createBinding, createState, createComputed, onCleanup } from "ags"
+import { createBinding, createComputed } from "ags"
 import AstalHyprland from "gi://AstalHyprland"
+import { drawHexFlat } from "../lib/cairo-hex"
+import { hexToRgba } from "../lib/cairo-separator"
 
 const hyprland = AstalHyprland.get_default()!
 
-// Active pip color cycles through emerald/blue/amethyst by workspace id mod 3
-const ACTIVE_CLASSES = ["pip-active-0", "pip-active-1", "pip-active-2"] as const
+// Active pip colors cycle by (workspaceId - 1) % 3
+const ACTIVE_COLORS = ["#1a8a6a", "#1c3d7a", "#583090"] as const  // emerald-lt, blue-lt, amethyst-lt
+const OCCUPIED_COLOR = "#0e4a38"  // emerald-dim
+const URGENT_COLOR = "#8C2F39"   // error
 
-function pipCssClass(id: number, focusedId: number, isUrgent: boolean): string {
-  if (isUrgent) return "pip pip-urgent"
-  if (id === focusedId) return `pip ${ACTIVE_CLASSES[(id - 1) % 3]}`
-  const ws = hyprland.get_workspace(id)
-  if (ws && ws.clients.length > 0) return "pip pip-occupied"
-  return "pip pip-inactive"
+interface PipProps {
+  readonly id: number
+}
+
+function WorkspacePip({ id }: PipProps) {
+  const focused = createBinding(hyprland, "focusedWorkspace")
+  const workspaces = createBinding(hyprland, "workspaces")
+
+  // Only visible if this workspace is active or has clients
+  const visible = createComputed(() => {
+    const focusedId = focused()?.id ?? 1
+    if (id === focusedId) return true
+    const wss = workspaces()
+    const ws = wss.find((w: AstalHyprland.Workspace) => w.id === id)
+    return ws !== undefined && ws.clients.length > 0
+  })
+
+  return (
+    <button
+      visible={visible}
+      class="pip-button"
+      onClicked={() => hyprland.dispatch("workspace", String(id))}
+      tooltipText={`Workspace ${id}`}
+      hexpand={false}
+      vexpand={false}
+    >
+      <drawingarea
+        widthRequest={18}
+        heightRequest={16}
+        $={(da: any) => {
+          da.set_draw_func((_area: any, cr: any, w: number, h: number) => {
+            const focusedId = hyprland.focusedWorkspace?.id ?? 1
+            const isActive = id === focusedId
+            const colorHex = isActive ? ACTIVE_COLORS[(id - 1) % 3] : OCCUPIED_COLOR
+            const alpha = isActive ? 1.0 : 0.8
+            drawHexFlat(cr, w / 2, h / 2, 7, hexToRgba(colorHex, alpha))
+          })
+
+          // Trigger redraw when focus or workspaces change
+          const hFocus = hyprland.connect("notify::focused-workspace", () => da.queue_draw())
+          const hWs = hyprland.connect("notify::workspaces", () => da.queue_draw())
+          da.connect("destroy", () => {
+            hyprland.disconnect(hFocus)
+            hyprland.disconnect(hWs)
+          })
+        }}
+      />
+    </button>
+  )
 }
 
 export function WorkspaceIndicator() {
-  // Keep signal setup inside the component so onCleanup has a tracking context
-  const [urgentId, setUrgentId] = createState<number | null>(null)
-  const urgentHandle = hyprland.connect("urgent", (_: any, client: any) => {
-    setUrgentId(client?.workspace?.id ?? null)
-  })
-  onCleanup(() => hyprland.disconnect(urgentHandle))
-
-  const focused = createBinding(hyprland, "focusedWorkspace")
-
-  const pips = Array.from({ length: 10 }, (_, i) => {
-    const id = i + 1
-    return (
-      <button
-        class={createComputed(() => {
-          const focusedId = focused()?.id ?? 1
-          return pipCssClass(id, focusedId, urgentId() === id)
-        })}
-        widthRequest={8}
-        heightRequest={8}
-        halign={3}
-        valign={3}
-        onClicked={() => hyprland.dispatch("workspace", String(id))}
-      />
-    )
-  })
+  const pips = Array.from({ length: 10 }, (_, i) => (
+    <WorkspacePip id={i + 1} />
+  ))
 
   return (
     <box class="workspace-pips" spacing={4}>

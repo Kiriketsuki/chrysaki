@@ -14,15 +14,11 @@ export function Network() {
 
   const text = createComputed(() => {
     const w = wifi()
-    if (w && w.enabled) return `⌾ ${truncate(w.ssid, 16)}`
+    if (w && w.enabled) return `󰤨  ${truncate(w.ssid, 16)}`
     const e = wired()
-    if (e && e.speed > 0) return "⏚ Ethernet"
-    return "⊗ No network"
+    if (e && e.speed > 0) return "󰈀  Ethernet"
+    return "󰤭  No network"
   })
 
-  return (
-    <box class="segment-network">
-      <label class="network-label" label={text} />
-    </box>
-  )
+  return <label class="network-label" label={text} />
 }

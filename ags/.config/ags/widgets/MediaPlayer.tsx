@@ -16,13 +16,13 @@ export function MediaPlayer() {
     if (!player) return "—"
     const artist = truncate(player.artist, 12)
     const title = truncate(player.title, 18)
-    return artist ? `${artist} — ${title}` : title
+    return artist ? `󰎆  ${artist} — ${title}` : `󰎆  ${title}`
   })
 
   const visible = createComputed(() => players().length > 0)
 
   return (
-    <box class="segment-media" visible={visible}>
+    <box visible={visible}>
       <label class="media-label" label={text} />
     </box>
   )
