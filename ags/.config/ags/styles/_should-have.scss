@@ -1,0 +1,43 @@
+@use "palette" as *;
+
+// SystemTray
+.segment-tray {
+  background: rgba(28, 31, 43, 0.4); // surface with alpha
+}
+
+// MediaPlayer
+.segment-media {
+  background: rgba(30, 16, 64, 0.4); // amethyst-dim with alpha
+}
+
+.media-label {
+  color: $amethyst-light;
+  font-size: 12px;
+  max-width: 200px;
+}
+
+// Network
+.segment-network {
+  background: rgba(12, 26, 64, 0.4); // blue-dim with alpha
+}
+
+.network-label {
+  color: $teal-light; // blue is fill-only per design rules, use teal for text
+  font-size: 12px;
+}
+
+// Service status dots
+.service-status {
+  padding: 0px 4px;
+}
+
+.service-dot {
+  min-width: 6px;
+  min-height: 6px;
+}
+
+.dot-ov        { background: $emerald-light; }
+.dot-gitnexus  { background: $teal-light; }
+.dot-ollama    { background: $amethyst-light; }
+.dot-syncthing { background: $blonde; }
+.dot-error     { background: $error; }

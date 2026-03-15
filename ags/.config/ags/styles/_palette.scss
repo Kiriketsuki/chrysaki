@@ -1,0 +1,39 @@
+// Chrysaki Colour Palette — canonical tokens from PALETTE.md
+
+// Surfaces
+$abyss:    #0f1117;
+$base:     #161821;
+$surface:  #1c1f2b;
+$raised:   #252836;
+$elevated: #2e3142;
+$border:   #363a4f;
+
+// Tri-primary
+$emerald:        #14664e;
+$emerald-light:  #1a8a6a;
+$emerald-dim:    #0e4a38;
+$blue:           #122858;
+$blue-light:     #1c3d7a;
+$blue-dim:       #0c1a40;
+$amethyst:       #3a2068;
+$amethyst-light: #583090;
+$amethyst-dim:   #1e1040;
+
+// Secondary
+$teal:         #197278;
+$teal-light:   #20969c;
+$teal-dim:     #0f4f54;
+$blonde:       #FBB13C;
+$blonde-light: #FCC96A;
+$blonde-dim:   #C4861C;
+
+// Semantic
+$error:   #8C2F39;
+$warning: $blonde;
+$success: $emerald;
+
+// Text
+$text-primary:   #e0e2ea;
+$text-secondary: #a0a4b8;
+$text-muted:     #6a6e82;
+$text-inverse:   #0f1117;
