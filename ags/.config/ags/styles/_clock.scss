@@ -1,0 +1,8 @@
+@use "palette" as *;
+
+.clock-label {
+  color: $teal-light;
+  font-family: "IosevkaTermSlab Nerd Font";
+  font-weight: 600;
+  font-size: 14px;
+}

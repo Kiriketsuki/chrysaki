@@ -158,7 +158,7 @@ White tint alpha range: **0.03–0.12**. Above 0.15 looks milky on dark backgrou
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **ags-bar-redesign** (81 symbols, 101 relationships, 6 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **chrysaki** (81 symbols, 101 relationships, 6 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -174,7 +174,7 @@ This project is indexed by GitNexus as **ags-bar-redesign** (81 symbols, 101 rel
 
 1. `gitnexus_query({query: "<error or symptom>"})` — find execution flows related to the issue
 2. `gitnexus_context({name: "<suspect function>"})` — see all callers, callees, and process participation
-3. `READ gitnexus://repo/ags-bar-redesign/process/{processName}` — trace the full execution flow step by step
+3. `READ gitnexus://repo/chrysaki/process/{processName}` — trace the full execution flow step by step
 4. For regressions: `gitnexus_detect_changes({scope: "compare", base_ref: "main"})` — see what your branch changed
 
 ## When Refactoring
@@ -213,10 +213,10 @@ This project is indexed by GitNexus as **ags-bar-redesign** (81 symbols, 101 rel
 
 | Resource | Use for |
 |----------|---------|
-| `gitnexus://repo/ags-bar-redesign/context` | Codebase overview, check index freshness |
-| `gitnexus://repo/ags-bar-redesign/clusters` | All functional areas |
-| `gitnexus://repo/ags-bar-redesign/processes` | All execution flows |
-| `gitnexus://repo/ags-bar-redesign/process/{name}` | Step-by-step execution trace |
+| `gitnexus://repo/chrysaki/context` | Codebase overview, check index freshness |
+| `gitnexus://repo/chrysaki/clusters` | All functional areas |
+| `gitnexus://repo/chrysaki/processes` | All execution flows |
+| `gitnexus://repo/chrysaki/process/{name}` | Step-by-step execution trace |
 
 ## Self-Check Before Finishing
 
