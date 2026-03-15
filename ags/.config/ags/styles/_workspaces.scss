@@ -6,14 +6,10 @@
 
 .pip-button {
   background: transparent;
-  border-right: 1px solid rgba(106, 110, 130, 0.25);
+  border: none;
   padding: 2px 4px;
   min-width: 24px;
   min-height: 22px;
-}
-
-.pip-button:last-child {
-  border-right: none;
 }
 
 .pip {

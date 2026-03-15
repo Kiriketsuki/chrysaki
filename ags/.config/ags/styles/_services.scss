@@ -1,0 +1,91 @@
+@use "palette" as *;
+
+// Service icon button in the bar segment
+.svc-button {
+  background: transparent;
+  border: none;
+  padding: 0px 2px;
+  min-width: 0px;
+}
+
+// Service panel popup — frosted glass via Hyprland compositor blur
+// Low alpha lets blur show through; dark tint preserves contrast
+.svc-panel {
+  background-color: rgba(15, 17, 23, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.50);
+  padding: 10px;
+  min-width: 280px;
+}
+
+.svc-panel-title {
+  color: $text-primary;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 4px 0px 6px 0px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  margin-bottom: 4px;
+}
+
+.svc-panel-row {
+  padding: 6px 6px;
+}
+
+// Accent-tinted row backgrounds per service
+.svc-row-svc-emerald {
+  background: rgba($emerald, 0.12);
+}
+
+.svc-row-svc-teal {
+  background: rgba($teal, 0.12);
+}
+
+.svc-row-svc-amethyst {
+  background: rgba($amethyst, 0.12);
+}
+
+.svc-row-svc-blonde {
+  background: rgba($teal-dim, 0.18);
+}
+
+.svc-panel-name {
+  color: $text-primary;
+  font-size: 12px;
+}
+
+// Force service icons white in the panel
+.svc-panel-row .svc-icon {
+  -gtk-icon-style: symbolic;
+  color: $text-primary;
+}
+
+.svc-panel-healthy {
+  color: $emerald-light;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.svc-panel-unhealthy {
+  color: $error;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.svc-panel-toggle {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: $text-primary;
+  font-size: 14px;
+  padding: 2px 6px;
+  min-width: 0px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.10);
+  }
+}
+
+.svc-panel-no-toggle {
+  color: $text-muted;
+  font-size: 11px;
+  padding: 2px 6px;
+}

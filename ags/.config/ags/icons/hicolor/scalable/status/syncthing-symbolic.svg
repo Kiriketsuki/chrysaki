@@ -1,0 +1,11 @@
+<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <!-- Simplified Syncthing logo: hub with 3 orbital nodes -->
+  <circle cx="8" cy="8" r="5.5" fill="none" stroke="#e0e2ea" stroke-width="1"/>
+  <circle cx="8" cy="8" r="1.8" fill="#e0e2ea"/>
+  <line x1="8" y1="6.2" x2="8" y2="3" stroke="#e0e2ea" stroke-width="1.2"/>
+  <line x1="6.5" y1="9" x2="4" y2="11.5" stroke="#e0e2ea" stroke-width="1.2"/>
+  <line x1="9.5" y1="9" x2="12" y2="11.5" stroke="#e0e2ea" stroke-width="1.2"/>
+  <circle cx="8" cy="2.5" r="1.4" fill="#e0e2ea"/>
+  <circle cx="3.5" cy="12" r="1.4" fill="#e0e2ea"/>
+  <circle cx="12.5" cy="12" r="1.4" fill="#e0e2ea"/>
+</svg>

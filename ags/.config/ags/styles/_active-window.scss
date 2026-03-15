@@ -1,11 +1,7 @@
 @use "palette" as *;
 
-.segment-active-window {
-  background: rgba(14, 74, 56, 0.7); // emerald-dim with alpha
-}
-
 .active-window-label {
-  color: $text-secondary;
+  color: $text-primary;
   font-size: 12px;
   font-style: italic;
 }

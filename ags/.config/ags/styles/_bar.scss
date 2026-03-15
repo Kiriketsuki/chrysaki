@@ -4,27 +4,24 @@
 // Islands — ChamferedBar handles glass background via Cairo
 // CSS provides only min-height and outer drop shadow
 .island-left {
-  min-height: 40px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.30);
+  min-height: 26px;
 }
 
 .island-center {
-  min-height: 40px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.30);
+  min-height: 26px;
 }
 
 .island-right {
-  min-height: 40px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.30);
+  min-height: 26px;
 }
 
 .tiled-bar {
-  min-height: 40px;
+  min-height: 26px;
 }
 
 .segment {
   padding: 0px 8px;
-  min-height: 40px;
+  min-height: 26px;
   color: $text-primary;
 }
 
@@ -41,28 +38,28 @@
   min-height: 0px;
 }
 
-// Service status hex dots
-.svc-dot {
-  font-size: 14px;
-  color: $text-muted;
-}
-
-.svc-emerald {
-  color: $emerald-light;
-}
-
-.svc-teal {
-  color: $teal-light;
-}
-
-.svc-amethyst {
-  color: $amethyst-light;
-}
-
-.svc-blonde {
-  color: $blonde-light;
+// Service status icons (Gio.FileIcon doesn't respect CSS color,
+// so we use opacity for health indication instead)
+.svc-icon {
+  opacity: 1.0;
+  transition: opacity 300ms ease;
 }
 
 .svc-error {
-  color: $error;
+  opacity: 0.35;
+}
+
+// System tray collapse/expand toggle
+.tray-toggle {
+  background: transparent;
+  border: none;
+  color: $text-muted;
+  font-size: 14px;
+  padding: 0px 2px;
+  min-width: 0px;
+  min-height: 0px;
+
+  &:hover {
+    color: $text-primary;
+  }
 }
