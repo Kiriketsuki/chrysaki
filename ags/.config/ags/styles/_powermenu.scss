@@ -1,7 +1,7 @@
 @use "palette" as *;
 
 .power-button {
-  color: $error;
+  color: $text-primary;
   font-size: 16px;
   background: transparent;
   border: none;
@@ -9,7 +9,7 @@
   padding: 0px 4px;
 
   &:hover {
-    color: #b53f4a; // error-light
-    background: rgba(140, 47, 57, 0.2);
+    color: $text-secondary;
+    background: rgba(255, 255, 255, 0.06);
   }
 }

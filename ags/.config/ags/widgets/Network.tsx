@@ -31,14 +31,14 @@ export function Network() {
 
   const ssid = createComputed(() => {
     const w = wifi()
-    if (w && w.enabled) return truncate(w.ssid, 10)
+    if (w && w.enabled) return truncate(w.ssid, 3)
     const e = wired()
     if (e && e.speed > 0) return "Ethernet"
     return "Offline"
   })
 
   return (
-    <box spacing={6} valign={3}>
+    <box spacing={14} valign={3}>
       <label class="network-icon" label={icon} />
       <label class="network-ssid" label={ssid} />
     </box>

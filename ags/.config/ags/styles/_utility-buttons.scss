@@ -1,17 +1,5 @@
 @use "palette" as *;
 
-.segment-notifications {
-  background: rgba(14, 74, 56, 0.7); // emerald-dim with alpha
-}
-
-.segment-wallpaper {
-  background: rgba(15, 79, 84, 0.7); // teal-dim with alpha
-}
-
-.segment-theme {
-  background: rgba(30, 16, 64, 0.7); // amethyst-dim with alpha
-}
-
 .utility-button {
   color: $text-primary;
   font-size: 14px;

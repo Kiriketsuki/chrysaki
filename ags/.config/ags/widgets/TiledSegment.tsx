@@ -1,31 +1,56 @@
 /**
- * TiledBar — lays out N segments interleaved with Cairo diagonal separators.
+ * TiledBar -- lays out N segments interleaved with Cairo diagonal separators.
  *
- * Uses zigzag-alt preset (S,\) as per ags-bar-spec.md §3.
+ * Uses zigzag-alt preset (S,\) as per ags-bar-spec.md S3.
  * Each separator is a 16px DrawingArea that Cairo-paints the diagonal transition.
+ *
+ * Segments have transparent backgrounds -- the animated gradient on the
+ * ChamferedBar island handles the color. Separators use a fixed
+ * text-primary-at-low-alpha color for subtle diagonal dividers.
  */
 
 import { tile, separatorEdges, PRESETS, type Edge } from "../lib/tiling"
-import { drawSeparator, hexToRgba, type RGBA } from "../lib/cairo-separator"
 
 export interface SegmentDef {
   readonly widget: JSX.Element
   readonly cssClass: string
-  /** Hex color (#RRGGBB) of this segment's background for separator drawing */
-  readonly bgColor: string
-  readonly bgAlpha: number
 }
 
 const SEP_WIDTH = 16
 
-function makeSeparator(edge: Edge, leftColor: RGBA, rightColor: RGBA, barHeight: number): JSX.Element {
+/**
+ * Draw a single diagonal line separator (not two filled triangles).
+ * The gradient shows through; only a thin line marks the segment boundary.
+ */
+function drawDiagonalLine(
+  cr: any,
+  w: number,
+  h: number,
+  edge: Edge,
+): void {
+  if (edge === "|") return
+
+  cr.setSourceRGBA(0xe0 / 255, 0xe2 / 255, 0xea / 255, 0.18)
+  cr.setLineWidth(1.2)
+
+  if (edge === "\\") {
+    cr.moveTo(0, 0)
+    cr.lineTo(w, h)
+  } else {
+    cr.moveTo(0, h)
+    cr.lineTo(w, 0)
+  }
+  cr.stroke()
+}
+
+function makeSeparator(edge: Edge, barHeight: number): JSX.Element {
   return (
     <drawingarea
       widthRequest={SEP_WIDTH}
       heightRequest={barHeight}
       $={(self: any) =>
         self.set_draw_func((_area: any, cr: any, w: number, h: number) => {
-          drawSeparator(cr, w, h, edge, leftColor, rightColor)
+          drawDiagonalLine(cr, w, h, edge)
         })
       }
     />
@@ -35,7 +60,7 @@ function makeSeparator(edge: Edge, leftColor: RGBA, rightColor: RGBA, barHeight:
 export function TiledBar({
   segments,
   preset = "zigzag-alt",
-  barHeight = 40,
+  barHeight = 32,
 }: {
   segments: readonly SegmentDef[]
   preset?: keyof typeof PRESETS
@@ -50,11 +75,8 @@ export function TiledBar({
   for (let i = 0; i < segments.length; i++) {
     const seg = segments[i]
 
-    const bgRgba = hexToRgba(seg.bgColor, seg.bgAlpha)
-    const bgCss = `background-color: rgba(${Math.round(bgRgba[0] * 255)}, ${Math.round(bgRgba[1] * 255)}, ${Math.round(bgRgba[2] * 255)}, ${bgRgba[3]});`
-
     children.push(
-      <box class={`segment ${seg.cssClass}`} valign={3} css={bgCss}>
+      <box class={`segment ${seg.cssClass}`} valign={3}>
         {seg.widget}
       </box>
     )
@@ -62,9 +84,7 @@ export function TiledBar({
     if (i < segments.length - 1) {
       const edge = sepEdges[i]
       if (edge !== "|") {
-        const leftRgba = hexToRgba(seg.bgColor, seg.bgAlpha)
-        const rightRgba = hexToRgba(segments[i + 1].bgColor, segments[i + 1].bgAlpha)
-        children.push(makeSeparator(edge, leftRgba, rightRgba, barHeight))
+        children.push(makeSeparator(edge, barHeight))
       }
     }
   }

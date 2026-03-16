@@ -1,10 +1,6 @@
 @use "palette" as *;
 
-.segment-volume {
-  background: rgba(12, 26, 64, 0.7); // blue-dim with alpha
-}
-
 .pulseaudio-label {
-  color: $teal-light; // blue is fill-only per design rules
+  color: $text-primary;
   font-size: 12px;
 }

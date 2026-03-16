@@ -2,9 +2,10 @@
 @use "glass" as *;
 
 // Islands — ChamferedBar handles glass background via Cairo
-// CSS provides only min-height and outer drop shadow
+// CSS provides only min-height and padding for pointed tips
 .island-left {
   min-height: 26px;
+  padding-right: 16px; // keep children clear of the pointed right tip
 }
 
 .island-center {
@@ -13,6 +14,7 @@
 
 .island-right {
   min-height: 26px;
+  padding-left: 16px; // keep children clear of the pointed left tip
 }
 
 .tiled-bar {

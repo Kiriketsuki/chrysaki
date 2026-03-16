@@ -1,31 +1,16 @@
 @use "palette" as *;
 
-// SystemTray
-.segment-tray {
-  background: rgba(28, 31, 43, 0.7); // surface with alpha
-}
-
-// MediaPlayer
-.segment-media {
-  background: rgba(30, 16, 64, 0.7); // amethyst-dim with alpha
-}
-
 .media-label {
-  color: $amethyst-light;
+  color: $text-primary;
   font-size: 12px;
 }
 
-// Network
-.segment-network {
-  background: rgba(12, 26, 64, 0.7); // blue-dim with alpha
-}
-
 .network-icon {
-  color: $teal-light;
+  color: $text-primary;
   font-size: 16px;
 }
 
 .network-ssid {
-  color: $teal-light;
+  color: $text-primary;
   font-size: 12px;
 }

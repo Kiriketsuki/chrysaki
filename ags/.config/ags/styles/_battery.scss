@@ -1,22 +1,11 @@
 @use "palette" as *;
 
 .battery-label {
+  color: $text-primary;
   font-family: "IosevkaTermSlab Nerd Font";
   font-size: 13px;
 }
 
-.battery-full {
-  color: $blonde;
-}
-
-.battery-medium {
-  color: $blonde-dim;
-}
-
 .battery-low {
   color: $error;
-}
-
-.battery-charging {
-  color: $blonde-light;
 }

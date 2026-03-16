@@ -1,7 +1,7 @@
 import app from "ags/gtk4/app"
 import { Astal, Gdk } from "ags/gtk4"
 import { TiledBar, type SegmentDef } from "./TiledSegment"
-import { ChamferedBar } from "./ChamferedIsland"
+import { ChamferedBar, JEWEL_PALETTE } from "./ChamferedIsland"
 import { Battery } from "./Battery"
 import { Clock } from "./Clock"
 import { ActiveWindow } from "./ActiveWindow"
@@ -13,20 +13,14 @@ export function BarLeft(gdkmonitor: Gdk.Monitor) {
     {
       widget: <Battery />,
       cssClass: "segment-battery",
-      bgColor: "#C4861C", // blonde-dim
-      bgAlpha: 0.5,
     },
     {
       widget: <Clock />,
       cssClass: "segment-clock",
-      bgColor: "#0f4f54", // teal-dim
-      bgAlpha: 0.7,
     },
     {
       widget: <ActiveWindow />,
       cssClass: "segment-active-window",
-      bgColor: "#0e4a38", // emerald-dim
-      bgAlpha: 0.7,
     },
   ]
 
@@ -46,11 +40,12 @@ export function BarLeft(gdkmonitor: Gdk.Monitor) {
         class="island-left"
         halign={1}
         valign={3}
-        $={(self: any) =>
-          self.setChamfer({ tl: true, tr: false, bl: true, br: false })
-        }
+        $={(self: any) => {
+          self.setChamfer({ tl: false, tr: false, bl: true, br: false })
+          self.setGradientColors(JEWEL_PALETTE)
+        }}
       >
-        <TiledBar segments={segments} preset="zigzag" barHeight={40} />
+        <TiledBar segments={segments} preset="zigzag" barHeight={26} />
       </ChamferedBar>
     </window>
   )

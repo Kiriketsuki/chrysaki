@@ -8,7 +8,7 @@ const hyprland = AstalHyprland.get_default()!
 
 // Active pip colors cycle by (workspaceId - 1) % 3
 const ACTIVE_COLORS = ["#1a8a6a", "#1c3d7a", "#583090"] as const  // emerald-lt, blue-lt, amethyst-lt
-const OCCUPIED_COLOR = "#0e4a38"  // emerald-dim
+const DIM_COLORS    = ["#0e4a38", "#0c1a40", "#1e1040"] as const  // emerald-dim, blue-dim, amethyst-dim
 
 const HEX_RADIUS = 10
 const PIP_WIDTH = 24
@@ -48,7 +48,7 @@ function WorkspacePip({ id }: PipProps) {
           da.set_draw_func((_area: any, cr: any, w: number, h: number) => {
             const focusedId = hyprland.focusedWorkspace?.id ?? 1
             const isActive = id === focusedId
-            const colorHex = isActive ? ACTIVE_COLORS[(id - 1) % 3] : OCCUPIED_COLOR
+            const colorHex = isActive ? ACTIVE_COLORS[(id - 1) % 3] : DIM_COLORS[(id - 1) % 3]
             const alpha = isActive ? 1.0 : 0.8
 
             // Draw hex pip background

@@ -170,6 +170,19 @@ This project is indexed by GitNexus as **chrysaki** (85 symbols, 101 relationshi
 - When exploring unfamiliar code, use `gitnexus_query({query: "concept"})` to find execution flows instead of grepping. It returns process-grouped results ranked by relevance.
 - When you need full context on a specific symbol — callers, callees, which execution flows it participates in — use `gitnexus_context({name: "symbolName"})`.
 
+## Code Search — NEVER Use Explore Agents
+
+**Do NOT spawn Explore subagents for code search in this repo.** Explore agents use Glob/Grep/Read — dumb file search that bypasses the indexed intelligence. Use GitNexus and OpenViking directly in the main session instead:
+
+| Task | Use this — NOT Explore |
+|------|------------------------|
+| Find code by concept | `gitnexus_query({query: "concept", repo: "chrysaki"})` |
+| Understand a symbol | `gitnexus_context({name: "symbolName", repo: "chrysaki"})` |
+| Trace an execution flow | `READ gitnexus://repo/chrysaki/process/{name}` |
+| Semantic / fuzzy search | `ov_search` (OpenViking) |
+
+Explore agents are appropriate for repos that are NOT indexed by GitNexus/OV. This repo is indexed — always go straight to the graph tools.
+
 ## When Debugging
 
 1. `gitnexus_query({query: "<error or symptom>"})` — find execution flows related to the issue
