@@ -55,13 +55,13 @@
 .tray-toggle {
   background: transparent;
   border: none;
-  color: $text-muted;
+  color: $text-primary;
   font-size: 14px;
   padding: 0px 2px;
   min-width: 0px;
   min-height: 0px;
 
   &:hover {
-    color: $text-primary;
+    color: $text-secondary;
   }
 }
