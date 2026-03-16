@@ -100,79 +100,141 @@ export function traceChamferedRect(
 }
 
 /**
- * Draw animated diagonal hatching with a wave that flips line direction.
+ * Draw a sword-slash cluster at position cx, centered vertically.
  *
- * Default: 45° lines (\). When the WaveFrame is active, the wave center
- * sweeps across in frame.waveDirection. Lines near the wave flip to /
- * and brighten, then settle back after the wave passes.
+ * Ports both SVG shapes as Cairo bezier fills, creating an X crossing:
+ *
+ * SVG 2 (\): Three-layer glowing slash — outer glow + primary strike +
+ *            white highlight core. Goes top-left → bottom-right.
+ * SVG 1 (/): Two-layer chrome slash — colored outer rim + dark void center.
+ *            Goes bottom-left → top-right.
+ *
+ * Both are drawn at the same cx so they cross, forming an impact mark.
+ * Colors are light-variant Chrysaki jewel tones passed from the palette.
  */
-function drawAnimatedHatch(cr: any, w: number, h: number, frame: WaveFrame): void {
-  const spacing = 7
-  const diag = w + h
+function drawSwordSlash(
+  cr: any,
+  cx: number,
+  h: number,
+  color: GradientColor,
+  alpha: number,
+): void {
+  const s = h / 200
 
-  // Wave center in pixel-space — offscreen (-60) during idle
-  let waveCenter: number
-  if (frame.isWaving) {
-    const rawProgress = frame.waveDirection === 1 ? frame.waveProgress : 1 - frame.waveProgress
-    waveCenter = rawProgress * (w + 120) - 60
-  } else {
-    waveCenter = -60
+  // ── Shape 1: \ diagonal (SVG 2 — three-layer glowing slash) ───────────────
+  // Shape center at (110, 90) in SVG space → translate to (cx, h/2).
+  cr.save()
+  cr.translate(cx - 110 * s, h / 2 - 90 * s)
+
+  // Outer glow (secondary strike, emerald-dim equivalent)
+  cr.newPath()
+  cr.moveTo(10 * s, 30 * s)
+  cr.curveTo(60 * s, 70 * s, 110 * s, 120 * s, 170 * s, 190 * s)
+  cr.curveTo(100 * s, 130 * s, 50 * s, 80 * s, 10 * s, 30 * s)
+  cr.closePath()
+  cr.setSourceRGBA(color.r, color.g, color.b, 0.38 * alpha)
+  cr.fill()
+
+  // Primary strike (main blade body)
+  cr.newPath()
+  cr.moveTo(30 * s, 10 * s)
+  cr.curveTo(80 * s, 50 * s, 130 * s, 100 * s, 190 * s, 170 * s)
+  cr.curveTo(120 * s, 110 * s, 70 * s, 60 * s, 30 * s, 10 * s)
+  cr.closePath()
+  cr.setSourceRGBA(color.r, color.g, color.b, 0.72 * alpha)
+  cr.fill()
+
+  // Bright highlight core (white inset)
+  cr.newPath()
+  cr.moveTo(35 * s, 15 * s)
+  cr.curveTo(80 * s, 55 * s, 125 * s, 100 * s, 185 * s, 165 * s)
+  cr.curveTo(120 * s, 105 * s, 75 * s, 60 * s, 35 * s, 15 * s)
+  cr.closePath()
+  cr.setSourceRGBA(1, 1, 1, 0.28 * alpha)
+  cr.fill()
+
+  cr.restore()
+
+  // ── Shape 2: / diagonal (SVG 1 — chrome-edged slash) ─────────────────────
+  // Shape center at (100, 100) in SVG space → translate to (cx, h/2).
+  cr.save()
+  cr.translate(cx - 100 * s, h / 2 - 100 * s)
+
+  // Outer rim (colored blade edge)
+  cr.newPath()
+  cr.moveTo(15 * s, 185 * s)
+  cr.curveTo(70 * s, 110 * s, 120 * s, 60 * s, 185 * s, 15 * s)
+  cr.curveTo(110 * s, 80 * s, 60 * s, 130 * s, 15 * s, 185 * s)
+  cr.closePath()
+  cr.setSourceRGBA(color.r, color.g, color.b, 0.45 * alpha)
+  cr.fill()
+
+  // Void core (dark interior — chrome-edge look)
+  cr.newPath()
+  cr.moveTo(25 * s, 175 * s)
+  cr.curveTo(70 * s, 120 * s, 120 * s, 70 * s, 175 * s, 25 * s)
+  cr.curveTo(120 * s, 80 * s, 70 * s, 130 * s, 25 * s, 175 * s)
+  cr.closePath()
+  cr.setSourceRGBA(0, 0, 0, 0.55 * alpha)
+  cr.fill()
+
+  cr.restore()
+}
+
+/**
+ * Draw the base diagonal texture and, during a wave, sword-slash shapes
+ * at the wave front using Chrysaki jewel-tone colors.
+ *
+ * Base: subtle black \ lines at 0.06 alpha (always visible).
+ * Wave: SVG-ported \ + / bezier slashes that appear fast (~100ms) then
+ *       linger and fade slowly (~1400ms). Colors are the next palette color.
+ */
+function drawAnimatedHatch(
+  cr: any,
+  w: number,
+  h: number,
+  frame: WaveFrame,
+  colors?: readonly GradientColor[],
+): void {
+  // ── Base diagonal texture ──────────────────────────────────────────────────
+  const spacing = 8
+  const diag = w + h
+  for (let d = -h - spacing; d < diag + spacing; d += spacing) {
+    cr.setLineWidth(0.6)
+    cr.setSourceRGBA(0, 0, 0, 0.06)
+    cr.newPath()
+    cr.moveTo(d, 0)
+    cr.lineTo(d + h, h)
+    cr.stroke()
   }
 
-  // Per-line timing: each line slashes itself when the wave front reaches it.
-  // SLASH_SPAN: fraction of waveProgress for a line to fully extend (~150ms).
-  // FADE_SPAN:  fraction to fade back to rest (~200ms).
-  const SLASH_SPAN = 0.06
-  const FADE_SPAN  = 0.08
+  if (!frame.isWaving || !colors || colors.length === 0) return
 
-  for (let d = -h - spacing; d < diag + spacing; d += spacing) {
-    const lineX = d + h * 0.5
+  // ── Sword-slash layer (wave front only) ────────────────────────────────────
+  // SLASH_SPAN: fraction of waveProgress for slash to fully appear (~100ms at 5s wave).
+  // FADE_SPAN:  fraction to fully fade (~1400ms at 5s wave).
+  const SLASH_SPAN = 0.02
+  const FADE_SPAN  = 0.28
 
-    // When does the wave front reach this line? Normalised to [0,1].
-    const hitNorm = Math.max(0, Math.min(1, (lineX + 60) / (w + 120)))
-    // R→L flips: rightmost lines get hit first when wave comes from the right.
+  const slashColor   = colors[frame.nextColorIndex % colors.length]
+  const slashSpacing = Math.max(h * 0.85, 30)
+
+  for (let slashX = -h; slashX < w + h; slashX += slashSpacing) {
+    const hitNorm     = Math.max(0, Math.min(1, (slashX + 60) / (w + 120)))
     const hitProgress = frame.waveDirection === 1 ? hitNorm : 1 - hitNorm
+    const afterHit    = frame.waveProgress - hitProgress
+    const afterSlash  = afterHit - SLASH_SPAN
 
-    let alpha         = 0.08
-    let lineWidth     = 0.8
-    let drawSlash     = false
-    let slashFraction = 1   // portion of the line segment drawn (0=none, 1=full)
-
-    if (frame.isWaving) {
-      const afterHit   = frame.waveProgress - hitProgress
-      const afterSlash = afterHit - SLASH_SPAN
-
-      if (afterHit >= 0 && afterHit < SLASH_SPAN) {
-        // Extending: line draws itself from tip toward tail
-        const p  = afterHit / SLASH_SPAN
-        drawSlash     = true
-        slashFraction = p
-        alpha         = 0.88 * p
-        lineWidth     = 0.8 + 3.0 * p
-      } else if (afterSlash >= 0 && afterSlash < FADE_SPAN) {
-        // Fading: fully drawn, bleeding back to rest
-        const p  = afterSlash / FADE_SPAN
-        drawSlash     = true
-        slashFraction = 1
-        alpha         = 0.88 - 0.80 * p
-        lineWidth     = 3.8 - 3.0 * p
-      }
+    let alpha = 0
+    if (afterHit >= 0 && afterHit < SLASH_SPAN) {
+      alpha = (afterHit / SLASH_SPAN) * 0.92
+    } else if (afterSlash >= 0 && afterSlash < FADE_SPAN) {
+      alpha = 0.92 * (1 - afterSlash / FADE_SPAN)
     }
 
-    cr.setLineWidth(lineWidth)
-    cr.setSourceRGBA(0, 0, 0, alpha)
-    cr.newPath()
-
-    if (drawSlash) {
-      // Slash direction /: grows from top-right corner toward bottom-left
-      cr.moveTo(d + h, 0)
-      cr.lineTo(d + h - h * slashFraction, h * slashFraction)
-    } else {
-      // Resting direction \
-      cr.moveTo(d, 0)
-      cr.lineTo(d + h, h)
+    if (alpha > 0.01) {
+      drawSwordSlash(cr, slashX, h, slashColor, alpha)
     }
-    cr.stroke()
   }
 }
 
@@ -291,7 +353,7 @@ export function drawIslandBackground(
   cr.clip()
 
   // 4. Draw animated hatching texture inside the clip
-  drawAnimatedHatch(cr, w, h, frame ?? DEFAULT_FRAME)
+  drawAnimatedHatch(cr, w, h, frame ?? DEFAULT_FRAME, gradientColors)
 
   // 5. Restore (removes clip)
   cr.restore()

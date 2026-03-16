@@ -21,7 +21,7 @@ export interface WaveFrame {
 
 const IDLE_MIN_MS = 6000
 const IDLE_MAX_MS = 10000
-const WAVE_DURATION_MS = 2500
+const WAVE_DURATION_MS = 5000
 
 export class WaveAnimationState {
   private _currentColorIndex: number
