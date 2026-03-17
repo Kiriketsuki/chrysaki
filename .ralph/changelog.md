@@ -1,3 +1,26 @@
+## Iteration 6 - 2026-03-17 23:30
+**Task**: T12 - EMERGENCY FILE WRITE — NotificationToast.tsx written to disk with Write tool
+
+### Introduced
+| Item | Type | File | Purpose |
+|:---|:---|:---|:---|
+| `NotificationToast()` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Exported window factory registered in app.ts; creates the layer-shell toast stack window anchored TOP\|RIGHT |
+| `ToastRow(n)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Builds an imperative Gtk.Box for a single toast notification with app label, dismiss button, summary, optional body, and critical urgency class |
+| `showToast(n)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Adds notification to the active set (or overflow queue if at MAX_VISIBLE=4) and schedules 5000ms auto-dismiss via GLib.timeout_add |
+| `removeToast(id)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Removes toast widget from container, promotes next queued toast if any, hides window when stack is empty |
+| `updateVisibility()` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Shows or hides the toast window based on whether any toasts are active |
+| `queue` | constant | `ags/.config/ags/widgets/NotificationToast.tsx` | FIFO array holding notifications that overflow past MAX_VISIBLE |
+| `active` | constant | `ags/.config/ags/widgets/NotificationToast.tsx` | Map from notification ID to its Gtk.Box row widget for O(1) lookup on dismiss |
+| `container` | variable | `ags/.config/ags/widgets/NotificationToast.tsx` | Reference to the inner Gtk.Box populated via the `$=` JSX callback; holds all visible toast rows |
+
+### Design Notes
+- ToastRow is built imperatively (new Gtk.Box / Gtk.Label / Gtk.Button) rather than JSX because children must be appended/removed dynamically at runtime after initial window construction.
+- The `$=` JSX callback (Astal's widget-reference pattern, seen in ServiceStatus.tsx) captures the container box reference so imperative append/remove operations work correctly.
+- DND awareness is checked in the "notified" signal handler — if `notifd.dontDisturb` is true, the notification is silently ignored; it will still appear in the center panel via NotificationCenter.tsx's own "notified" handler.
+- The "resolved" signal handler ensures toasts are cleaned up when notifications are dismissed from the center panel while a toast is still visible.
+
+---
+
 ## Iteration 3 - 2026-03-17 20:30
 **Task**: T3.1 - Toast stacking — max 3-4 visible, queue overflow
 
