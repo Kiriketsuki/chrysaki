@@ -300,3 +300,25 @@ No new items introduced. NotificationToggle.tsx already called `toggleNotificati
 - `n.invokeAction(id)` is the AstalNotifd D-Bus callback; the notification daemon delivers the action to the originating app.
 
 ---
+
+## Iteration 4 - 2026-03-17 22:00
+**Task**: T10 - Create NotificationToast.tsx — file never landed on disk
+
+### Introduced
+| Item | Type | File | Purpose |
+|:---|:---|:---|:---|
+| `NotificationToast()` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Layer-shell window (TOP\|RIGHT, marginTop 48, marginRight 8); hidden when empty; registers `rebuild` listener; exposes `toastWin` and `listBox` refs via `$` callbacks for imperative updates |
+| `enqueueToast(n)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | DND-aware entry point: pushes notification into `activeToasts` (up to MAX_VISIBLE=4) and calls `scheduleAutoDismiss`, or into `queuedToasts` overflow; fires `_notifyToastChange` |
+| `dismissToast(n)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Removes notification from `activeToasts`; calls `promoteFromQueue` to fill the vacated slot; fires `_notifyToastChange` |
+| `scheduleAutoDismiss(n)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | One-shot `GLib.timeout_add` of 5000ms that calls `dismissToast(n)`; returns `GLib.SOURCE_REMOVE` to fire exactly once |
+| `promoteFromQueue()` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Moves notifications from `queuedToasts` into `activeToasts` until either list is exhausted or `MAX_VISIBLE` is reached; schedules auto-dismiss for each promoted notification |
+| `onToastChange(cb)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Registers a callback in `_toastListeners`; called by `NotificationToast()` to wire the `rebuild` function that imperatively updates the GTK4 box children |
+| `ToastRow(n)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Renders a single toast card: app name label, close button (calls `dismissToast`), summary label, optional body label; applies `notif-toast-critical` class for CRITICAL urgency |
+
+### Design Notes
+- Follows the same listener pattern as `_unreadListeners` in `NotificationCenter.tsx` — custom state, no GObject property needed.
+- `rebuild()` closes over `listBox` and `toastWin` refs set by `$` imperative callbacks; early-returns if refs are null (safe against signals firing before window creation).
+- Connects to both `notifd.notified` (enqueue) and `notifd.resolved` (external dismiss cleanup) at module load time — both handlers are registered before `app.start` runs.
+- Window is initially hidden (`visible={false}`); `rebuild()` sets `toastWin.visible = activeToasts.length > 0` after each state change.
+
+---
