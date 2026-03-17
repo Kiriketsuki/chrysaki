@@ -101,6 +101,23 @@ No new items introduced. NotificationToggle.tsx already called `toggleNotificati
 
 ---
 
+## Iteration 3 - 2026-03-17 19:10
+**Task**: T2.2 - Clear-all button and empty state
+
+### Introduced
+| Item | Type | File | Purpose |
+|:---|:---|:---|:---|
+| `ClearAllButton()` | function | `widgets/NotificationCenter.tsx` | Panel header button — visible only when `notifd.notifications.length > 0`; on click snapshots the list and calls `n.dismiss()` on each entry, then resets unread count to 0 |
+| `.notif-clear-all-btn` | CSS class | `styles/_notifications.scss` | Transparent button, muted text; turns error-red on hover — signals destructive action without dominating the header |
+
+### Design Notes
+- The button uses `visible={notifications.as((list) => list.length > 0)}` so it auto-hides when the list empties, keeping the header uncluttered in the empty state.
+- List is snapshotted (`[...notifd.notifications]`) before iteration to avoid modifying a live array while iterating — standard immutability pattern.
+- Empty state ("No notifications" label) was already present from T2.1; this task confirms the label and its `.notif-empty` styling are sufficient — no changes needed there.
+- `_setUnreadCount(0)` is called after clearing so the bar badge also resets immediately without waiting for the next panel open event.
+
+---
+
 ## Iteration 3 - 2026-03-17 19:00
 **Task**: T2.1 - Notification list rendering — summary, body, timestamp, dismiss button per notification
 
