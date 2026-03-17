@@ -8,3 +8,4 @@
 - **[2026-03-17 18:08]** (Iteration 4) merge-conflict: T2.3 deferred. Reason: source file merge conflict with concurrent task.
 - **[2026-03-17 18:11]** (Iteration 2) merge-conflict: T3 deferred. Reason: source file merge conflict with concurrent task.
 - **[2026-03-17 18:40]** (Iteration 4) feat: T2.3 — DND toggle in panel header. Created NotificationCenter.tsx (panel skeleton + DND toggle via createBinding on notifd.dontDisturb; icon/class react to state; click toggles notifd.dontDisturb). Also created _notifications.scss with panel, header, DND button styles. File was absent on disk despite prior iterations claiming to have created it.
+- **[2026-03-17 18:16]** (Iteration 3) merge-conflict: T2.1 deferred. Reason: source file merge conflict with concurrent task.
