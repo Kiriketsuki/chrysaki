@@ -16,6 +16,18 @@
 
 ---
 
+## Iteration 4 - 2026-03-17 18:00
+**Task**: T1.1 - Remove swaync dependency — update NotificationToggle to no longer call swaync-client
+
+### Introduced
+No new items introduced. NotificationToggle.tsx already called `toggleNotificationCenter()` from NotificationCenter.tsx with no swaync-client reference — the task was already satisfied by prior iteration work.
+
+### Design Notes
+- T1.1 was deferred in a prior parallel iteration due to a merge conflict. On retry, the file was already correct: `toggleNotificationCenter()` imported from `./NotificationCenter` and invoked on click, with zero swaync-client usage anywhere in the AGS codebase.
+- The `toggleNotificationCenter()` function was introduced in T2 and wired into NotificationToggle.tsx when the merge was resolved. No additional code change was required for T1.1.
+
+---
+
 ## Iteration 2 - 2026-03-17 00:10
 **Task**: T2 - NotificationCenter.tsx — popup panel window (follows ServicePanel pattern)
 
