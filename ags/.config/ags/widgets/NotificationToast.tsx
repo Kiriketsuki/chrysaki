@@ -22,25 +22,25 @@ function buildToastRow(n: AstalNotifd.Notification): any {
   const isCritical = n.urgency === AstalNotifd.Urgency.CRITICAL
   return (
     <box
-      class={`notif-toast-row${isCritical ? " notif-toast-critical" : ""}`}
+      class={`notif-toast${isCritical ? " notif-toast-critical" : ""}`}
       orientation={1}
       spacing={2}
     >
       <box class="notif-toast-header" spacing={6}>
         <label
-          class="notif-row-app"
+          class="notif-toast-app"
           label={n.appName || "App"}
           halign={1}
           hexpand
         />
         <button
-          class="notif-dismiss-btn"
+          class="notif-toast-close"
           label="󰅖"
           onClicked={() => removeToast(n)}
         />
       </box>
       <label
-        class="notif-row-summary"
+        class="notif-toast-summary"
         label={n.summary || ""}
         halign={1}
         xalign={0}
@@ -48,7 +48,7 @@ function buildToastRow(n: AstalNotifd.Notification): any {
       />
       {n.body && (
         <label
-          class="notif-row-body"
+          class="notif-toast-body"
           label={n.body}
           halign={1}
           xalign={0}
@@ -143,7 +143,7 @@ export function NotificationToast() {
       }}
     >
       <box
-        class="notif-toast-stack"
+        class="notif-toast-list"
         orientation={1}
         spacing={6}
         $={(box: any) => {

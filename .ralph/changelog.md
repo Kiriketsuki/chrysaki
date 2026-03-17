@@ -396,3 +396,15 @@ No new items introduced. NotificationToggle.tsx already called `toggleNotificati
 - `notifd` is imported from `NotificationCenter` (the canonical singleton) rather than calling `get_default()` again, matching the established pattern.
 
 ---
+## Iteration 9 - 2026-03-17 20:10
+**Task**: T14 - Fix CSS class mismatch in NotificationToast.tsx
+
+### Introduced
+No new items introduced.
+
+### Design Notes
+- Six CSS class names in `NotificationToast.tsx` were mismatched against `_notifications.scss` definitions. The toast card `<box>` used `notif-toast-row` while SCSS defined the chamfered shape (`clip-path` 8px chamfer) and high-alpha background (`rgba(28,31,43,0.92)`) under `.notif-toast`.
+- Corrected all six: card → `notif-toast`, container → `notif-toast-list`, app label → `notif-toast-app`, dismiss button → `notif-toast-close`, summary → `notif-toast-summary`, body → `notif-toast-body`.
+- The panel notification rows use a separate namespace (`notif-row-*`) to allow independent styling. Toast classes use `notif-toast-*` to keep the two contexts visually distinct — toasts use higher-alpha opaque backgrounds (0.92) since they float without compositor blur, while panel rows use low-alpha (0.04) with glassmorphism blur from the panel window.
+
+---
