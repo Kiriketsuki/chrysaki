@@ -13,3 +13,4 @@
 - **[2026-03-17 18:33]** (Iteration 2) merge-conflict: T3 deferred. Reason: source file merge conflict with concurrent task.
 - **[2026-03-17 19:10]** (Iteration 3) feat: T2.2 — Clear-all button and empty state. Added ClearAllButton() component to panel header (visible only when notifications.length > 0); onClicked snapshots the list and calls n.dismiss() on each, then resets unread count to 0. Empty state label ("No notifications") was already present from T2.1 and covered by .notif-empty SCSS. Added .notif-clear-all-btn styles to _notifications.scss.
 - **[2026-03-17 18:36]** (Iteration 5) merge-conflict: T8 deferred. Reason: source file merge conflict with concurrent task.
+- **[2026-03-17 18:37]** (Iteration 2) merge-conflict: T3 deferred. Reason: source file merge conflict with concurrent task.
