@@ -1,0 +1,1 @@
+- **[2026-03-17 00:00]** (Iteration 1) feat: T1 — Created NotificationCenter.tsx with AstalNotifd.get_default() to claim D-Bus daemon ownership; created _notifications.scss stub to unblock style.scss import. Previous T1 iteration had wired app.ts/style.scss/NotificationToggle.tsx but never created the actual files.

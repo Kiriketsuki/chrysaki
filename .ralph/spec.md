@@ -41,8 +41,8 @@ Desktop power user running a Hyprland/Wayland desktop who needs unified notifica
 
 ## Project Status
 - **Overall Status**: IN_PROGRESS
-- **Current Iteration**: 0
-- **Last Update**: 2026-03-17 00:00
+- **Current Iteration**: 1
+- **Last Update**: 2026-03-17 00:10
 - **Task Selection Mode**: scored
 
 <!-- Overall Status flow: IN_PROGRESS -> COUNCIL_PENDING -> VERIFICATION_PENDING -> MISSION_COMPLETE -->
@@ -66,7 +66,7 @@ Desktop power user running a Hyprland/Wayland desktop who needs unified notifica
 ## Task Matrix
 | ID | Task Description | Priority | Impact | Blocking | Risk | Score | Status | Dependencies | Parent |
 |:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|
-| T1 | AstalNotifd service setup — import, instantiate, verify D-Bus ownership | High | 4 | 4 | 3 | 23 | pending | None | - |
+| T1 | AstalNotifd service setup — import, instantiate, verify D-Bus ownership | High | 4 | 4 | 3 | 23 | completed | None | - |
 | T1.1 | Remove swaync dependency — update NotificationToggle to no longer call swaync-client | High | 5 | 0 | 1 | 16 | pending | T1 | - |
 | T2 | NotificationCenter.tsx — popup panel window (follows ServicePanel pattern) | High | 5 | 5 | 2 | 27 | pending | T1 | - |
 | T2.1 | Notification list rendering — summary, body, timestamp, dismiss button per notification | High | 5 | 3 | 1 | 22 | pending | T2 | - |
