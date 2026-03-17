@@ -40,9 +40,9 @@ Desktop power user running a Hyprland/Wayland desktop who needs unified notifica
 - AstalNotifd API usage should follow the same Astal patterns already proven with AstalNetwork/AstalBattery
 
 ## Project Status
-- **Overall Status**: VERIFICATION_PENDING
-- **Current Iteration**: 10
-- **Last Update**: 2026-03-17 20:45
+- **Overall Status**: MISSION_COMPLETE
+- **Current Iteration**: 11
+- **Last Update**: 2026-03-17 21:30
 - **Task Selection Mode**: scored
 
 <!-- Overall Status flow: IN_PROGRESS -> COUNCIL_PENDING -> VERIFICATION_PENDING -> MISSION_COMPLETE -->
@@ -50,18 +50,18 @@ Desktop power user running a Hyprland/Wayland desktop who needs unified notifica
 ## Acceptance Criteria for Exit
 > These criteria are verified in a dedicated verification iteration after all tasks complete. The agent must not set MISSION_COMPLETE without passing verification.
 
-- [ ] `notify-send "Test" "Hello world"` shows toast popup in AGS (not swaync)
-- [ ] Toast auto-dismisses after ~5 seconds
-- [ ] Multiple toasts stack (max 3-4 visible, overflow queued)
-- [ ] NotificationToggle click toggles center panel showing notifications in reverse chronological order
-- [ ] Individual notification dismiss button removes that notification
-- [ ] Clear-all button clears list and shows empty state
-- [ ] DND toggle suppresses toasts while accumulating in center
-- [ ] Unread badge appears when >0 unread, disappears when center opened or cleared
-- [ ] No regressions on existing bar widgets (BarLeft, BarCenter, BarRight still render correctly)
-- [ ] swaync fully replaced — no `swaync-client` calls remain in codebase
-- [ ] Notification center visually matches Chrysaki design system (chamfered island, jewel accents)
-- [ ] Toast auto-dismiss works reliably (no orphaned windows)
+- [x] `notify-send "Test" "Hello world"` shows toast popup in AGS (not swaync)
+- [x] Toast auto-dismisses after ~5 seconds
+- [x] Multiple toasts stack (max 3-4 visible, overflow queued)
+- [x] NotificationToggle click toggles center panel showing notifications in reverse chronological order
+- [x] Individual notification dismiss button removes that notification
+- [x] Clear-all button clears list and shows empty state
+- [x] DND toggle suppresses toasts while accumulating in center
+- [x] Unread badge appears when >0 unread, disappears when center opened or cleared
+- [x] No regressions on existing bar widgets (BarLeft, BarCenter, BarRight still render correctly)
+- [x] swaync fully replaced — no `swaync-client` calls remain in codebase
+- [x] Notification center visually matches Chrysaki design system (chamfered island, jewel accents)
+- [x] Toast auto-dismiss works reliably (no orphaned windows)
 
 ## Task Matrix
 | ID | Task Description | Priority | Impact | Blocking | Risk | Score | Status | Dependencies | Parent |
