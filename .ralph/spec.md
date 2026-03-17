@@ -40,9 +40,9 @@ Desktop power user running a Hyprland/Wayland desktop who needs unified notifica
 - AstalNotifd API usage should follow the same Astal patterns already proven with AstalNetwork/AstalBattery
 
 ## Project Status
-- **Overall Status**: IN_PROGRESS
-- **Current Iteration**: 3
-- **Last Update**: 2026-03-17 21:00
+- **Overall Status**: COUNCIL_PENDING
+- **Current Iteration**: 4
+- **Last Update**: 2026-03-17 22:00
 - **Task Selection Mode**: scored
 
 <!-- Overall Status flow: IN_PROGRESS -> COUNCIL_PENDING -> VERIFICATION_PENDING -> MISSION_COMPLETE -->
@@ -81,7 +81,7 @@ Desktop power user running a Hyprland/Wayland desktop who needs unified notifica
 | T7 | Notification actions — render action buttons, fire D-Bus callbacks | Med | 3 | 0 | 2 | 11 | completed | T2.1 | - |
 | T8 | Body markup rendering — formatted text support | Med | 3 | 0 | 2 | 11 | completed | T2.1 | - |
 | T9 | Urgency styling — Error red accent for critical notifications | Low | 2 | 0 | 1 | 7 | completed | T5 | - |
-| T10 | Create NotificationToast.tsx — file never landed on disk despite T3/T3.1/T6 claiming creation | High | 5 | 5 | 1 | 26 | pending | T1, T5 | - |
+| T10 | Create NotificationToast.tsx — file never landed on disk despite T3/T3.1/T6 claiming creation | High | 5 | 5 | 1 | 26 | completed | T1, T5 | - |
 
 ## Known Issues
 > Append-only. The agent logs problems, warnings, or concerns detected during work.
