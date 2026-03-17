@@ -1,7 +1,7 @@
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **chrysaki-ralph-ags-notification-center-T2** (88 symbols, 101 relationships, 6 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **chrysaki-ralph-ags-notification-center-T1.1** (88 symbols, 101 relationships, 6 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -17,7 +17,7 @@ This project is indexed by GitNexus as **chrysaki-ralph-ags-notification-center-
 
 1. `gitnexus_query({query: "<error or symptom>"})` — find execution flows related to the issue
 2. `gitnexus_context({name: "<suspect function>"})` — see all callers, callees, and process participation
-3. `READ gitnexus://repo/chrysaki-ralph-ags-notification-center-T2/process/{processName}` — trace the full execution flow step by step
+3. `READ gitnexus://repo/chrysaki-ralph-ags-notification-center-T1.1/process/{processName}` — trace the full execution flow step by step
 4. For regressions: `gitnexus_detect_changes({scope: "compare", base_ref: "main"})` — see what your branch changed
 
 ## When Refactoring
@@ -56,10 +56,10 @@ This project is indexed by GitNexus as **chrysaki-ralph-ags-notification-center-
 
 | Resource | Use for |
 |----------|---------|
-| `gitnexus://repo/chrysaki-ralph-ags-notification-center-T2/context` | Codebase overview, check index freshness |
-| `gitnexus://repo/chrysaki-ralph-ags-notification-center-T2/clusters` | All functional areas |
-| `gitnexus://repo/chrysaki-ralph-ags-notification-center-T2/processes` | All execution flows |
-| `gitnexus://repo/chrysaki-ralph-ags-notification-center-T2/process/{name}` | Step-by-step execution trace |
+| `gitnexus://repo/chrysaki-ralph-ags-notification-center-T1.1/context` | Codebase overview, check index freshness |
+| `gitnexus://repo/chrysaki-ralph-ags-notification-center-T1.1/clusters` | All functional areas |
+| `gitnexus://repo/chrysaki-ralph-ags-notification-center-T1.1/processes` | All execution flows |
+| `gitnexus://repo/chrysaki-ralph-ags-notification-center-T1.1/process/{name}` | Step-by-step execution trace |
 
 ## Self-Check Before Finishing
 
