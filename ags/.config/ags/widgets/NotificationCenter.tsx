@@ -94,6 +94,24 @@ function NotificationRow(n: AstalNotifd.Notification) {
   )
 }
 
+// --- Clear-all button ---
+
+function ClearAllButton() {
+  const notifications = createBinding(notifd, "notifications")
+  return (
+    <button
+      class="notif-clear-all-btn"
+      label="󰆴  Clear all"
+      visible={notifications.as((list) => list.length > 0)}
+      onClicked={() => {
+        const list = [...notifd.notifications]
+        list.forEach((n) => n.dismiss())
+        _setUnreadCount(0)
+      }}
+    />
+  )
+}
+
 // --- DND toggle (header button) ---
 
 function DndToggle() {
@@ -137,6 +155,7 @@ export function NotificationCenter() {
             halign={1}
             hexpand
           />
+          <ClearAllButton />
           <DndToggle />
         </box>
         <box class="notif-panel-list" orientation={1} spacing={4}>

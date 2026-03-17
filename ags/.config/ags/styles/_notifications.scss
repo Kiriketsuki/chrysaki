@@ -43,6 +43,19 @@
   padding: 4px 0px;
 }
 
+.notif-clear-all-btn {
+  background: transparent;
+  border: none;
+  color: $text-muted;
+  font-size: 11px;
+  padding: 2px 6px;
+  min-width: 0px;
+
+  &:hover {
+    color: $error;
+  }
+}
+
 .notif-dnd-btn {
   background: transparent;
   border: none;
