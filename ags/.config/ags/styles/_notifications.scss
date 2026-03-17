@@ -1,42 +1,41 @@
 @use "palette" as *;
 
 // ============================================================
-// Bar toggle button
+// Bar toggle button + unread badge
 // ============================================================
 
+// Wrapper box (no position: relative — not supported in GTK CSS)
 .notif-toggle-wrap {
-  position: relative;
+  padding: 0px;
 }
 
-// Flat-top hexagon badge (Chrysaki status indicator shape)
+// Badge label — flat rectangle (clip-path not supported in GTK CSS)
 .notif-badge {
-  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
   background: $error;
   color: $text-primary;
   font-size: 9px;
   font-weight: bold;
   min-width: 16px;
-  min-height: 16px;
-  padding: 0px 2px;
+  min-height: 14px;
+  padding: 0px 3px;
 }
 
 // ============================================================
-// Panel window (glassmorphism — compositor blur provides depth)
+// Panel window
 // ============================================================
 
 .notif-panel {
-  background-color: rgba(15, 17, 23, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+  background-color: rgba(15, 17, 23, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.50);
   padding: 10px;
   min-width: 320px;
-  max-width: 400px;
 }
 
 // --- Panel header ---
 
 .notif-panel-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
   padding-bottom: 6px;
   margin-bottom: 4px;
 }
@@ -93,36 +92,27 @@
 }
 
 // ============================================================
-// Notification row (chamfered Chrysaki container)
-// clip-path produces the 8px chamfer; borders are omitted as
-// clip-path clips them off — use background tint instead.
+// Notification row
 // ============================================================
 
 .notif-row {
-  clip-path: polygon(
-    8px 0%,
-    calc(100% - 8px) 0%,
-    100% 8px,
-    100% calc(100% - 8px),
-    calc(100% - 8px) 100%,
-    8px 100%,
-    0% calc(100% - 8px),
-    0% 8px
-  );
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 8px 12px;
+  margin-bottom: 4px;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.07);
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.14);
   }
 }
 
-// Urgency modifier: critical notifications get Error red tint
 .notif-row-critical {
-  background: rgba(140, 47, 57, 0.15);
+  background: rgba(140, 47, 57, 0.18);
+  border-color: rgba(140, 47, 57, 0.35);
 
   &:hover {
-    background: rgba(140, 47, 57, 0.25);
+    background: rgba(140, 47, 57, 0.28);
   }
 
   .notif-row-app {
@@ -182,14 +172,14 @@
 
 .notif-action-btn {
   background: rgba(26, 138, 106, 0.15);
-  border: 1px solid rgba(26, 138, 106, 0.3);
+  border: 1px solid rgba(26, 138, 106, 0.30);
   color: $emerald-light;
   font-size: 11px;
   padding: 3px 8px;
   min-width: 0px;
 
   &:hover {
-    background: rgba(26, 138, 106, 0.3);
+    background: rgba(26, 138, 106, 0.30);
     border-color: $emerald-light;
     color: $text-primary;
   }
@@ -200,42 +190,34 @@
 }
 
 // ============================================================
-// Toast popup window (layer-shell, TOP | RIGHT anchor)
-// High alpha background: toasts float without compositor blur.
+// Toast popup window (layer-shell, TOP | RIGHT)
+// Solid high-alpha background — toasts float without blur.
 // ============================================================
 
 .notif-toast-list {
-  padding: 0px;
+  padding: 4px;
 }
 
-// Chamfered toast card — matches .notif-row shape at larger scale
 .notif-toast {
-  clip-path: polygon(
-    8px 0%,
-    calc(100% - 8px) 0%,
-    100% 8px,
-    100% calc(100% - 8px),
-    calc(100% - 8px) 100%,
-    8px 100%,
-    0% calc(100% - 8px),
-    0% 8px
-  );
-  background: rgba(28, 31, 43, 0.92); // $surface at high alpha
+  background: rgba(28, 31, 43, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.60);
   padding: 10px 14px;
   min-width: 300px;
-  max-width: 380px;
+  margin-bottom: 4px;
 
   &:hover {
-    background: rgba(37, 40, 54, 0.95); // $raised at high alpha
+    background: rgba(37, 40, 54, 0.98);
+    border-color: rgba(255, 255, 255, 0.18);
   }
 }
 
-// Urgency modifier: critical toasts get Error red background
 .notif-toast-critical {
-  background: rgba(140, 47, 57, 0.88);
+  background: rgba(140, 47, 57, 0.92);
+  border-color: rgba(181, 63, 74, 0.50);
 
   &:hover {
-    background: rgba(181, 63, 74, 0.92);
+    background: rgba(181, 63, 74, 0.95);
   }
 
   .notif-toast-app {
