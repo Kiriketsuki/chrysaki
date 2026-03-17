@@ -322,3 +322,26 @@ No new items introduced. NotificationToggle.tsx already called `toggleNotificati
 - Window is initially hidden (`visible={false}`); `rebuild()` sets `toastWin.visible = activeToasts.length > 0` after each state change.
 
 ---
+## Iteration 5 - 2026-03-17 22:45
+**Task**: T11 - Write NotificationToast.tsx to disk
+
+### Introduced
+| Item | Type | File | Purpose |
+|:---|:---|:---|:---|
+| `NotificationToast()` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Exported entry point — creates the layer-shell toast window, wires notifd signals, captures the list box ref for imperative child management |
+| `ToastRow(n)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Renders a single toast row: app name + dismiss button header, summary label, optional body label, notif-toast-critical class on CRITICAL urgency |
+| `showToast(id)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Fetches notification by ID, appends ToastRow to the list box, schedules 5s GLib timeout for auto-dismiss |
+| `dismissById(id)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Removes a notification from visibleIds, detaches its row widget from the box, promotes the next queued ID if any |
+| `enqueue(id)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | DND-aware entry point — skips if dontDisturb, calls showToast if under MAX_VISIBLE, otherwise pushes to queuedIds |
+| `updateVisibility()` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Shows/hides the toast window based on whether visibleIds is non-empty |
+| `visibleIds` | const | `ags/.config/ags/widgets/NotificationToast.tsx` | FIFO tracking array of currently displayed notification IDs (max 4) |
+| `queuedIds` | const | `ags/.config/ags/widgets/NotificationToast.tsx` | Overflow queue for notifications waiting for a visible slot |
+| `rowMap` | const | `ags/.config/ags/widgets/NotificationToast.tsx` | Map from notification ID to its Gtk.Widget row — used for imperative remove on dismiss |
+
+### Design Notes
+- Uses a single persistent layer-shell window (hidden when empty) with a Gtk.Box whose children are managed imperatively via `append`/`remove` — avoids creating per-notification windows and the margin-offset stacking complexity that would entail.
+- `toastBox` is a module-level ref captured at window creation time; null-checked before every `append`/`remove` call.
+- Signal handlers connect inside `NotificationToast()` so they share the same `toastBox` closure; called once from `app.ts` so no duplicate handler risk.
+- `notifd` is imported from `NotificationCenter` (the canonical singleton) rather than calling `get_default()` again, matching the established pattern.
+
+---
