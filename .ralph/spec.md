@@ -40,7 +40,7 @@ Desktop power user running a Hyprland/Wayland desktop who needs unified notifica
 - AstalNotifd API usage should follow the same Astal patterns already proven with AstalNetwork/AstalBattery
 
 ## Project Status
-- **Overall Status**: COUNCIL_PENDING
+- **Overall Status**: IN_PROGRESS
 - **Current Iteration**: 4
 - **Last Update**: 2026-03-17 22:00
 - **Task Selection Mode**: scored
@@ -82,6 +82,7 @@ Desktop power user running a Hyprland/Wayland desktop who needs unified notifica
 | T8 | Body markup rendering — formatted text support | Med | 3 | 0 | 2 | 11 | completed | T2.1 | - |
 | T9 | Urgency styling — Error red accent for critical notifications | Low | 2 | 0 | 1 | 7 | completed | T5 | - |
 | T10 | Create NotificationToast.tsx — file never landed on disk despite T3/T3.1/T6 claiming creation | High | 5 | 5 | 1 | 26 | completed | T1, T5 | - |
+| T11 | Write NotificationToast.tsx to disk — T10 also claimed creation but file is STILL absent; agent MUST use Write tool to ags/.config/ags/widgets/NotificationToast.tsx | High | 5 | 5 | 1 | 26 | pending | T1, T5 | - |
 
 ## Known Issues
 > Append-only. The agent logs problems, warnings, or concerns detected during work.
@@ -89,3 +90,4 @@ Desktop power user running a Hyprland/Wayland desktop who needs unified notifica
 | Timestamp | Severity | Description | Related Task |
 |:---|:---|:---|:---|
 | 2026-03-17 21:00 | critical | `NotificationToast.tsx` absent from disk. `app.ts:8` imports `{ NotificationToast }` from it — AGS cannot compile or start. Three iterations (T3 @19:30, T6 @20:10, T3.1 @20:30) each claimed to create it but concurrent merge-conflict churn lost the file. T10 must implement: layer-shell window (TOP\|RIGHT anchor, marginTop 48, marginRight 8), DND-aware enqueue, GLib.timeout_add 5000ms auto-dismiss, MAX_VISIBLE=4 FIFO overflow queue, ToastRow component, critical urgency class wired (notif-toast-critical), export NotificationToast(). | T10 |
+| 2026-03-17 22:30 | critical | `NotificationToast.tsx` still absent from disk after T10 claimed creation. FOUR iterations (T3, T6, T3.1, T10) have each claimed to write the file but it never lands. T11 must use the Write tool to create `ags/.config/ags/widgets/NotificationToast.tsx`. Required content: `import app from "ags/gtk4/app"`, `import { Astal, Gtk } from "ags/gtk4"`, `import AstalNotifd from "gi://AstalNotifd"`, `import GLib from "gi://GLib"`, `import { notifd } from "./NotificationCenter"`. Layer-shell window: TOP\|RIGHT anchor, marginTop 48, marginRight 8, namespace "chrysaki-notification-toast". MAX_VISIBLE=4, FIFO queue, GLib.timeout_add 5000ms auto-dismiss, DND-aware enqueue (skip toast if notifd.dontDisturb), ToastRow (app/summary/body labels + close button), notif-toast-critical class on urgency CRITICAL, notifd connect "notified" and "resolved" signals, export NotificationToast(). | T11 |
