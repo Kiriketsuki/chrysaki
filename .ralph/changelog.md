@@ -1,3 +1,18 @@
+## Iteration 10 - 2026-03-17 20:20
+**Task**: T15 - Document swaync removal in README.md
+
+### Introduced
+| Item | Type | File | Purpose |
+|:---|:---|:---|:---|
+| `### AGS Notification Center` | section | `README.md` | Documents the prerequisite (stop/disable swaync) before starting AGS, satisfying the Technical Constraint |
+
+### Design Notes
+- Added under the `## Installation` section — install instructions are the natural home for "do this before you run it" prerequisites.
+- Section intentionally minimal: one sentence description + one command block, satisfying the constraint without over-documenting.
+- `systemctl --user stop swaync && systemctl --user disable swaync` covers both the running process and the autostart, so AGS can claim D-Bus ownership on next login.
+
+---
+
 ## Iteration 8 - 2026-03-17 19:55
 **Task**: T13 - ROOT CAUSE FIXED — NotificationToast.tsx written AND staged with git add
 
