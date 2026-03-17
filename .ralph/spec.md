@@ -40,9 +40,9 @@ Desktop power user running a Hyprland/Wayland desktop who needs unified notifica
 - AstalNotifd API usage should follow the same Astal patterns already proven with AstalNetwork/AstalBattery
 
 ## Project Status
-- **Overall Status**: IN_PROGRESS
-- **Current Iteration**: 7
-- **Last Update**: 2026-03-17 23:45
+- **Overall Status**: COUNCIL_PENDING
+- **Current Iteration**: 8
+- **Last Update**: 2026-03-17 19:55
 - **Task Selection Mode**: scored
 
 <!-- Overall Status flow: IN_PROGRESS -> COUNCIL_PENDING -> VERIFICATION_PENDING -> MISSION_COMPLETE -->
@@ -84,7 +84,7 @@ Desktop power user running a Hyprland/Wayland desktop who needs unified notifica
 | T10 | Create NotificationToast.tsx — file never landed on disk despite T3/T3.1/T6 claiming creation | High | 5 | 5 | 1 | 26 | completed | T1, T5 | - |
 | T11 | Write NotificationToast.tsx to disk — T10 also claimed creation but file is STILL absent; agent MUST use Write tool to ags/.config/ags/widgets/NotificationToast.tsx | High | 5 | 5 | 1 | 26 | completed | T1, T5 | - |
 | T12 | EMERGENCY FILE WRITE — NotificationToast.tsx still absent after 5 iterations and 2 council reviews. Protocol: (1) Run `ls ags/.config/ags/widgets/` to confirm file is missing. (2) Use the Write tool with absolute path `/home/kiriketsuki/dots/chrysaki-ralph-ags-notification-center/ags/.config/ags/widgets/NotificationToast.tsx`. (3) Run `ls ags/.config/ags/widgets/NotificationToast.tsx` to confirm file now exists. (4) Only then mark completed. Do NOT use Edit, Bash echo/cat, or any tool other than Write. | High | 5 | 5 | 1 | 26 | completed | T1, T5 | - |
-| T13 | ROOT CAUSE FIXED — Write NotificationToast.tsx AND stage it. SYSTEMIC FAILURE: every prior iteration wrote the file but never ran `git add`, so the untracked file was lost when the worktree was cleaned up. Git history confirms T12 commit contains only .ralph/ files — the file was never captured. MANDATORY PROTOCOL: (1) Bash: `ls ags/.config/ags/widgets/NotificationToast.tsx` — expect "No such file". (2) Write tool: absolute path `/home/kiriketsuki/dots/chrysaki-ralph-ags-notification-center/ags/.config/ags/widgets/NotificationToast.tsx` with the full file content (see Known Issues T12 entry for spec). (3) Bash: `ls ags/.config/ags/widgets/NotificationToast.tsx` — confirm file exists. (4) Bash: `git -C /home/kiriketsuki/dots/chrysaki-ralph-ags-notification-center add ags/.config/ags/widgets/NotificationToast.tsx` — STAGE THE FILE. (5) Bash: `git -C /home/kiriketsuki/dots/chrysaki-ralph-ags-notification-center status` — confirm "new file: ags/.config/ags/widgets/NotificationToast.tsx" appears in staged changes. (6) Only mark completed after step 5 confirms staged status. DO NOT SKIP STEPS 4 AND 5. | High | 5 | 5 | 1 | 26 | pending | T1, T5 | - |
+| T13 | ROOT CAUSE FIXED — Write NotificationToast.tsx AND stage it. SYSTEMIC FAILURE: every prior iteration wrote the file but never ran `git add`, so the untracked file was lost when the worktree was cleaned up. Git history confirms T12 commit contains only .ralph/ files — the file was never captured. MANDATORY PROTOCOL: (1) Bash: `ls ags/.config/ags/widgets/NotificationToast.tsx` — expect "No such file". (2) Write tool: absolute path `/home/kiriketsuki/dots/chrysaki-ralph-ags-notification-center/ags/.config/ags/widgets/NotificationToast.tsx` with the full file content (see Known Issues T12 entry for spec). (3) Bash: `ls ags/.config/ags/widgets/NotificationToast.tsx` — confirm file exists. (4) Bash: `git -C /home/kiriketsuki/dots/chrysaki-ralph-ags-notification-center add ags/.config/ags/widgets/NotificationToast.tsx` — STAGE THE FILE. (5) Bash: `git -C /home/kiriketsuki/dots/chrysaki-ralph-ags-notification-center status` — confirm "new file: ags/.config/ags/widgets/NotificationToast.tsx" appears in staged changes. (6) Only mark completed after step 5 confirms staged status. DO NOT SKIP STEPS 4 AND 5. | High | 5 | 5 | 1 | 26 | completed | T1, T5 | - |
 
 ## Known Issues
 > Append-only. The agent logs problems, warnings, or concerns detected during work.

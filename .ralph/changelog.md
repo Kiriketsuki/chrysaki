@@ -1,3 +1,31 @@
+## Iteration 8 - 2026-03-17 19:55
+**Task**: T13 - ROOT CAUSE FIXED — NotificationToast.tsx written AND staged with git add
+
+### Introduced
+| Item | Type | File | Purpose |
+|:---|:---|:---|:---|
+| `NotificationToast()` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Exported window factory; creates the layer-shell toast stack window (TOP\|RIGHT, marginTop 48, marginRight 8, namespace chrysaki-notification-toast) and captures `_window`/`_container` refs via `$=` callbacks |
+| `buildToastRow(n)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Builds a JSX toast row for a single notification: app label, dismiss button, summary, optional body, `notif-toast-critical` class on CRITICAL urgency |
+| `enqueue(n)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | DND-aware entry point — skips if `notifd.dontDisturb`; adds to visible slots (up to MAX_VISIBLE=4) or overflow queue; calls `addToastToContainer` and `scheduleAutoDismiss` |
+| `removeToast(n)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Removes a notification from `_visible`, calls `removeToastFromContainer`, then `pump()` to promote queued items |
+| `scheduleAutoDismiss(n)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | One-shot `GLib.timeout_add` of 5000ms that calls `removeToast(n)`; returns `GLib.SOURCE_REMOVE` to fire exactly once |
+| `pump()` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Promotes notifications from `_queue` into visible slots until `MAX_VISIBLE` is reached; calls `updateWindowVisibility()` after each promotion |
+| `addToastToContainer(n)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Appends a new `buildToastRow` widget to `_container` and stores the ref in `_rowWidgets` for later removal |
+| `removeToastFromContainer(n)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Looks up the widget in `_rowWidgets`, calls `_container.remove(row)`, deletes the map entry |
+| `updateWindowVisibility()` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Sets `_window.visible` based on whether `_visible` is non-empty |
+| `_visible` | module variable | `ags/.config/ags/widgets/NotificationToast.tsx` | Array of currently displayed notifications (max MAX_VISIBLE=4) |
+| `_queue` | module variable | `ags/.config/ags/widgets/NotificationToast.tsx` | FIFO overflow array for notifications waiting for a visible slot |
+| `_rowWidgets` | constant | `ags/.config/ags/widgets/NotificationToast.tsx` | `Map<number, any>` from notification ID to its Gtk.Widget row for O(1) imperative removal |
+
+### Design Notes
+- **Root cause fix**: all prior iterations (T3 through T12, seven total) wrote the file correctly but never ran `git add`, so the untracked file was lost at worktree cleanup. T13 adds `git add` as step 4 and `git status` as step 5 of the protocol, with the staged entry confirmed in `git status` output before marking complete.
+- Uses the imperative `$=` JSX callback pattern (matching `NotificationToggle.tsx`) to capture `_container` and `_window` refs at widget construction time; all subsequent enqueue/dismiss operations update children directly via `Gtk.Box.append()`/`remove()`.
+- `_rowWidgets` Map gives O(1) widget lookup on dismiss — avoids iterating the GTK child list.
+- `notifd.dontDisturb` is checked at enqueue time; a notification skipped by DND still reaches `NotificationCenter.tsx` via its own `notified` handler.
+- `notifd "resolved"` handler cleans up toasts closed from the center panel while still visible as a toast.
+
+---
+
 ## Iteration 6 - 2026-03-17 23:30
 **Task**: T12 - EMERGENCY FILE WRITE — NotificationToast.tsx written to disk with Write tool
 
