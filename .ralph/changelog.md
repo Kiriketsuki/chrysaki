@@ -1,3 +1,28 @@
+## Iteration 3 - 2026-03-17 19:45
+**Task**: T5 - _notifications.scss — panel, toast, badge styling (Chrysaki tokens, chamfered containers)
+
+### Introduced
+| Item | Type | File | Purpose |
+|:---|:---|:---|:---|
+| chamfered clip-path on `.notif-row` | CSS rule | `ags/.config/ags/styles/_notifications.scss` | 8px polygon chamfer on notification rows; no explicit border (clip-path clips it); hover brightens background tint |
+| `.notif-row-critical` | CSS class | `ags/.config/ags/styles/_notifications.scss` | Error-red tint modifier for critical-urgency rows; overrides app-name color to `$blonde-light` for safe text on dark |
+| `.notif-toast-list` | CSS class | `ags/.config/ags/styles/_notifications.scss` | Container box inside the toast window; zero padding so toasts stack flush |
+| `.notif-toast` | CSS class | `ags/.config/ags/styles/_notifications.scss` | Chamfered toast card at high alpha ($surface 0.92); hover lifts to $raised 0.95 |
+| `.notif-toast-critical` | CSS class | `ags/.config/ags/styles/_notifications.scss` | Error-red background for critical toasts; hover shifts to error-light; app name uses `$blonde-light` |
+| `.notif-toast-header` | CSS class | `ags/.config/ags/styles/_notifications.scss` | Header row inside a toast (app name + close button); 3px bottom margin |
+| `.notif-toast-app` | CSS class | `ags/.config/ags/styles/_notifications.scss` | App name label in toast — emerald-light, small bold |
+| `.notif-toast-close` | CSS class | `ags/.config/ags/styles/_notifications.scss` | Close button in toast — transparent, muted; hover turns error-red |
+| `.notif-toast-summary` | CSS class | `ags/.config/ags/styles/_notifications.scss` | Summary text in toast — primary color, bold 13px |
+| `.notif-toast-body` | CSS class | `ags/.config/ags/styles/_notifications.scss` | Body text in toast — secondary color, 12px, 2px top margin |
+
+### Design Notes
+- `.notif-row` gains the standard Chrysaki chamfer (`polygon(8px 0%, ...)`) for geometric consistency with other design system elements. Because `clip-path` clips borders off, the border declaration is removed; background-color tint is the only visual boundary.
+- Toast cards use a high-alpha Surface background (`rgba(28,31,43,0.92)`) unlike the panel which uses low-alpha for compositor blur to show through. Toasts float without guaranteed blur context, so they need their own opacity for contrast.
+- Urgency classes (`.notif-row-critical`, `.notif-toast-critical`) are defined here as foundation for T9, keeping T5 and T9 cleanly separated: T5 provides the CSS, T9 wires the JSX class conditionals.
+- `$blonde-light` is used as app-name text on critical red backgrounds — it is a "safe text accent on dark" per CLAUDE.md design rules, providing clear source attribution without reading as a second error signal.
+
+---
+
 ## Iteration 2 - 2026-03-17 19:30
 **Task**: T3 - NotificationToast.tsx — toast popup window with auto-dismiss timer
 
