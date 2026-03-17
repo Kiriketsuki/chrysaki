@@ -1,3 +1,14 @@
+## Iteration 5 - 2026-03-17 19:50
+**Task**: T5.1 - Register _notifications.scss in style.scss
+
+### Introduced
+No new items introduced.
+
+### Design Notes
+- `@use "styles/notifications"` was already present in `style.scss` (line 13), added by a prior iteration alongside the _notifications.scss stub. No file changes were required; spec status updated to `completed`.
+
+---
+
 ## Iteration 3 - 2026-03-17 19:45
 **Task**: T5 - _notifications.scss — panel, toast, badge styling (Chrysaki tokens, chamfered containers)
 
