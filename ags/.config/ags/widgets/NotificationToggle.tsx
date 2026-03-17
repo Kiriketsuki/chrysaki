@@ -1,13 +1,11 @@
-import { execAsync } from "ags/process"
+import { toggleNotificationCenter } from "./NotificationCenter"
 
 export function NotificationToggle() {
   return (
     <button
       class="utility-button"
       label="󰂚"
-      onClicked={() =>
-        execAsync(["bash", "-c", "swaync-client -t"]).catch(console.error)
-      }
+      onClicked={() => toggleNotificationCenter()}
       tooltipText="Toggle notifications"
     />
   )
