@@ -40,7 +40,7 @@ Desktop power user running a Hyprland/Wayland desktop who needs unified notifica
 - AstalNotifd API usage should follow the same Astal patterns already proven with AstalNetwork/AstalBattery
 
 ## Project Status
-- **Overall Status**: IN_PROGRESS
+- **Overall Status**: COUNCIL_PENDING
 - **Current Iteration**: 3
 - **Last Update**: 2026-03-17 20:30
 - **Task Selection Mode**: scored
