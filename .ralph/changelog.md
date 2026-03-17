@@ -149,3 +149,21 @@ No new items introduced. NotificationToggle.tsx already called `toggleNotificati
 - `teal-light` is chosen for the app name accent — it is a safe text color on dark surfaces per CLAUDE.md rules, and signals "informational source" without the urgency of blonde or error-red.
 
 ---
+
+## Iteration 3 - 2026-03-17 19:00
+**Task**: T7 - Notification actions — render action buttons, fire D-Bus callbacks
+
+### Introduced
+| Item | Type | File | Purpose |
+|:---|:---|:---|:---|
+| action buttons block in `NotificationRow` | JSX | `ags/.config/ags/widgets/NotificationCenter.tsx` | Conditionally renders a row of action buttons below the notification body; each button calls `n.invokeAction(action.id)` to fire the D-Bus callback |
+| `.notif-actions` | CSS class | `ags/.config/ags/styles/_notifications.scss` | Flex container for action buttons with top border separator and 6px margin-top |
+| `.notif-action-btn` | CSS class | `ags/.config/ags/styles/_notifications.scss` | Emerald-accented action button with hover/active states; hexpand so buttons share row space evenly |
+
+### Design Notes
+- Actions render only when `n.actions.length > 0` — no empty box rendered for notifications without actions.
+- Buttons use `hexpand` so multiple actions split the available width evenly across the row.
+- Emerald accent (`$emerald-light`) chosen per design system: emerald is the primary jewel tone for interactive elements on dark surfaces.
+- `n.invokeAction(id)` is the AstalNotifd D-Bus callback; the notification daemon delivers the action to the originating app.
+
+---

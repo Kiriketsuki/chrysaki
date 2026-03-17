@@ -136,3 +136,30 @@
   font-size: 12px;
   margin-top: 2px;
 }
+
+// --- Notification action buttons ---
+
+.notif-actions {
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.notif-action-btn {
+  background: rgba(26, 138, 106, 0.15);
+  border: 1px solid rgba(26, 138, 106, 0.3);
+  color: $emerald-light;
+  font-size: 11px;
+  padding: 3px 8px;
+  min-width: 0px;
+
+  &:hover {
+    background: rgba(26, 138, 106, 0.3);
+    border-color: $emerald-light;
+    color: $text-primary;
+  }
+
+  &:active {
+    background: rgba(26, 138, 106, 0.45);
+  }
+}
