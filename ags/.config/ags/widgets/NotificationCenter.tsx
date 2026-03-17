@@ -104,8 +104,13 @@ function formatTimestamp(unixTime: number): string {
 }
 
 function NotificationRow(n: AstalNotifd.Notification) {
+  const isCritical = n.urgency === AstalNotifd.Urgency.CRITICAL
   return (
-    <box class="notif-row" orientation={1} spacing={2}>
+    <box
+      class={`notif-row${isCritical ? " notif-row-critical" : ""}`}
+      orientation={1}
+      spacing={2}
+    >
       <box class="notif-row-header" spacing={6}>
         <label
           class="notif-row-app"

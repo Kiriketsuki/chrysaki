@@ -80,7 +80,7 @@ Desktop power user running a Hyprland/Wayland desktop who needs unified notifica
 | T6 | app.ts — register NotificationCenter() and NotificationToast() in main() | High | 4 | 0 | 1 | 13 | pending | T2, T3 | - |
 | T7 | Notification actions — render action buttons, fire D-Bus callbacks | Med | 3 | 0 | 2 | 11 | completed | T2.1 | - |
 | T8 | Body markup rendering — formatted text support | Med | 3 | 0 | 2 | 11 | completed | T2.1 | - |
-| T9 | Urgency styling — Error red accent for critical notifications | Low | 2 | 0 | 1 | 7 | pending | T5 | - |
+| T9 | Urgency styling — Error red accent for critical notifications | Low | 2 | 0 | 1 | 7 | completed | T5 | - |
 
 ## Known Issues
 > Append-only. The agent logs problems, warnings, or concerns detected during work.

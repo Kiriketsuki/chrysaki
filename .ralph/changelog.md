@@ -1,3 +1,18 @@
+## Iteration 5 - 2026-03-17 20:00
+**Task**: T9 - Urgency styling — Error red accent for critical notifications
+
+### Introduced
+| Item | Type | File | Purpose |
+|:---|:---|:---|:---|
+| `isCritical` | local variable | `ags/.config/ags/widgets/NotificationCenter.tsx` | Boolean derived from `n.urgency === AstalNotifd.Urgency.CRITICAL`; drives conditional class |
+
+### Design Notes
+- `AstalNotifd.Urgency.CRITICAL` is the GObject enum value (vapi: `Urgency.CRITICAL`), accessible directly via the GI binding in TypeScript.
+- Class string is `notif-row notif-row-critical` for critical, `notif-row` otherwise — modifier pattern matches existing DND button styling convention in the same file.
+- `notif-toast-critical` (already in _notifications.scss) cannot be wired yet: `NotificationToast.tsx` is not present on disk. Will be applied when that file is created by T3/T6.
+
+---
+
 ## Iteration 5 - 2026-03-17 19:50
 **Task**: T5.1 - Register _notifications.scss in style.scss
 
