@@ -100,3 +100,35 @@ No new items introduced. NotificationToggle.tsx already called `toggleNotificati
 - `_setUnreadCount` is intentionally unexported — only the panel toggle and the `notified` signal should mutate count.
 
 ---
+
+## Iteration 3 - 2026-03-17 19:00
+**Task**: T2.1 - Notification list rendering — summary, body, timestamp, dismiss button per notification
+
+### Introduced
+| Item | Type | File | Purpose |
+|:---|:---|:---|:---|
+| `formatTimestamp(unixTime)` | function | `widgets/NotificationCenter.tsx` | Converts a Unix timestamp to a human-readable relative string ("just now", "5m ago", "2h ago", "3d ago") |
+| `NotificationRow(n)` | function | `widgets/NotificationCenter.tsx` | Renders one notification as a box with header row (app name, timestamp, dismiss button), summary label, and optional body label |
+| `notifd` | exported const | `widgets/NotificationCenter.tsx` | AstalNotifd singleton — registers AGS as D-Bus notification daemon; exported for downstream tasks |
+| `getUnreadCount()` | exported function | `widgets/NotificationCenter.tsx` | Returns current unread count (incremented on `notified` signal, reset on panel open) |
+| `onUnreadChange(cb)` | exported function | `widgets/NotificationCenter.tsx` | Registers a listener called whenever unread count changes |
+| `toggleNotificationCenter()` | exported function | `widgets/NotificationCenter.tsx` | Shows/hides the panel; resets unread count to 0 on open |
+| `DndToggle()` | function | `widgets/NotificationCenter.tsx` | Binds to `notifd.dontDisturb` reactively; icon and class update on state change; click toggles DND |
+| `NotificationCenter()` | exported function | `widgets/NotificationCenter.tsx` | Layer-shell panel window with header (title + DndToggle) and reactive notification list driven by `createBinding(notifd, "notifications")` |
+| `.notif-row` | CSS class | `styles/_notifications.scss` | Individual notification container — frosted tint background, 1px border, hover brightening |
+| `.notif-row-header` | CSS class | `styles/_notifications.scss` | Row header box — contains app name, timestamp, and dismiss button |
+| `.notif-row-app` | CSS class | `styles/_notifications.scss` | App name label — teal-light color, small bold font |
+| `.notif-row-time` | CSS class | `styles/_notifications.scss` | Timestamp label — muted text, small font |
+| `.notif-dismiss-btn` | CSS class | `styles/_notifications.scss` | Dismiss button — transparent, muted color; turns error-red on hover |
+| `.notif-row-summary` | CSS class | `styles/_notifications.scss` | Summary label — primary text, bold, wraps to multiple lines |
+| `.notif-row-body` | CSS class | `styles/_notifications.scss` | Body label — secondary text, smaller font, ellipsized at end |
+| `.notif-empty` | CSS class | `styles/_notifications.scss` | Empty-state label shown when notifications list is empty |
+
+### Design Notes
+- `NotificationRow` uses a flat two-level structure: header row (app + time + dismiss) above summary, with body below if non-empty. This matches common notification UX patterns (macOS, GNOME).
+- The notification list uses `createBinding(notifd, "notifications").as(list => ...)` to render reactively — list re-renders whenever a notification is added or dismissed. `[...list].reverse()` shows newest-first.
+- `n.dismiss()` is the AstalNotifd API for closing a notification — this fires the D-Bus `CloseNotification` call and triggers the `resolved` signal, causing the list to re-render via the binding.
+- Both files were absent on disk despite prior parallel iterations claiming to have created them. This iteration creates them as a complete, coherent file consolidating T2 (panel skeleton), T4 (unread state), T2.3 (DND toggle), and T2.1 (notification rows).
+- `teal-light` is chosen for the app name accent — it is a safe text color on dark surfaces per CLAUDE.md rules, and signals "informational source" without the urgency of blonde or error-red.
+
+---
