@@ -1,0 +1,16 @@
+@use "palette" as *;
+
+.media-label {
+  color: $text-primary;
+  font-size: 12px;
+}
+
+.network-icon {
+  color: $text-primary;
+  font-size: 16px;
+}
+
+.network-ssid {
+  color: $text-primary;
+  font-size: 12px;
+}

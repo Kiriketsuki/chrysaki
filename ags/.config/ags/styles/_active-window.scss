@@ -1,0 +1,7 @@
+@use "palette" as *;
+
+.active-window-label {
+  color: $text-primary;
+  font-size: 12px;
+  font-style: italic;
+}

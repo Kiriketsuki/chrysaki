@@ -1,0 +1,43 @@
+@use "palette" as *;
+
+.workspace-pips {
+  padding: 0px 4px;
+}
+
+.pip-button {
+  background: transparent;
+  border: none;
+  padding: 2px 4px;
+  min-width: 24px;
+  min-height: 22px;
+}
+
+.pip {
+  min-width: 8px;
+  min-height: 8px;
+  transition: background 150ms ease;
+}
+
+.pip-inactive {
+  background: $border;
+}
+
+.pip-occupied {
+  background: $emerald-dim;
+}
+
+.pip-active-0 {
+  background: $emerald-light;
+}
+
+.pip-active-1 {
+  background: $blue-light;
+}
+
+.pip-active-2 {
+  background: $amethyst-light;
+}
+
+.pip-urgent {
+  background: $error;
+}

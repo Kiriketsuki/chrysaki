@@ -1,0 +1,13 @@
+@use "palette" as *;
+
+.utility-button {
+  color: $text-primary;
+  font-size: 14px;
+  background: transparent;
+  border: none;
+  padding: 0px 4px;
+
+  &:hover {
+    color: $text-secondary;
+  }
+}

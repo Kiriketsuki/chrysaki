@@ -1,0 +1,21 @@
+@use "styles/palette" as *;
+@use "styles/glass" as *;
+@use "styles/bar";
+@use "styles/workspaces";
+@use "styles/clock";
+@use "styles/battery";
+@use "styles/powermenu";
+@use "styles/should-have";
+@use "styles/active-window";
+@use "styles/pulseaudio";
+@use "styles/utility-buttons";
+@use "styles/services";
+
+* {
+  font-family: "Space Grotesk", "IosevkaTermSlab Nerd Font", monospace;
+  font-size: 13px;
+}
+
+window {
+  background: transparent;
+}

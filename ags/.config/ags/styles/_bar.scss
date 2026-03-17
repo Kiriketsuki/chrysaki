@@ -1,0 +1,67 @@
+@use "palette" as *;
+@use "glass" as *;
+
+// Islands — ChamferedBar handles glass background via Cairo
+// CSS provides only min-height and padding for pointed tips
+.island-left {
+  min-height: 26px;
+  padding-right: 16px; // keep children clear of the pointed right tip
+}
+
+.island-center {
+  min-height: 26px;
+}
+
+.island-right {
+  min-height: 26px;
+  padding-left: 16px; // keep children clear of the pointed left tip
+}
+
+.tiled-bar {
+  min-height: 26px;
+}
+
+.segment {
+  padding: 0px 8px;
+  min-height: 26px;
+  color: $text-primary;
+}
+
+// System tray: hide menubutton dropdown arrows
+.segment-tray menubutton {
+  background: transparent;
+  border: none;
+  padding: 0px 2px;
+  min-width: 0px;
+}
+
+.segment-tray menubutton > box > image:last-child {
+  min-width: 0px;
+  min-height: 0px;
+}
+
+// Service status icons (Gio.FileIcon doesn't respect CSS color,
+// so we use opacity for health indication instead)
+.svc-icon {
+  opacity: 1.0;
+  transition: opacity 300ms ease;
+}
+
+.svc-error {
+  opacity: 0.35;
+}
+
+// System tray collapse/expand toggle
+.tray-toggle {
+  background: transparent;
+  border: none;
+  color: $text-primary;
+  font-size: 14px;
+  padding: 0px 2px;
+  min-width: 0px;
+  min-height: 0px;
+
+  &:hover {
+    color: $text-secondary;
+  }
+}

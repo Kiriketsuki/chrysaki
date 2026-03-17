@@ -1,3 +1,24 @@
+## 2026-03-16 Handoff
+
+### Decisions
+- 4 slash renderers replaced with user-supplied SVG designs (glow/wind/diamond/lightning → SVG1–4)
+- Colors reverted to JEWEL_PALETTE after brief "black slash" experiment (superseded by SVG designs)
+- Ripple base color now updates immediately on every addRipple() call (not just MAX_RIPPLES eviction)
+- Ripple wave-front alpha raised 0.35 → 0.80; inner trail fades PEAK→base not PEAK→0
+- T5 intersection flash: 8-vertex star (outerR=h*0.35, innerR=h*0.15), 200ms fade
+- lerpColor removed (T6 never planned)
+
+### Failed Approaches
+- Original 4 slash shapes: user said "horrible" — replaced with user-supplied SVGs
+- Black slash approach: hardcoded BLACK const, superseded by colored SVG designs
+- Ripple base-only-on-eviction: never triggered in practice, moved to every fire
+
+### Handoff Target
+- Plan file: 2026-03-16-ags-slash-ripple-flash.md
+- Branch: feat/ags-bar
+
+---
+
 ## 2026-03-04 Handoff
 
 ### Decisions
@@ -98,5 +119,307 @@
 ### Handoff Target
 - Plan file: .claude/handoffs/2026-03-10-09h40-tmux-rice-palette.md
 - Branch: feat/tmux-rice
+
+---
+
+## 2026-03-15 Handoff
+
+### Decisions
+- Cairo separators (16px drawingarea) instead of CSS clip-path — GTK4 doesn't support clip-path
+- accessor() not .get() for dependency tracking in gnim reactive system
+- createState + hyprland.connect("urgent") for urgent workspace — no bindable property
+- ws.clients.length for occupancy — no get_client_count() method
+- item.get_menu_model() for tray — no create_menu() method
+- Segment bg colors use dim variants with alpha to avoid milky look
+- zigzag-alt (|,\) preset matches tmux port
+
+### Failed Approaches
+- {...children} JSX spread — spreads indices as props, use {children}
+- accessor.get() in createComputed — no dependency tracking
+- hyprland.urgentWorkspace property — doesn't exist
+- workspace.get_client_count() — doesn't exist
+- trayItem.create_menu() — doesn't exist
+- ags init without -d flag — created in wrong directory
+- npm install -g sass — permission denied, use --prefix ~/.local
+
+### Handoff Target
+- Plan file: .claude/handoffs/2026-03-15-15h19-ags-bar-implementation.md
+- Branch: main (no feature branch yet — needs branch + PR)
+
+---
+
+## 2026-03-15 Handoff (16h00) — Cleanup
+
+### Decisions
+- ThemeButton removed from BarRight (user: "do not need to show the palette anymore")
+- BarCenter EXCLUSIVE, BarLeft/BarRight NORMAL (don't steal screen space)
+- Workspace pips: occupied+active only via Cairo DrawingArea
+- All segment alpha 0.7, bar height 40px
+- waybar replaced by ags in hyprland.conf autostart
+
+### Failed Approaches
+- Bash tool completely blocked after worktree deletion (session CWD = deleted dir)
+- Spawning subagent to run bash commands also blocked by same CWD issue
+
+### Handoff Target
+- Plan file: .claude/handoffs/2026-03-15-16h00-ags-bar-cleanup.md
+- Branch: feat/ags-bar (chrysaki subrepo)
+
+---
+
+## 2026-03-15 Handoff (17h25) — Textures & Chamfer
+
+### Decisions
+- `Binding.as()` deprecated in AGS v3 — use `<For each={binding}>` for dynamic widget children
+- `createComputed` works for primitive props (label, visible, class) but NOT for widget children via `.as()`
+- BarLeft/BarRight exclusivity changed NORMAL → IGNORE (renders at true top edge, not pushed by EXCLUSIVE zones)
+- ServiceStatus (4 health dots) removed — too cryptic for glance bar
+- WallpaperButton removed — user requested
+- Waybar fully disabled: palette script restarts AGS instead
+- Hyprland layer rules added for chrysaki-bar-* blur
+- Diagonal crosshatch texture added to glass mixin (AutoConnect-inspired)
+- Border-radius used as chamfer approximation (GTK4 CSS lacks clip-path)
+- Segment padding reduced 20px → 8px, SSID truncated to 8 chars
+
+### Failed Approaches
+- `Binding.as()` for SystemTray: dumps Accessor toString() as visible text. Fixed with `<For>`.
+- `createComputed().as()` for ServiceStatus: same text dump. Fixed with createComputed for class prop.
+- Gtk.Overlay for chamfered island bg: DrawingArea main child collapses to 0x0. set_measure_overlay didn't help. Window shows 1x1px.
+- `status((s) => transform)` on createPoll Accessor: Accessor doesn't support Binding-style transform call.
+
+### Handoff Target
+- Plan file: .claude/handoffs/2026-03-15-17h25-ags-bar-textures-chamfer.md
+- Branch: feat/ags-bar (chrysaki subrepo)
+
+---
+
+## 2026-03-15 Handoff
+
+### Decisions
+- WaveAnimationState is pure TS (Date.now()), no GTK deps — called from GLib timer in ChamferedIsland
+- DEFAULT_FRAME in cairo-island.ts for BarCenter (no gradient, static hatch)
+- DIM_COLORS array replaces single OCCUPIED_COLOR — tri-primary per workspace
+- 16px padding on pointed island tips
+
+### Failed Approaches
+- `ags --quit` is not valid — use `ags quit -i chrysaki-bar`
+
+### Handoff Target
+- Plan file: 2026-03-15-00h00-ags-bar-visual-polish.md
+- Branch: feat/ags-bar
+
+---
+
+## 2026-03-16 Handoff — Wave-Driven Flat Color Transition
+
+### Decisions
+- Flat color fill replaces cycling gradient — single `colors[currentColorIndex]` fill during idle
+- Light-variant palette (0.35 alpha) over dim variants — dim was too muddy
+- Direction-aware smoothstep: L→R `(waveCenter+hw - x)`, R→L `(x - (waveCenter-hw))` — original single formula was inverted
+- Per-line stroke fixes latent batch `cr.stroke()` bug (last line's color/width applied to all)
+- Black hatch (user preference), sword-strike animation (per-line draw-itself timing, not gaussian glow)
+- Kill AGS via gjs PID, not `ags quit` (unreliable)
+
+### Failed Approaches
+- Single smoothstep formula for both directions: blend inverted, new color at wave start then snapped
+- Gaussian brightness modulation on static lines: user wanted lines to animate edge-to-edge
+- Batch cr.stroke(): per-line alpha/width variation was silently broken
+
+### Handoff Target
+- Plan file: .claude/handoffs/2026-03-16-11h40-ags-wave-flat-color.md
+- Branch: feat/ags-bar
+
+---
+
+## 2026-03-16 Handoff — Wave System Revamp & Ripple Polish
+
+### Decisions
+- Two dedicated spawners (L→R / R→L) replace pooled wave array + random direction pick
+- Wave speed + slash timing fixed at wave spawn — consistent cadence per wave
+- SLASH_WAIT_FRACTION = 0.5 — overlap, 2+ slashes visible at once
+- Wave cooldown 600–2000ms (was 1800–4800ms)
+- cy locked to 0.5 ± 0.05 normalised (±2px on 40px bar)
+- cx jitter narrowed to ±0.015 normalised
+- Ripple: sqrt alpha decay over 700ms, birth flash, 1px ring steps
+- Base texture removed; intersection flash (8-vertex star) removed
+- BarCenter excluded from animation (intentional)
+
+### Failed Approaches
+- SLASH_WAIT_FRACTION 0.82: bar felt empty
+- Wave interval 1800–4800ms: too few waves
+- cy 0.2–0.8 spread: too much y variation
+
+### Handoff Target
+- Plan file: .claude/handoffs/2026-03-16-wave-slash-polish.md
+- Branch: feat/ags-bar
+
+---
+
+## 2026-03-16 Handoff — Slash/Wave Polish & Separator Math
+
+### Decisions
+- Slash direction alternates within each wave (back→forward→back…); first slash random
+- Red/blonde (Error Lt / Blonde) are slash-exclusive colors — excluded from JEWEL_PALETTE, appended internally as SLASH_COLORS, ripple picks capped to jewel count (4)
+- Waves stop on intersection — `stopWave(sweepDir)` kills active wave, starts normal cooldown
+- Intersecting slashes get 2× fade via `extendFade(id, 2)`
+- `waveSweepDir` field added to `ActiveSlash` and `InternalSlash`
+- Separator color derived: avg jewel → blend over Base at 0.35 → lerp 50% toward white → ~#8E98A1
+- Tray toggle chevron: `$text-primary` (was `$text-muted`)
+- SLASH_WAIT_FRACTION 0.5 → 0.4; slash timing +20%
+
+### Failed Approaches
+- `#363a4f` separator at 0.85: invisible on dark Base (~1.5:1 contrast)
+- Two-pass white+black separator: user said "ugly, doesn't fit theme"
+
+### Handoff Target
+- Plan file: .claude/handoffs/2026-03-16-ags-slash-wave-polish.md
+- Branch: feat/ags-bar
+
+---
+
+## 2026-03-16 Handoff — Visual Refinements (Phases 1-4)
+
+### Decisions
+- CUT 8→12, both bottom chamfers on left/right islands
+- Wave border: 2px black 0.38 alpha, period-1 harmonics, bidirectional collision pulses via BorderWaveState
+- Smooth ripples: cairo.RadialGradient replaces stroked-arc loop, ring color lerps fromColorIndex→colorIndex
+- Pip colors: occupied=#363a4f, active=#1c3d7a fill + #FBB13C text; rotation +π/2 per activation, 250ms ease-out-cubic
+- addPulse uses midCx (0..1) as perimeter fraction — good enough for wide bars
+- `ags quit` unreliable — always kill by gjs PID
+
+### Failed Approaches
+- `npx ags bundle`: npm can't resolve ags package — use `/usr/bin/ags bundle`
+
+### Handoff Target
+- Plan file: .claude/handoffs/2026-03-16-22h00-ags-bar-visual-refinement.md
+- Branch: feat/ags-bar
+
+---
+
+## 2026-03-17 Handoff — Border Wave Polish & Font
+
+### Decisions
+- Font: Patrick Hand → Caveat (user loves it, keep)
+- Physical wavelength: N = round(islandWidth / 6px) — consistent cycle density across all islands
+- Single shared temporal phase (not separate top/bottom) — definitive slant fix
+- Spatial phase gradient shared between edges — locally-varying frequency without slant
+- Border: black 70% alpha, 0.5px line width
+- Gaussian σ=0.45, amplitude 1px, period 1.5-2.3s, FREQ_MOD_DEPTH=0.3
+
+### Failed Approaches
+- Separate top/bottom phases: caused slant (different temporal factor at same x)
+- Fixed random N per island: right island looked different from left
+
+### Handoff Target
+- Plan file: .claude/handoffs/2026-03-17-ags-border-wave-polish.md
+- Branch: feat/ags-bar
+
+---
+
+## 2026-03-17 Handoff — Wave Gaussian Envelope + Patrick Hand Font
+
+### Decisions
+- Wave parameterization changed from perimeter arc-length fraction to xNorm = pixelX / w — fixes slant (top/bottom now share same phase at same x)
+- Gaussian envelope σ=0.18 added — amplitude highest at center, ~0 at edges
+- N reduced {14,16,18} → {5,6,7} to give sketch-matching oval density
+- Secondary harmonic removed — single sine gives clean ovals
+- Pulse system updated from circular perimeter-distance to linear x-distance
+- Font: Yusei Magic → Patrick Hand (user requested test)
+- Kill AGS: `pkill -f ags` (pkill -x ags doesn't match)
+
+### Failed Approaches
+- Perimeter-fraction wave: top edge L→R, bottom edge R→L → same x = different t = phase mismatch = slanted loops
+
+### Handoff Target
+- Plan file: .claude/handoffs/2026-03-17-wave-gaussian-patrick-hand.md
+- Branch: feat/ags-bar
+
+---
+
+## 2026-03-17 Handoff — Slash Speed / Z-Index / Font
+
+### Decisions
+- Font: Caveat (too slanted) → Outfit (too simplified) → Oxanium (geometric, techy, upright)
+- Slash sweepSpeed doubled: 0.0003–0.0008 → 0.0007–0.0013 (crosses bar ~0.6–1.4s)
+- SLASH_WAIT_FRACTION halved: 0.4 → 0.2 (slashes twice as dense)
+- Colliding slashes elevated via snapshot.push_opacity(1.0) + fresh Graphene.Rect + append_cairo + pop
+- _collidingIds: Set<number> on ChamferedBar tracks which slashes are in an active collision
+
+### Failed Approaches
+- Bare second append_cairo (no push_opacity): user confirmed slashes still behind icons/text
+- Outfit font: "too simplified"
+
+### Handoff Target
+- Plan file: .claude/handoffs/2026-03-17-ags-slash-font-speed.md
+- Branch: feat/ags-bar
+
+---
+
+## 2026-03-17 Handoff — Slash Spawner Refactor & Shape Normalization
+
+### Decisions
+- InternalWave → InternalSpawner: time-triggered, one slash at a time; next fires at linger midpoint
+- slashSpacing = 0.55 * barH / barW (was 0.4, bumped slightly)
+- All 4 slash bodies normalized to ~21 units wide (lightning was 3.2 — worst offender)
+- NORMAL_ALPHA_SCALE = 0.25 in ChamferedIsland.tsx: normal slashes ghosted, collision slashes full alpha
+- AGS restart removed from generate_and_apply_palette.sh (fixed palette, no wallpaper dependency)
+- Kill AGS: use kill $(pgrep -f ags), not pkill -f ags (exit 144)
+
+### Failed Approaches
+- slashSpacing multiplier 3.0 with wide clamp [0.05, 0.20]: too sparse, reverted
+- pkill -f ags: unreliable (exit 144)
+
+### Handoff Target
+- Plan file: .claude/handoffs/2026-03-17-13h41-ags-slash-spawner-vibrancy.md
+- Branch: feat/ags-bar
+
+---
+
+## 2026-03-17 Handoff — Slash Animation Polish (Single Alternating Slashes)
+
+### Decisions
+- Single slashes per spawn (not pairs) — user rejected `∧/∨` closing pairs
+- Alternating `/\` direction — wave.nextDir toggles each spawn
+- Position-based spacing: `0.4 * barH / barW` (halved from 0.8)
+- Wave speed slowed: 0.00028–0.0005 normalised/ms (~2–3.5s bar crossing)
+- All phases doubled: appear=200ms, linger=400ms, fade=200ms
+- onCollision() replaces extendLinger+stopWave — resets both slashes, blocks spawners until slash fades
+- Collision linger=1200ms, fade=400ms; spawner unblocks 300–600ms after slash gone
+- Time-based spawning (700ms interval) tried and reverted — "too slow"
+- Font: Space Grotesk (settled)
+
+### Failed Approaches
+- Closing `∧/∨` pairs with finalOffset/pairOffset: user saw "cross slash" → simplified to single
+- Time-based spawning at appear+linger+fade/2 = 700ms: user said "too slow", reverted
+- push_opacity+append_cairo for z-elevation: slashes still behind icons — fixed with Gtk.Overlay
+
+### Handoff Target
+- Plan file: .claude/handoffs/2026-03-17-05h20-ags-slash-animation.md
+- Branch: feat/ags-bar
+
+---
+
+## 2026-03-16 Handoff — Autonomous Slash Waves + Radial Ripples
+
+### Decisions
+- Wave-based spawning (swordsmen advancing L→R or R→L), not individual random slashes
+- Stroke-ring ripples (shockwave: transparent center → peak at wave front → soft outer fade)
+- Ripple speed 0.8–1.6 px/ms (user: "much faster")
+- Glow slash merged to single blade (0.60) + low-alpha bloom (0.18) — original was too thick
+- Wind outer alpha 0.35→0.25, diamond band narrowed + white core 0.55→0.35
+- `withSlashTransform` pattern: canonical direction per renderer, mirror via `scale(-1,1)`
+- `patternCreateRadial` avoided (uncertain GJS API) — use `cr.arc` strokes instead
+- Vertical strip ripple fill abandoned (not radial enough) → `cr.arc` stroke rings
+
+### Failed Approaches
+- `patternCreateRadial` — uncertain GJS/AGS Cairo API availability
+- 2px vertical strips for ripple — looks like straight vertical sweeps
+- Filled disc ripples (concentric circles) — solid blobs, user wanted shockwave ring
+- Original two-shape glow (0.38 + 0.72 overlapping fills) — too thick
+- Individual random spawning — user wanted directional wave structure
+
+### Handoff Target
+- Plan file: lazy-hatching-popcorn.md (plan mode)
+- Branch: feat/ags-bar
 
 ---
