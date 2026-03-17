@@ -1,0 +1,125 @@
+@use "palette" as *;
+
+// --- Bar toggle wrapper ---
+
+.notif-toggle-wrap {
+  position: relative;
+}
+
+.notif-badge {
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  background: $error;
+  color: $text-primary;
+  font-size: 9px;
+  font-weight: bold;
+  min-width: 16px;
+  min-height: 16px;
+  padding: 0px 2px;
+}
+
+// --- Panel container ---
+
+.notif-panel {
+  background-color: rgba(15, 17, 23, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+  padding: 10px;
+  min-width: 320px;
+  max-width: 400px;
+}
+
+// --- Panel header ---
+
+.notif-panel-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+}
+
+.notif-panel-title {
+  color: $text-primary;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 4px 0px;
+}
+
+.notif-dnd-btn {
+  background: transparent;
+  border: none;
+  color: $text-secondary;
+  font-size: 16px;
+  padding: 2px 4px;
+  min-width: 0px;
+
+  &:hover {
+    color: $text-primary;
+  }
+}
+
+.notif-dnd-active {
+  color: $blonde-light;
+}
+
+// --- Notification list ---
+
+.notif-panel-list {
+  padding: 4px 0px;
+}
+
+.notif-empty {
+  color: $text-muted;
+  font-size: 12px;
+  padding: 16px 0px;
+}
+
+// --- Notification row ---
+
+.notif-row {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 8px 10px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.07);
+  }
+}
+
+.notif-row-header {
+  margin-bottom: 2px;
+}
+
+.notif-row-app {
+  color: $teal-light;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.notif-row-time {
+  color: $text-muted;
+  font-size: 10px;
+}
+
+.notif-dismiss-btn {
+  background: transparent;
+  border: none;
+  color: $text-muted;
+  font-size: 12px;
+  padding: 0px 2px;
+  min-width: 0px;
+
+  &:hover {
+    color: $error;
+  }
+}
+
+.notif-row-summary {
+  color: $text-primary;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.notif-row-body {
+  color: $text-secondary;
+  font-size: 12px;
+  margin-top: 2px;
+}
