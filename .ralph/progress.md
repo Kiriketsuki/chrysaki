@@ -24,3 +24,4 @@
 - **[2026-03-17 19:50]** (Iteration 5) chore: T5.1 completed. style.scss already contains `@use "styles/notifications"` at line 13 — task was satisfied by a prior iteration. No code change needed; status updated to completed.
 - **[2026-03-17 18:55]** (Iteration 6) merge-conflict: T9 deferred. Reason: source file merge conflict with concurrent task.
 - **[2026-03-17 18:58]** (Iteration 3) merge-conflict: T3.1 deferred. Reason: source file merge conflict with concurrent task.
+- **[2026-03-17 20:00]** (Iteration 5) feat: T9 — Urgency styling wired in NotificationRow. Added `isCritical` check (`n.urgency === AstalNotifd.Urgency.CRITICAL`) and appends `notif-row-critical` to the row class string. CSS classes were already defined in _notifications.scss (T5). NotificationToast.tsx not present on disk (T3/T6 pending), so toast urgency (`notif-toast-critical`) cannot be wired yet.
