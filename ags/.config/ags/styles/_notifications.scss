@@ -1,0 +1,279 @@
+@use "palette" as *;
+
+// ============================================================
+// Bar toggle button
+// ============================================================
+
+.notif-toggle-wrap {
+  position: relative;
+}
+
+// Flat-top hexagon badge (Chrysaki status indicator shape)
+.notif-badge {
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  background: $error;
+  color: $text-primary;
+  font-size: 9px;
+  font-weight: bold;
+  min-width: 16px;
+  min-height: 16px;
+  padding: 0px 2px;
+}
+
+// ============================================================
+// Panel window (glassmorphism — compositor blur provides depth)
+// ============================================================
+
+.notif-panel {
+  background-color: rgba(15, 17, 23, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+  padding: 10px;
+  min-width: 320px;
+  max-width: 400px;
+}
+
+// --- Panel header ---
+
+.notif-panel-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+}
+
+.notif-panel-title {
+  color: $text-primary;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 4px 0px;
+}
+
+.notif-clear-all-btn {
+  background: transparent;
+  border: none;
+  color: $text-muted;
+  font-size: 11px;
+  padding: 2px 6px;
+  min-width: 0px;
+
+  &:hover {
+    color: $error;
+  }
+}
+
+.notif-dnd-btn {
+  background: transparent;
+  border: none;
+  color: $text-secondary;
+  font-size: 16px;
+  padding: 2px 4px;
+  min-width: 0px;
+
+  &:hover {
+    color: $text-primary;
+  }
+}
+
+.notif-dnd-active {
+  color: $blonde-light;
+}
+
+// ============================================================
+// Panel notification list
+// ============================================================
+
+.notif-panel-list {
+  padding: 4px 0px;
+}
+
+.notif-empty {
+  color: $text-muted;
+  font-size: 12px;
+  padding: 16px 0px;
+}
+
+// ============================================================
+// Notification row (chamfered Chrysaki container)
+// clip-path produces the 8px chamfer; borders are omitted as
+// clip-path clips them off — use background tint instead.
+// ============================================================
+
+.notif-row {
+  clip-path: polygon(
+    8px 0%,
+    calc(100% - 8px) 0%,
+    100% 8px,
+    100% calc(100% - 8px),
+    calc(100% - 8px) 100%,
+    8px 100%,
+    0% calc(100% - 8px),
+    0% 8px
+  );
+  background: rgba(255, 255, 255, 0.04);
+  padding: 8px 12px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.07);
+  }
+}
+
+// Urgency modifier: critical notifications get Error red tint
+.notif-row-critical {
+  background: rgba(140, 47, 57, 0.15);
+
+  &:hover {
+    background: rgba(140, 47, 57, 0.25);
+  }
+
+  .notif-row-app {
+    color: $blonde-light;
+  }
+}
+
+.notif-row-header {
+  margin-bottom: 2px;
+}
+
+.notif-row-app {
+  color: $teal-light;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.notif-row-time {
+  color: $text-muted;
+  font-size: 10px;
+}
+
+.notif-dismiss-btn {
+  background: transparent;
+  border: none;
+  color: $text-muted;
+  font-size: 12px;
+  padding: 0px 2px;
+  min-width: 0px;
+
+  &:hover {
+    color: $error;
+  }
+}
+
+.notif-row-summary {
+  color: $text-primary;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.notif-row-body {
+  color: $text-secondary;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+// ============================================================
+// Notification action buttons
+// ============================================================
+
+.notif-actions {
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.notif-action-btn {
+  background: rgba(26, 138, 106, 0.15);
+  border: 1px solid rgba(26, 138, 106, 0.3);
+  color: $emerald-light;
+  font-size: 11px;
+  padding: 3px 8px;
+  min-width: 0px;
+
+  &:hover {
+    background: rgba(26, 138, 106, 0.3);
+    border-color: $emerald-light;
+    color: $text-primary;
+  }
+
+  &:active {
+    background: rgba(26, 138, 106, 0.45);
+  }
+}
+
+// ============================================================
+// Toast popup window (layer-shell, TOP | RIGHT anchor)
+// High alpha background: toasts float without compositor blur.
+// ============================================================
+
+.notif-toast-list {
+  padding: 0px;
+}
+
+// Chamfered toast card — matches .notif-row shape at larger scale
+.notif-toast {
+  clip-path: polygon(
+    8px 0%,
+    calc(100% - 8px) 0%,
+    100% 8px,
+    100% calc(100% - 8px),
+    calc(100% - 8px) 100%,
+    8px 100%,
+    0% calc(100% - 8px),
+    0% 8px
+  );
+  background: rgba(28, 31, 43, 0.92); // $surface at high alpha
+  padding: 10px 14px;
+  min-width: 300px;
+  max-width: 380px;
+
+  &:hover {
+    background: rgba(37, 40, 54, 0.95); // $raised at high alpha
+  }
+}
+
+// Urgency modifier: critical toasts get Error red background
+.notif-toast-critical {
+  background: rgba(140, 47, 57, 0.88);
+
+  &:hover {
+    background: rgba(181, 63, 74, 0.92);
+  }
+
+  .notif-toast-app {
+    color: $blonde-light;
+  }
+}
+
+.notif-toast-header {
+  margin-bottom: 3px;
+}
+
+.notif-toast-app {
+  color: $emerald-light;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.notif-toast-close {
+  background: transparent;
+  border: none;
+  color: $text-muted;
+  font-size: 12px;
+  padding: 0px 2px;
+  min-width: 0px;
+
+  &:hover {
+    color: $error;
+  }
+}
+
+.notif-toast-summary {
+  color: $text-primary;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.notif-toast-body {
+  color: $text-secondary;
+  font-size: 12px;
+  margin-top: 2px;
+}
