@@ -2,3 +2,4 @@
 - **[2026-03-17 00:10]** (Iteration 2) feat: T2 — Created NotificationCenter.tsx (panel window skeleton following ServicePanel pattern) and _notifications.scss stub. Exports notifd singleton for sub-tasks, toggleNotificationCenter() for NotificationToggle, and NotificationCenter() window. Discovered T1 never actually created either file despite being marked completed.
 - **[2026-03-17 17:42]** (Iteration 4) merge-conflict: T1.1 deferred. Reason: source file merge conflict with concurrent task.
 - **[2026-03-17 18:00]** (Iteration 4) chore: T1.1 completed. NotificationToggle.tsx already imports toggleNotificationCenter() from NotificationCenter.tsx with no swaync-client calls — task satisfied by prior iterations. No code change needed; status updated to completed.
+- **[2026-03-17 17:55]** (Iteration 5) merge-conflict: T2.3 deferred. Reason: source file merge conflict with concurrent task.
