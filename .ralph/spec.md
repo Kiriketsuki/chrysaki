@@ -40,9 +40,9 @@ Desktop power user running a Hyprland/Wayland desktop who needs unified notifica
 - AstalNotifd API usage should follow the same Astal patterns already proven with AstalNetwork/AstalBattery
 
 ## Project Status
-- **Overall Status**: IN_PROGRESS
-- **Current Iteration**: 5
-- **Last Update**: 2026-03-17 22:45
+- **Overall Status**: COUNCIL_PENDING
+- **Current Iteration**: 6
+- **Last Update**: 2026-03-17 23:30
 - **Task Selection Mode**: scored
 
 <!-- Overall Status flow: IN_PROGRESS -> COUNCIL_PENDING -> VERIFICATION_PENDING -> MISSION_COMPLETE -->
@@ -83,7 +83,7 @@ Desktop power user running a Hyprland/Wayland desktop who needs unified notifica
 | T9 | Urgency styling — Error red accent for critical notifications | Low | 2 | 0 | 1 | 7 | completed | T5 | - |
 | T10 | Create NotificationToast.tsx — file never landed on disk despite T3/T3.1/T6 claiming creation | High | 5 | 5 | 1 | 26 | completed | T1, T5 | - |
 | T11 | Write NotificationToast.tsx to disk — T10 also claimed creation but file is STILL absent; agent MUST use Write tool to ags/.config/ags/widgets/NotificationToast.tsx | High | 5 | 5 | 1 | 26 | completed | T1, T5 | - |
-| T12 | EMERGENCY FILE WRITE — NotificationToast.tsx still absent after 5 iterations and 2 council reviews. Protocol: (1) Run `ls ags/.config/ags/widgets/` to confirm file is missing. (2) Use the Write tool with absolute path `/home/kiriketsuki/dots/chrysaki-ralph-ags-notification-center/ags/.config/ags/widgets/NotificationToast.tsx`. (3) Run `ls ags/.config/ags/widgets/NotificationToast.tsx` to confirm file now exists. (4) Only then mark completed. Do NOT use Edit, Bash echo/cat, or any tool other than Write. | High | 5 | 5 | 1 | 26 | pending | T1, T5 | - |
+| T12 | EMERGENCY FILE WRITE — NotificationToast.tsx still absent after 5 iterations and 2 council reviews. Protocol: (1) Run `ls ags/.config/ags/widgets/` to confirm file is missing. (2) Use the Write tool with absolute path `/home/kiriketsuki/dots/chrysaki-ralph-ags-notification-center/ags/.config/ags/widgets/NotificationToast.tsx`. (3) Run `ls ags/.config/ags/widgets/NotificationToast.tsx` to confirm file now exists. (4) Only then mark completed. Do NOT use Edit, Bash echo/cat, or any tool other than Write. | High | 5 | 5 | 1 | 26 | completed | T1, T5 | - |
 
 ## Known Issues
 > Append-only. The agent logs problems, warnings, or concerns detected during work.
