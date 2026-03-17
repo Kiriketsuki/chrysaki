@@ -5,6 +5,7 @@ import { BarCenter } from "./widgets/BarCenter"
 import { BarRight } from "./widgets/BarRight"
 import { ServicePanel } from "./widgets/ServiceStatus"
 import { NotificationCenter } from "./widgets/NotificationCenter"
+import { NotificationToast } from "./widgets/NotificationToast"
 
 app.start({
   instanceName: "chrysaki-bar",
@@ -18,5 +19,6 @@ app.start({
     // Single-instance panels (not per-monitor)
     ServicePanel()
     NotificationCenter()
+    NotificationToast()
   },
 })
