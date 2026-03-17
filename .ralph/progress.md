@@ -6,3 +6,4 @@
 - **[2026-03-17 17:59]** (Iteration 2) merge-conflict: T3 deferred. Reason: source file merge conflict with concurrent task.
 - **[2026-03-17 18:30]** (Iteration 5) feat: T4 — Unread badge on NotificationToggle. Created NotificationCenter.tsx (T2 skeleton was missing on disk despite being marked completed), _notifications.scss stub, and updated NotificationToggle.tsx with a hex-badge label driven by getUnreadCount()/onUnreadChange() module-level state that resets when the panel opens.
 - **[2026-03-17 18:08]** (Iteration 4) merge-conflict: T2.3 deferred. Reason: source file merge conflict with concurrent task.
+- **[2026-03-17 18:11]** (Iteration 2) merge-conflict: T3 deferred. Reason: source file merge conflict with concurrent task.
