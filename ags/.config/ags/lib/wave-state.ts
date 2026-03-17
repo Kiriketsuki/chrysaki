@@ -15,13 +15,16 @@ export type SlashDir  = 'back' | 'forward'  // \ | /
 
 export interface ActiveSlash {
   readonly id: number
-  readonly cx: number        // normalised 0..1 along bar width
+  readonly cx: number        // meeting point (normalised 0..1) — where the pair converges
+  readonly drawnCx: number   // current visual x = cx + pairOffset * (1 - closeT)
   readonly cy: number        // normalised 0..1 along bar height
   readonly dir: SlashDir
   readonly type: SlashType
   readonly alpha: number     // 0..0.92 current opacity
   readonly colorIndex: number
   readonly waveSweepDir: 1 | -1  // which spawner produced this slash (+1 = L→R, -1 = R→L)
+  readonly appearing: boolean    // true while still in the appear phase (elapsed < appearMs)
+  readonly closeT: number        // 0=open (at pairOffset from cx), 1=closed (at cx)
 }
 
 // ── Gradient types ───────────────────────────────────────────────────────────
@@ -52,9 +55,10 @@ export interface GradientFrame {
 // ── RippleState ──────────────────────────────────────────────────────────────
 
 export interface ActiveRipple {
-  readonly cx: number        // normalised 0..1
-  readonly cy: number        // normalised 0..1
-  readonly colorIndex: number
+  readonly cx: number           // normalised 0..1
+  readonly cy: number           // normalised 0..1
+  readonly colorIndex: number   // target color
+  readonly fromColorIndex: number  // gradient base color at spawn — for ring color lerp
   readonly radiusPx: number
   readonly startMs: number
 }
@@ -107,9 +111,11 @@ export class RippleState {
     const ripples = this._ripples.length >= MAX_RIPPLES
       ? this._ripples.slice(1)
       : this._ripples
+    // Capture current gradient base color for the ring color lerp
+    const fromColorIndex = this._toStops[0]?.colorIndex ?? 0
     this._ripples = [
       ...ripples,
-      { cx, cy, colorIndex, radiusPx: 0, startMs: Date.now() },
+      { cx, cy, colorIndex, fromColorIndex, radiusPx: 0, startMs: Date.now() },
     ]
 
     // Trigger gradient regen — new main + supplementary avoiding the current pair
@@ -159,25 +165,23 @@ export class RippleState {
 
 // ── SlashEventState ─────────────────────────────────────────────────────────
 
-/** A wave: a swordsman advancing across the bar, spawning slashes as it goes. */
-interface InternalWave {
-  sweepDir: 1 | -1    // +1 = L→R, -1 = R→L (advance direction)
-  sweepX: number      // current wave front position (normalised 0..1)
-  sweepSpeed: number  // normalised units per ms — fixed at spawn
-  spawnTimer: number  // ms until next slash spawn within this wave
-  // Slash timing — fixed at wave spawn, constant for all slashes in this wave.
-  slashAppearMs: number
-  slashLingerMs: number
-  slashFadeMs: number
-  elapsed: number
-  totalLifeMs: number // retire after this many ms
-  lastSlashDir: SlashDir | null  // alternates each spawn; null = first slash, pick randomly
-  fixedColorIndex: number         // all slashes in this wave share one color
+/**
+ * A spawner: a directional cursor that marches across the bar one slash at a time.
+ * Position of each new slash = previous slash position + slashSpacing.
+ * Timing of each new slash = triggered when the current slash is near end of fade.
+ */
+interface InternalSpawner {
+  sweepDir: 1 | -1           // +1 = L→R, -1 = R→L
+  currentX: number           // x of the most recently spawned slash (normalised 0..1)
+  nextDir: SlashDir          // direction of the next slash — alternates each spawn
+  fixedColorIndex: number    // all slashes from this spawner share one color
+  activeSlashId: number | null  // ID of the slash currently being tracked for timing
+  done: boolean              // true when currentX has left the bar; waits for last slash to fade
 }
 
 interface InternalSlash {
   id: number
-  cx: number
+  cx: number   // visual x position (normalised 0..1)
   cy: number
   dir: SlashDir
   type: SlashType
@@ -190,58 +194,95 @@ interface InternalSlash {
   waveSweepDir: 1 | -1
 }
 
-/**
- * Fraction of the previous slash's total lifetime to wait before spawning
- * the next one. 0.82 = next slash starts when the previous is ~82% through
- * its fade — almost gone but not fully invisible.
- */
-const SLASH_WAIT_FRACTION = 0.4
+// ── Fixed slash timing ────────────────────────────────────────────────────────
+const SLASH_APPEAR_MS = 200  // ms to reach full alpha
+const SLASH_LINGER_MS = 300  // ms at full alpha before fade
+const SLASH_FADE_MS   = 200  // ms to fade out
 
-/** ms of cooldown between waves per spawner — controls tempo. */
+// Colliding slashes are reset to these unified values; their spawners stay blocked
+// until the slashes are fully gone.
+const COLLISION_LINGER_MS = 1200  // 3× normal linger
+const COLLISION_FADE_MS   =  400  // 2× normal fade
+
+/**
+ * Fraction through the linger phase at which the next slash is pre-spawned.
+ * 0.5 = spawn at the midpoint of linger → next slash appears while current is still bright.
+ */
+const SPAWN_LINGER_THRESHOLD = 0.5
+
+/** ms of cooldown between spawner runs — controls tempo. */
 const WAVE_INTERVAL_MIN = 600
 const WAVE_INTERVAL_MAX = 2000
 
 export class SlashEventState {
   private _slashes: InternalSlash[] = []
   // Two dedicated spawners — one per direction.
-  private _lrWave: InternalWave | null = null  // always L→R
-  private _rlWave: InternalWave | null = null  // always R→L
-  private _lrTimer: number  // cooldown until next L→R wave
-  private _rlTimer: number  // cooldown until next R→L wave
+  private _lrSpawner: InternalSpawner | null = null  // always L→R
+  private _rlSpawner: InternalSpawner | null = null  // always R→L
+  private _lrTimer: number  // cooldown until next L→R run
+  private _rlTimer: number  // cooldown until next R→L run
+  // Slash IDs that the spawners are blocked on — run restarts only once the slash fades.
+  private _lrWaitId: number | null = null
+  private _rlWaitId: number | null = null
   private _lastTickMs: number
   private _nextId = 0
   private readonly _paletteLength: number
   private readonly _lrColorIndex: number  // fixed color for all L→R slashes
   private readonly _rlColorIndex: number  // fixed color for all R→L slashes
+  // Bar pixel dimensions — updated each tick from ChamferedBar.
+  private _barW = 800
+  private _barH = 40
 
   constructor(paletteLength = 4, lrColorIndex?: number, rlColorIndex?: number) {
     this._paletteLength = paletteLength
     this._lrColorIndex = lrColorIndex ?? Math.floor(Math.random() * paletteLength)
     this._rlColorIndex = rlColorIndex ?? Math.floor(Math.random() * paletteLength)
     this._lastTickMs = Date.now()
-    // Stagger initial waves so L→R and R→L don't fire simultaneously.
+    // Stagger initial runs so L→R and R→L don't fire simultaneously.
     this._lrTimer = 300  + Math.random() * 700
     this._rlTimer = 1500 + Math.random() * 1500
   }
 
-  /** Double the fade duration of a slash by id. Called when it participates in an intersection. */
-  extendFade(id: number, multiplier: number): void {
-    const slash = this._slashes.find(s => s.id === id)
-    if (slash) slash.fadeMs = slash.fadeMs * multiplier
+  /** Update bar pixel dimensions so spawn spacing stays proportional to bar geometry. */
+  setBarDimensions(w: number, h: number): void {
+    this._barW = Math.max(1, w)
+    this._barH = Math.max(1, h)
+  }
+
+  /** Normalised x-distance between consecutive slashes (≈ one slash-height wide). */
+  private _slashSpacing(): number {
+    return Math.min(0.05, Math.max(0.008, (0.55 * this._barH) / this._barW))
   }
 
   /**
-   * Kill the active wave for the given sweep direction and start a normal cooldown.
-   * Called when a slash from that wave participates in an intersection — the wave
-   * "spent itself" on the crossing and stops spawning further slashes.
+   * Handle a collision between two slashes (one from each spawner direction).
+   * Resets both slashes to shared unified linger/fade durations, kills their
+   * respective active spawners, and blocks those spawners until each slash fully fades.
    */
-  stopWave(sweepDir: 1 | -1): void {
+  onCollision(idA: number, idB: number): void {
+    for (const s of this._slashes) {
+      if (s.id === idA || s.id === idB) {
+        // Fast-forward to full alpha if still appearing — no alpha jump
+        if (s.elapsed < s.appearMs) s.elapsed = s.appearMs
+        // Extend linger from current position so there's no restart to 0
+        s.lingerMs = (s.elapsed - s.appearMs) + COLLISION_LINGER_MS
+        s.fadeMs   = COLLISION_FADE_MS
+        s.driftY   = 0
+      }
+    }
+    const slashA = this._slashes.find(s => s.id === idA)
+    const slashB = this._slashes.find(s => s.id === idB)
+    if (slashA) this._blockWave(slashA.waveSweepDir, slashA.id)
+    if (slashB) this._blockWave(slashB.waveSweepDir, slashB.id)
+  }
+
+  private _blockWave(sweepDir: 1 | -1, waitId: number): void {
     if (sweepDir === 1) {
-      this._lrWave = null
-      this._lrTimer = WAVE_INTERVAL_MIN + Math.random() * (WAVE_INTERVAL_MAX - WAVE_INTERVAL_MIN)
+      this._lrSpawner = null
+      this._lrWaitId  = waitId
     } else {
-      this._rlWave = null
-      this._rlTimer = WAVE_INTERVAL_MIN + Math.random() * (WAVE_INTERVAL_MAX - WAVE_INTERVAL_MIN)
+      this._rlSpawner = null
+      this._rlWaitId  = waitId
     }
   }
 
@@ -250,12 +291,15 @@ export class SlashEventState {
       .map(s => ({
         id:           s.id,
         cx:           s.cx,
+        drawnCx:      s.cx,
         cy:           s.cy,
         dir:          s.dir,
         type:         s.type,
         colorIndex:   s.colorIndex,
         alpha:        this._alpha(s),
         waveSweepDir: s.waveSweepDir,
+        appearing:    s.elapsed < s.appearMs,
+        closeT:       1,
       }))
       .filter(s => s.alpha > 0.01)
   }
@@ -265,7 +309,7 @@ export class SlashEventState {
     const dt  = now - this._lastTickMs
     this._lastTickMs = now
 
-    // Advance slash lifetimes + vertical drift
+    // Advance slash lifetimes + vertical drift.
     for (const s of this._slashes) {
       s.elapsed += dt
       s.cy += s.driftY * dt
@@ -274,103 +318,116 @@ export class SlashEventState {
       s => s.elapsed < s.appearMs + s.lingerMs + s.fadeMs,
     )
 
-    // L→R spawner
-    if (this._lrWave !== null) {
-      this._lrWave = this._tickWave(this._lrWave, dt)
-      if (this._lrWave === null) {
-        // Wave just finished — start cooldown for next one.
+    // Unblock spawners whose collision slash has fully faded.
+    if (this._lrWaitId !== null && !this._slashes.some(s => s.id === this._lrWaitId)) {
+      this._lrWaitId = null
+      this._lrTimer  = 300 + Math.random() * 300
+    }
+    if (this._rlWaitId !== null && !this._slashes.some(s => s.id === this._rlWaitId)) {
+      this._rlWaitId = null
+      this._rlTimer  = 300 + Math.random() * 300
+    }
+
+    // L→R spawner — blocked while waiting on a collision slash to fade.
+    if (this._lrSpawner !== null) {
+      if (this._tickSpawner(this._lrSpawner)) {
+        this._lrSpawner = null
         this._lrTimer = WAVE_INTERVAL_MIN + Math.random() * (WAVE_INTERVAL_MAX - WAVE_INTERVAL_MIN)
       }
-    } else {
+    } else if (this._lrWaitId === null) {
       this._lrTimer -= dt
-      if (this._lrTimer <= 0) {
-        this._lrWave = this._makeWave(1)
-      }
+      if (this._lrTimer <= 0) this._lrSpawner = this._makeSpawner(1)
     }
 
-    // R→L spawner
-    if (this._rlWave !== null) {
-      this._rlWave = this._tickWave(this._rlWave, dt)
-      if (this._rlWave === null) {
+    // R→L spawner — blocked while waiting on a collision slash to fade.
+    if (this._rlSpawner !== null) {
+      if (this._tickSpawner(this._rlSpawner)) {
+        this._rlSpawner = null
         this._rlTimer = WAVE_INTERVAL_MIN + Math.random() * (WAVE_INTERVAL_MAX - WAVE_INTERVAL_MIN)
       }
-    } else {
+    } else if (this._rlWaitId === null) {
       this._rlTimer -= dt
-      if (this._rlTimer <= 0) {
-        this._rlWave = this._makeWave(-1)
-      }
+      if (this._rlTimer <= 0) this._rlSpawner = this._makeSpawner(-1)
     }
   }
 
-  /** Advance one wave by dt ms. Returns null when the wave has exited the bar. */
-  private _tickWave(wave: InternalWave, dt: number): InternalWave | null {
-    wave.elapsed += dt
-    wave.sweepX  += wave.sweepDir * wave.sweepSpeed * dt
-    wave.spawnTimer -= dt
+  /**
+   * Tick one spawner. Spawns the next slash when the active slash is near end of fade.
+   * Returns true when the spawner is fully retired (done + last slash has faded).
+   */
+  private _tickSpawner(spawner: InternalSpawner): boolean {
+    const spacing = this._slashSpacing()
 
-    if (wave.spawnTimer <= 0) {
-      if (wave.sweepX >= 0.0 && wave.sweepX <= 1.0) {
-        this._spawnSlashFromWave(wave)
+    // Determine whether it's time to spawn the next slash.
+    let shouldSpawn = false
+    if (spawner.activeSlashId === null) {
+      shouldSpawn = true  // first slash, or previous slash retired naturally
+    } else {
+      const active = this._slashes.find(s => s.id === spawner.activeSlashId)
+      if (!active) {
+        shouldSpawn = true  // slash expired — spawn immediately at next position
+      } else {
+        const lingerElapsed = active.elapsed - active.appearMs
+        if (lingerElapsed >= active.lingerMs * SPAWN_LINGER_THRESHOLD) shouldSpawn = true
       }
-      // Spacing is constant for this wave — set once at spawn, never changes.
-      wave.spawnTimer = (wave.slashAppearMs + wave.slashLingerMs + wave.slashFadeMs) * SLASH_WAIT_FRACTION
     }
 
-    const exitedBar = wave.sweepDir === 1 ? wave.sweepX > 1.1 : wave.sweepX < -0.1
-    if (wave.elapsed >= wave.totalLifeMs || exitedBar) return null
-    return wave
+    if (!spawner.done && shouldSpawn) {
+      const nextX = spawner.currentX + spawner.sweepDir * spacing
+      if (nextX >= 0 && nextX <= 1) {
+        spawner.currentX      = nextX
+        spawner.activeSlashId = this._spawnSlashFromSpawner(spawner)
+      } else {
+        spawner.done = true
+      }
+    }
+
+    // Retire when done and the tracked slash has fully faded.
+    if (spawner.done) {
+      const lastAlive = spawner.activeSlashId !== null &&
+        this._slashes.some(s => s.id === spawner.activeSlashId)
+      return !lastAlive
+    }
+    return false
   }
 
-  private _makeWave(sweepDir: 1 | -1): InternalWave {
-    // Speed: crosses bar in ~1.5s (fast) to ~3.5s (slow) — fixed for this wave.
-    const sweepSpeed  = 0.0003 + Math.random() * 0.0005
-    const crossTimeMs = 1.0 / sweepSpeed
-    // Slash timing — randomised once, constant for all slashes in this wave. (+20% vs original)
-    const slashAppearMs = 180 + Math.random() * 240   // 180–420ms
-    const slashLingerMs = 180 + Math.random() * 540   // 180–720ms
-    const slashFadeMs   = 300 + Math.random() * 420   // 300–720ms
+  private _makeSpawner(sweepDir: 1 | -1): InternalSpawner {
+    const spacing = this._slashSpacing()
     return {
       sweepDir,
-      sweepX:       sweepDir === 1 ? -0.02 : 1.02,
-      sweepSpeed,
-      spawnTimer:   0,  // spawn first slash immediately when in range
-      slashAppearMs,
-      slashLingerMs,
-      slashFadeMs,
-      elapsed:         0,
-      totalLifeMs:     crossTimeMs + 800,
-      lastSlashDir:    null,
+      // Start one spacing-step outside the bar so the first spawn lands at the edge.
+      currentX:        sweepDir === 1 ? -spacing : 1 + spacing,
+      nextDir:         Math.random() < 0.5 ? 'forward' : 'back',
       fixedColorIndex: sweepDir === 1 ? this._lrColorIndex : this._rlColorIndex,
+      activeSlashId:   null,
+      done:            false,
     }
   }
 
-  private _spawnSlashFromWave(wave: InternalWave): void {
-    const jitter    = (Math.random() - 0.5) * 0.03
-    const cx        = Math.max(0.01, Math.min(0.99, wave.sweepX + jitter))
-    const dir: SlashDir = wave.lastSlashDir === null
-      ? (Math.random() < 0.5 ? 'back' : 'forward')
-      : (wave.lastSlashDir === 'back' ? 'forward' : 'back')
-    wave.lastSlashDir = dir
-    const type      = this._pickType()
-    // cy: ±2px of bar centre in normalised units. Bar height ~40px → 2px = 0.05.
-    const cy        = 0.5 + (Math.random() - 0.5) * 0.1
-    const driftMag  = 0.00002 + Math.random() * 0.00006
-    const driftY    = Math.random() < 0.5 ? driftMag : -driftMag
+  private _spawnSlashFromSpawner(spawner: InternalSpawner): number {
+    const jitter   = (Math.random() - 0.5) * 0.005
+    const cx       = Math.max(0.02, Math.min(0.98, spawner.currentX + jitter))
+    const cy       = 0.5 + (Math.random() - 0.5) * 0.1
+    const driftMag = 0.00002 + Math.random() * 0.00006
+    const driftY   = Math.random() < 0.5 ? driftMag : -driftMag
+    const id       = this._nextId++
+
+    const tjitter = () => Math.round((Math.random() - 0.5) * 40)  // ±20ms
     this._slashes.push({
-      id:           this._nextId++,
-      cx,
-      cy,
-      dir,
-      type,
-      colorIndex:   wave.fixedColorIndex,
-      // Use wave-fixed timing — every slash in this wave has the same duration.
-      appearMs:     wave.slashAppearMs,
-      lingerMs:     wave.slashLingerMs,
-      fadeMs:       wave.slashFadeMs,
+      id, cx, cy,
+      dir:          spawner.nextDir,
+      type:         this._pickType(),
+      colorIndex:   spawner.fixedColorIndex,
+      appearMs:     SLASH_APPEAR_MS + tjitter(),
+      lingerMs:     SLASH_LINGER_MS + tjitter(),
+      fadeMs:       SLASH_FADE_MS   + tjitter(),
       elapsed:      0,
       driftY,
-      waveSweepDir: wave.sweepDir,
+      waveSweepDir: spawner.sweepDir,
     })
+
+    spawner.nextDir = spawner.nextDir === 'forward' ? 'back' : 'forward'
+    return id
   }
 
   private _alpha(s: InternalSlash): number {

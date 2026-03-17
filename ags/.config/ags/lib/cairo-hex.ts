@@ -11,11 +11,13 @@ import { type RGBA } from "./cairo-separator"
 /**
  * Draw a filled flat-top hexagon at (cx, cy) with circumradius `radius`.
  *
- * @param cr      Cairo context
- * @param cx      Center x
- * @param cy      Center y
- * @param radius  Circumradius (center to vertex), in pixels
- * @param rgba    Fill color as [r, g, b, a] in 0-1 range
+ * @param cr        Cairo context
+ * @param cx        Center x
+ * @param cy        Center y
+ * @param radius    Circumradius (center to vertex), in pixels
+ * @param rgba      Fill color as [r, g, b, a] in 0-1 range
+ * @param rotation  Optional rotation offset in radians (default 0). Applied to hex
+ *                  vertices only — text drawn separately stays upright.
  */
 export function drawHexFlat(
   cr: any,
@@ -23,11 +25,12 @@ export function drawHexFlat(
   cy: number,
   radius: number,
   rgba: RGBA,
+  rotation: number = 0,
 ): void {
   const [r, g, b, a] = rgba
   cr.newPath()
   for (let i = 0; i < 6; i++) {
-    const angle = (Math.PI / 3) * i  // 0, π/3, 2π/3, π, 4π/3, 5π/3
+    const angle = (Math.PI / 3) * i + rotation
     const x = cx + radius * Math.cos(angle)
     const y = cy + radius * Math.sin(angle)
     if (i === 0) cr.moveTo(x, y)

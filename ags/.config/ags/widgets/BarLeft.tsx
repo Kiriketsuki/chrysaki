@@ -32,7 +32,7 @@ export function BarLeft(gdkmonitor: Gdk.Monitor) {
       gdkmonitor={gdkmonitor}
       anchor={TOP | LEFT}
       exclusivity={Astal.Exclusivity.IGNORE}
-      marginTop={8}
+      marginTop={0}
       marginLeft={8}
       application={app}
     >
@@ -40,8 +40,10 @@ export function BarLeft(gdkmonitor: Gdk.Monitor) {
         class="island-left"
         halign={1}
         valign={3}
+        marginTop={8}
+        marginBottom={12}
         $={(self: any) => {
-          self.setChamfer({ tl: false, tr: false, bl: true, br: false })
+          self.setChamfer({ tl: false, tr: false, bl: true, br: true })
           self.setGradientColors(JEWEL_PALETTE)
         }}
       >

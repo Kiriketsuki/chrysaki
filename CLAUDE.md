@@ -158,7 +158,7 @@ White tint alpha range: **0.03–0.12**. Above 0.15 looks milky on dark backgrou
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **chrysaki** (85 symbols, 101 relationships, 6 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **chrysaki** (88 symbols, 101 relationships, 6 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -169,19 +169,6 @@ This project is indexed by GitNexus as **chrysaki** (85 symbols, 101 relationshi
 - **MUST warn the user** if impact analysis returns HIGH or CRITICAL risk before proceeding with edits.
 - When exploring unfamiliar code, use `gitnexus_query({query: "concept"})` to find execution flows instead of grepping. It returns process-grouped results ranked by relevance.
 - When you need full context on a specific symbol — callers, callees, which execution flows it participates in — use `gitnexus_context({name: "symbolName"})`.
-
-## Code Search — NEVER Use Explore Agents
-
-**Do NOT spawn Explore subagents for code search in this repo.** Explore agents use Glob/Grep/Read — dumb file search that bypasses the indexed intelligence. Use GitNexus and OpenViking directly in the main session instead:
-
-| Task | Use this — NOT Explore |
-|------|------------------------|
-| Find code by concept | `gitnexus_query({query: "concept", repo: "chrysaki"})` |
-| Understand a symbol | `gitnexus_context({name: "symbolName", repo: "chrysaki"})` |
-| Trace an execution flow | `READ gitnexus://repo/chrysaki/process/{name}` |
-| Semantic / fuzzy search | `ov_search` (OpenViking) |
-
-Explore agents are appropriate for repos that are NOT indexed by GitNexus/OV. This repo is indexed — always go straight to the graph tools.
 
 ## When Debugging
 

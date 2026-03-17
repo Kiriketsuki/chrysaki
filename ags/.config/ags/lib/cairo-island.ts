@@ -8,6 +8,7 @@
  */
 import cairo from 'cairo'
 import type { GradientFrame, GradientStop } from './wave-state'
+import { BorderWaveState } from './border-wave-state'
 export type { GradientFrame, GradientStop }
 
 export interface ChamferConfig {
@@ -21,7 +22,7 @@ export interface ChamferConfig {
   readonly pointRight?: boolean
 }
 
-const CUT = 8 // chamfer cut size in pixels
+const CUT = 12 // chamfer cut size in pixels
 
 /**
  * Trace a chamfered rectangle path on the Cairo context.
@@ -94,7 +95,8 @@ export function traceChamferedRect(
  * cairo-island.ts free of wave-state imports.
  */
 export interface SlashDraw {
-  readonly cx: number         // normalised 0..1 along bar width
+  readonly cx: number         // meeting point (normalised 0..1) — where pair converges
+  readonly drawnCx: number    // current visual position (normalised); use this for rendering
   readonly cy: number         // normalised 0..1 along bar height
   readonly dir: 'back' | 'forward'
   readonly type: 'glow' | 'wind' | 'diamond' | 'lightning'
@@ -105,13 +107,15 @@ export interface SlashDraw {
 /**
  * Descriptor for a radial ripple to render. Uses pixel coords.
  * alpha: lifecycle decay (0..1), pre-computed by caller via sqrt falloff.
+ * fromColorIndex: gradient base color at ripple spawn — ring color lerps toward colorIndex.
  */
 export interface RippleDraw {
-  readonly cx: number       // pixel x
-  readonly cy: number       // pixel y
+  readonly cx: number           // pixel x
+  readonly cy: number           // pixel y
   readonly radiusPx: number
-  readonly colorIndex: number
-  readonly alpha: number    // 0..1 — multiplied onto all ring alphas
+  readonly colorIndex: number   // target ripple color
+  readonly fromColorIndex: number  // color at spawn — used for smooth lerp
+  readonly alpha: number        // 0..1 — lifecycle decay
 }
 
 /**
@@ -166,18 +170,20 @@ function drawSlashGlow(
   dir: 'back' | 'forward',
 ): void {
   withSlashTransform(cr, cx, cy, h, 100, 100, dir, 'forward', (cr, s) => {
+    // Jewel body — width ≈21 units (CP offset ±10 from spine)
     cr.newPath()
     cr.moveTo(20 * s, 180 * s)
-    cr.curveTo(60 * s, 120 * s, 140 * s, 60 * s, 180 * s, 20 * s)
-    cr.curveTo(132 * s, 68 * s, 52 * s, 128 * s, 20 * s, 180 * s)
+    cr.curveTo(50 * s, 110 * s, 130 * s, 50 * s, 180 * s, 20 * s)
+    cr.curveTo(150 * s, 70 * s, 70 * s, 130 * s, 20 * s, 180 * s)
     cr.closePath()
     cr.setSourceRGBA(color.r, color.g, color.b, 0.85 * alpha)
     cr.fill()
 
+    // White core — width ≈7 units (CP offset ±3 from spine)
     cr.newPath()
-    cr.moveTo(22 * s, 178 * s)
-    cr.curveTo(60 * s, 122 * s, 138 * s, 62 * s, 178 * s, 22 * s)
-    cr.curveTo(134 * s, 66 * s, 56 * s, 126 * s, 22 * s, 178 * s)
+    cr.moveTo(20 * s, 180 * s)
+    cr.curveTo(57 * s, 117 * s, 137 * s, 57 * s, 180 * s, 20 * s)
+    cr.curveTo(143 * s, 63 * s, 63 * s, 123 * s, 20 * s, 180 * s)
     cr.closePath()
     cr.setSourceRGBA(1, 1, 1, 0.75 * alpha)
     cr.fill()
@@ -194,30 +200,30 @@ function drawSlashWind(
   alpha: number,
   dir: 'back' | 'forward',
 ): void {
-  withSlashTransform(cr, cx, cy, h, 100, 88, dir, 'forward', (cr, s) => {
-    // Outer trailing wind
+  withSlashTransform(cr, cx, cy, h, 100, 100, dir, 'forward', (cr, s) => {
+    // Outer trailing wind — width ≈28 units (CP offset ±13 from spine)
     cr.newPath()
-    cr.moveTo(15 * s, 160 * s)
-    cr.curveTo(60 * s, 100 * s, 140 * s, 60 * s, 185 * s, 15 * s)
-    cr.curveTo(135 * s, 70 * s, 65 * s, 110 * s, 15 * s, 160 * s)
+    cr.moveTo(20 * s, 180 * s)
+    cr.curveTo(47 * s, 107 * s, 127 * s, 47 * s, 180 * s, 20 * s)
+    cr.curveTo(153 * s, 73 * s, 73 * s, 133 * s, 20 * s, 180 * s)
     cr.closePath()
-    cr.setSourceRGBA(color.r, color.g, color.b, 0.55 * alpha)
+    cr.setSourceRGBA(color.r, color.g, color.b, 0.45 * alpha)
     cr.fill()
 
-    // Mid-layer streak
+    // Mid streak — width ≈21 units (CP offset ±10 from spine)
     cr.newPath()
-    cr.moveTo(18 * s, 157 * s)
-    cr.curveTo(62 * s, 102 * s, 138 * s, 62 * s, 182 * s, 18 * s)
-    cr.curveTo(135 * s, 68 * s, 65 * s, 108 * s, 18 * s, 157 * s)
+    cr.moveTo(20 * s, 180 * s)
+    cr.curveTo(50 * s, 110 * s, 130 * s, 50 * s, 180 * s, 20 * s)
+    cr.curveTo(150 * s, 70 * s, 70 * s, 130 * s, 20 * s, 180 * s)
     cr.closePath()
     cr.setSourceRGBA(color.r, color.g, color.b, 0.80 * alpha)
     cr.fill()
 
-    // Razor white inner edge
+    // Razor white core — width ≈7 units (CP offset ±3 from spine)
     cr.newPath()
-    cr.moveTo(21 * s, 154 * s)
-    cr.curveTo(64 * s, 104 * s, 136 * s, 64 * s, 179 * s, 21 * s)
-    cr.curveTo(135 * s, 66 * s, 65 * s, 106 * s, 21 * s, 154 * s)
+    cr.moveTo(20 * s, 180 * s)
+    cr.curveTo(57 * s, 117 * s, 137 * s, 57 * s, 180 * s, 20 * s)
+    cr.curveTo(143 * s, 63 * s, 63 * s, 123 * s, 20 * s, 180 * s)
     cr.closePath()
     cr.setSourceRGBA(1, 1, 1, 0.90 * alpha)
     cr.fill()
@@ -235,19 +241,20 @@ function drawSlashDiamond(
   dir: 'back' | 'forward',
 ): void {
   withSlashTransform(cr, cx, cy, h, 100, 100, dir, 'forward', (cr, s) => {
+    // Jewel body — width ≈21 units (CP offset ±10 from spine)
     cr.newPath()
     cr.moveTo(20 * s, 180 * s)
-    cr.curveTo(70 * s, 110 * s, 110 * s, 70 * s, 180 * s, 20 * s)
-    cr.curveTo(104 * s, 76 * s, 64 * s, 116 * s, 20 * s, 180 * s)
+    cr.curveTo(50 * s, 110 * s, 130 * s, 50 * s, 180 * s, 20 * s)
+    cr.curveTo(150 * s, 70 * s, 70 * s, 130 * s, 20 * s, 180 * s)
     cr.closePath()
     cr.setSourceRGBA(color.r, color.g, color.b, 0.85 * alpha)
     cr.fill()
 
-    // Black void core
+    // Black void core — width ≈7 units (CP offset ±3 from spine)
     cr.newPath()
-    cr.moveTo(22 * s, 178 * s)
-    cr.curveTo(70 * s, 112 * s, 112 * s, 70 * s, 178 * s, 22 * s)
-    cr.curveTo(106 * s, 74 * s, 66 * s, 114 * s, 22 * s, 178 * s)
+    cr.moveTo(20 * s, 180 * s)
+    cr.curveTo(57 * s, 117 * s, 137 * s, 57 * s, 180 * s, 20 * s)
+    cr.curveTo(143 * s, 63 * s, 63 * s, 123 * s, 20 * s, 180 * s)
     cr.closePath()
     cr.setSourceRGBA(0, 0, 0, 0.90 * alpha)
     cr.fill()
@@ -265,29 +272,30 @@ function drawSlashLightning(
   dir: 'back' | 'forward',
 ): void {
   withSlashTransform(cr, cx, cy, h, 100, 100, dir, 'back', (cr, s) => {
-    // Secondary trailing strike
+    // Secondary trailing strike — width ≈14 units, offset from primary
+    // For \ slash: perpendicular is (+d,-d)/(−d,+d). Spine CPs: (63,87),(112,137).
     cr.newPath()
     cr.moveTo(15 * s, 40 * s)
-    cr.curveTo(65 * s, 90 * s, 115 * s, 140 * s, 160 * s, 190 * s)
-    cr.curveTo(112 * s, 143 * s, 62 * s, 93 * s, 15 * s, 40 * s)
+    cr.curveTo(70 * s, 83 * s, 119 * s, 133 * s, 160 * s, 190 * s)
+    cr.curveTo(105 * s, 147 * s, 56 * s, 97 * s, 15 * s, 40 * s)
     cr.closePath()
     cr.setSourceRGBA(color.r, color.g, color.b, 0.45 * alpha)
     cr.fill()
 
-    // Primary strike
+    // Primary strike — width ≈21 units (CP offset ±10 from spine (80,70),(130,120))
     cr.newPath()
     cr.moveTo(30 * s, 20 * s)
-    cr.curveTo(80 * s, 70 * s, 130 * s, 120 * s, 180 * s, 170 * s)
-    cr.curveTo(127 * s, 123 * s, 77 * s, 73 * s, 30 * s, 20 * s)
+    cr.curveTo(90 * s, 60 * s, 140 * s, 110 * s, 180 * s, 170 * s)
+    cr.curveTo(120 * s, 130 * s, 70 * s, 80 * s, 30 * s, 20 * s)
     cr.closePath()
     cr.setSourceRGBA(color.r, color.g, color.b, 0.90 * alpha)
     cr.fill()
 
-    // White core
+    // White core — width ≈7 units (CP offset ±3 from spine)
     cr.newPath()
-    cr.moveTo(31 * s, 21 * s)
-    cr.curveTo(80 * s, 71 * s, 129 * s, 121 * s, 179 * s, 169 * s)
-    cr.curveTo(128 * s, 122 * s, 78 * s, 72 * s, 31 * s, 21 * s)
+    cr.moveTo(30 * s, 20 * s)
+    cr.curveTo(83 * s, 67 * s, 133 * s, 117 * s, 180 * s, 170 * s)
+    cr.curveTo(127 * s, 123 * s, 77 * s, 73 * s, 30 * s, 20 * s)
     cr.closePath()
     cr.setSourceRGBA(1, 1, 1, 0.75 * alpha)
     cr.fill()
@@ -379,23 +387,22 @@ function drawSlashLayer(
     const renderer = SLASH_RENDERERS[slash.type]
     if (!renderer) continue
     const color  = colors[slash.colorIndex % colors.length]
-    const pixelX = slash.cx * w
+    const pixelX = slash.drawnCx * w
     const pixelY = slash.cy * h
     renderer(cr, pixelX, pixelY, h, color, slash.alpha, slash.dir)
   }
 }
 
 /**
- * Draw the wave gradient base fill and radial ripple overlays inside a clipped region.
+ * Draw the wave gradient base fill and smooth radial ripple overlays inside a clipped region.
  *
- * Base: animated sine-wave gradient blending 3-5 jewel tones (drifts over time).
- * Ripples: shockwave rings expanding from slash intersection points.
+ * Base: animated sine-wave gradient blending jewel tones (drifts over time).
+ * Ripples: smooth shockwave rings expanding from slash intersection points.
  *
- * Each ripple ring: transparent at center, peak alpha at wave front, soft outer glow.
- * A white birth flash appears at origin while the ring is young.
- * Overall alpha decays over the ripple lifetime (pre-computed by caller).
- *
- * Technique: stroked arcs (not fills) avoid the disc-overwrite problem.
+ * Each ripple uses a cairo.RadialGradient for a continuous, banding-free ring:
+ *   transparent core → Gaussian peak at wave front → transparent outer glow.
+ * Ring color lerps from fromColorIndex toward colorIndex over the ripple lifetime.
+ * Birth flash is jewel-toned (not white) for coherence with the palette.
  */
 function drawRadialRippleFill(
   cr: any,
@@ -408,6 +415,8 @@ function drawRadialRippleFill(
 ): void {
   if (colors.length === 0) return
 
+  // Always clip to chamfered rect — the wave border is a stroke-only effect.
+  // Clipping to the wavy path would cause troughs to eat into island content.
   cr.save()
   traceChamferedRect(cr, 0, 0, w, h, chamfer)
   cr.clip()
@@ -420,58 +429,248 @@ function drawRadialRippleFill(
     return
   }
 
-  const PEAK    = 0.85  // wave-front alpha before lifecycle decay
-  const RING_W  = 50    // px: inner gradient from wave front inward
-  const OUTER_S = 28    // px: outer glow past the wave front
-  const STROKE  = 1     // px per ring band — fine steps for smooth gradient
+  const PEAK      = 0.95  // leading ring alpha before lifecycle decay
+  const N_RINGS   = 5     // number of concentric echo rings
+  const RING_W    = 2     // px: solid body of each ring (thin = sharp)
+  const RING_EDGE = 1     // px: minimal anti-alias blend — nearly hard edge
+  const RING_GAP  = 14    // px: center-to-center spacing between rings
 
   for (const ripple of ripples) {
     if (ripple.radiusPx <= 0 || ripple.alpha <= 0) continue
-    const c      = colors[ripple.colorIndex % colors.length]
-    const r      = ripple.radiusPx
-    const life   = ripple.alpha          // 0..1 lifecycle decay
-    const peakA  = PEAK * life
 
-    // Birth flash — white fill at origin while ring is very young (r < 18px)
-    if (r < 18) {
-      const birthT = 1 - r / 18          // 1.0 at birth → 0.0 at r=18
-      cr.newPath()
-      cr.arc(ripple.cx, ripple.cy, r * 0.4, 0, 2 * Math.PI)
-      cr.setSourceRGBA(1, 1, 1, birthT * 0.65 * life)
+    const life = ripple.alpha   // 0..1 lifecycle decay from sqrt falloff
+
+    // Color lerp: from spawn color → target color over ripple lifetime
+    const lerpT  = 1 - life
+    const cFrom  = colors[ripple.fromColorIndex % colors.length]
+    const cTo    = colors[ripple.colorIndex    % colors.length]
+    const c: GradientColor = {
+      r: cFrom.r + (cTo.r - cFrom.r) * lerpT,
+      g: cFrom.g + (cTo.g - cFrom.g) * lerpT,
+      b: cFrom.b + (cTo.b - cFrom.b) * lerpT,
+      a: cFrom.a + (cTo.a - cFrom.a) * lerpT,
+    }
+
+    const peakA = PEAK * life
+
+    // Hard concentric rings: leading ring at r, echo rings spaced RING_GAP px behind
+    for (let i = 0; i < N_RINGS; i++) {
+      const ringR = ripple.radiusPx - i * RING_GAP
+      if (ringR <= 0) continue
+
+      // Exponential alpha falloff per echo ring (0=1.0, 1=0.65, 2=0.42 ...)
+      const ringA = peakA * Math.pow(0.65, i)
+      if (ringA < 0.01) continue
+
+      // RadialGradient spans only the ring band: innerR → outerR
+      // 2px soft blend at each edge gives anti-alias look without blurring the circle
+      const innerR = Math.max(0, ringR - RING_W / 2 - RING_EDGE)
+      const outerR = ringR + RING_W / 2 + RING_EDGE
+      const span   = outerR - innerR
+      const eT     = RING_EDGE / span  // fraction of span occupied by one soft edge
+
+      const pat = new cairo.RadialGradient(ripple.cx, ripple.cy, innerR, ripple.cx, ripple.cy, outerR)
+      pat.addColorStopRGBA(0,       c.r, c.g, c.b, 0)      // soft inner fade in
+      pat.addColorStopRGBA(eT,      c.r, c.g, c.b, ringA)  // hard inner edge
+      pat.addColorStopRGBA(1 - eT,  c.r, c.g, c.b, ringA)  // hard outer edge
+      pat.addColorStopRGBA(1,       c.r, c.g, c.b, 0)      // soft outer fade out
+      cr.setSource(pat)
+      cr.arc(ripple.cx, ripple.cy, outerR, 0, 2 * Math.PI)
       cr.fill()
     }
 
-    // Outer glow — fades from peakA outward to 0
-    for (let off = OUTER_S; off > 0; off -= STROKE) {
-      const t      = off / OUTER_S
-      const smooth = t * t * (3 - 2 * t)
-      cr.newPath()
-      cr.arc(ripple.cx, ripple.cy, r + off, 0, 2 * Math.PI)
-      cr.setLineWidth(STROKE)
-      cr.setSourceRGBA(c.r, c.g, c.b, peakA * (1 - smooth))
-      cr.stroke()
-    }
-
-    // Wave front — peak alpha, slightly thicker ring
-    cr.newPath()
-    cr.arc(ripple.cx, ripple.cy, r, 0, 2 * Math.PI)
-    cr.setLineWidth(STROKE + 1)
-    cr.setSourceRGBA(c.r, c.g, c.b, peakA)
-    cr.stroke()
-
-    // Inner gradient — fades from peakA at wave front back to base alpha
-    for (let off = STROKE; off < RING_W && r - off > 0; off += STROKE) {
-      const t      = off / RING_W
-      const smooth = t * t * (3 - 2 * t)
-      const a      = c.a * life + (peakA - c.a * life) * (1 - smooth)
-      cr.newPath()
-      cr.arc(ripple.cx, ripple.cy, r - off, 0, 2 * Math.PI)
-      cr.setLineWidth(STROKE)
-      cr.setSourceRGBA(c.r, c.g, c.b, a)
-      cr.stroke()
+    // Birth flash — jewel-toned radial glow at origin (r < 20px)
+    if (ripple.radiusPx < 20) {
+      const birthT   = 1 - ripple.radiusPx / 20
+      const flashRad = Math.max(1, ripple.radiusPx * 0.55)
+      const flash    = new cairo.RadialGradient(ripple.cx, ripple.cy, 0, ripple.cx, ripple.cy, flashRad)
+      flash.addColorStopRGBA(0.0, c.r, c.g, c.b, birthT * 0.75 * life)
+      flash.addColorStopRGBA(1.0, c.r, c.g, c.b, 0)
+      cr.setSource(flash)
+      cr.arc(ripple.cx, ripple.cy, flashRad, 0, 2 * Math.PI)
+      cr.fill()
     }
   }
 
+  cr.restore()
+}
+
+// ── Perimeter helpers for sine wave border ──────────────────────────────────
+
+/**
+ * Build the ordered vertex list of a chamfered rectangle at [0, 0, w, h].
+ * Follows the same winding order as traceChamferedRect (clockwise in screen coords).
+ */
+function buildChamferedVertices(
+  w: number,
+  h: number,
+  c: ChamferConfig,
+): Array<[number, number]> {
+  const verts: Array<[number, number]> = []
+  const midY = h / 2
+
+  // Start vertex
+  if (c.pointLeft) {
+    verts.push([0, midY])
+  } else if (c.tl) {
+    verts.push([CUT, 0])
+  } else {
+    verts.push([0, 0])
+  }
+
+  // Top-right
+  if (c.pointRight) {
+    verts.push([w, midY])
+  } else if (c.tr) {
+    verts.push([w - CUT, 0])
+    verts.push([w, CUT])
+  } else {
+    verts.push([w, 0])
+  }
+
+  // Right side + bottom-right (skip when pointRight)
+  if (!c.pointRight) {
+    if (c.br) {
+      verts.push([w, h - CUT])
+      verts.push([w - CUT, h])
+    } else {
+      verts.push([w, h])
+    }
+  }
+
+  // Bottom-left
+  if (!c.pointLeft) {
+    if (c.bl) {
+      verts.push([CUT, h])
+      verts.push([0, h - CUT])
+    } else {
+      verts.push([0, h])
+    }
+  }
+
+  // TL closing vertex
+  if (!c.pointLeft && c.tl) {
+    verts.push([0, CUT])
+  }
+
+  return verts
+}
+
+/**
+ * Trace the wavy island perimeter onto the Cairo context (path only, no stroke/fill).
+ *
+ * Each perimeter point is displaced outward (peaks) or inward (troughs) perpendicular
+ * to the edge. Displacement is keyed on xNorm = pixelX / w (NOT perimeter arc length),
+ * so top and bottom edges at the same x share the same spatial phase. This produces
+ * vertically-aligned oval loops — peaks on top directly above peaks on bottom.
+ *
+ * Positive displacement = outward. Negative = inward (on the island surface — never
+ * clips content because fill/clip always uses traceChamferedRect).
+ */
+function traceSineWavePath(
+  cr: any,
+  w: number,
+  h: number,
+  chamfer: ChamferConfig,
+  borderWave: BorderWaveState,
+): void {
+  const verts = buildChamferedVertices(w, h, chamfer)
+  if (verts.length < 2) return
+
+  const STEP = 2
+  cr.newPath()
+  let started = false
+
+  for (let i = 0; i < verts.length; i++) {
+    const [x1, y1] = verts[i]
+    const [x2, y2] = verts[(i + 1) % verts.length]
+    const dx = x2 - x1
+    const dy = y2 - y1
+    const segLen = Math.hypot(dx, dy)
+    if (segLen <= 0) continue
+
+    // Outward normal for clockwise path in screen coords: N = (dy/len, -dx/len)
+    const nx = dy / segLen
+    const ny = -dx / segLen
+
+    let segDist = 0
+    while (segDist < segLen) {
+      const px = x1 + (dx / segLen) * segDist
+      const py = y1 + (dy / segLen) * segDist
+      // x-position normalized to island width — same value for top and bottom at
+      // the same horizontal position, so peaks align vertically into oval loops
+      const xNorm = Math.max(0, Math.min(1, px / w))
+      const disp  = borderWave.displacementAt(xNorm, w)
+
+      if (!started) { cr.moveTo(px + nx * disp, py + ny * disp); started = true }
+      else           { cr.lineTo(px + nx * disp, py + ny * disp) }
+
+      segDist += STEP
+    }
+
+    // Segment endpoint — avoids gaps at corners
+    const xNormEnd = Math.max(0, Math.min(1, x2 / w))
+    const dispEnd  = borderWave.displacementAt(xNormEnd, w)
+    cr.lineTo(x2 + nx * dispEnd, y2 + ny * dispEnd)
+  }
+
+  cr.closePath()
+}
+
+/**
+ * Trace the island outline — wavy when borderWave is present, chamfered rect otherwise.
+ * Used as the fill/clip path for all island drawing operations.
+ */
+function traceIslandPath(
+  cr: any,
+  w: number,
+  h: number,
+  chamfer: ChamferConfig,
+  borderWave?: BorderWaveState,
+): void {
+  if (borderWave) {
+    traceSineWavePath(cr, w, h, chamfer, borderWave)
+  } else {
+    traceChamferedRect(cr, 0, 0, w, h, chamfer)
+  }
+}
+
+/**
+ * Stroke a thin white highlight along the wavy island edge.
+ * The fill edge IS the visual border — this just adds a subtle polish line.
+ */
+function drawSineWaveBorder(
+  cr: any,
+  w: number,
+  h: number,
+  chamfer: ChamferConfig,
+  borderWave: BorderWaveState,
+): void {
+  traceSineWavePath(cr, w, h, chamfer, borderWave)
+  cr.setSourceRGBA(0, 0, 0, 0.70)
+  cr.setLineWidth(0.5)
+  cr.stroke()
+}
+
+/**
+ * Draw colliding slashes above all other island content (called after child snapshot).
+ * Clips to the chamfered island shape so slashes don't bleed outside the island,
+ * but because this runs after super.vfunc_snapshot the slashes appear on top of
+ * children (text labels, icons, etc.).
+ */
+export function drawElevatedSlashes(
+  cr: any,
+  w: number,
+  h: number,
+  chamfer: ChamferConfig,
+  slashes: readonly SlashDraw[],
+  colors: readonly GradientColor[],
+): void {
+  if (slashes.length === 0 || colors.length === 0) return
+  cr.save()
+  traceChamferedRect(cr, 0, 0, w, h, chamfer)
+  cr.clip()
+  drawSlashLayer(cr, w, h, slashes, colors)
   cr.restore()
 }
 
@@ -481,6 +680,8 @@ function drawRadialRippleFill(
  *
  * gradientFrame: when provided, animates the background with a sine-wave jewel gradient.
  *   Omit for static islands (e.g. center workspace island).
+ * borderWaveState: when provided, replaces the flat border with an animated sine wave border
+ *   that pulses on collisions. When absent, falls back to a flat 1px white highlight.
  */
 export function drawIslandBackground(
   cr: any,
@@ -491,8 +692,13 @@ export function drawIslandBackground(
   gradientFrame?: GradientFrame,
   ripples?: readonly RippleDraw[],
   slashes?: readonly SlashDraw[],
+  borderWaveState?: BorderWaveState,
 ): void {
-  // 1. Trace chamfered rectangle
+  // Fill/clip operations always use the clean chamfered rect so that the wave
+  // border (which can displace inward or outward) never cuts into island content.
+  // The wave lives exclusively on the border stroke drawn in step 4.
+
+  // 1. Base dark fill
   traceChamferedRect(cr, 0, 0, w, h, chamfer)
 
   // 1b. Wave gradient + ripple fill (drawn before glass fill for depth)
@@ -507,26 +713,33 @@ export function drawIslandBackground(
   cr.setSourceRGBA(1, 1, 1, 0.05)
   cr.fillPreserve()
 
-  // 3. Clip and draw slash layer
+  // 3. Slash layer — clipped to chamfered rect
   cr.save()
   traceChamferedRect(cr, 0, 0, w, h, chamfer)
   cr.clip()
   drawSlashLayer(cr, w, h, slashes ?? [], gradientColors ?? [])
   cr.restore()
 
-  // 4. Border stroke
-  traceChamferedRect(cr, 0.5, 0.5, w - 1, h - 1, chamfer)
-  cr.setSourceRGBA(1, 1, 1, 0.08)
-  cr.setLineWidth(1)
-  cr.stroke()
+  // 4. Border: wave stroke when borderWaveState set, flat highlight otherwise.
+  // The wave stroke is the ONLY place displacement is applied — it extends
+  // outward (past the bar edge) or inward (on the island surface) as the
+  // standing wave oscillates, without affecting any fill geometry.
+  if (borderWaveState) {
+    drawSineWaveBorder(cr, w, h, chamfer, borderWaveState)
+  } else {
+    traceChamferedRect(cr, 0.5, 0.5, w - 1, h - 1, chamfer)
+    cr.setSourceRGBA(0, 0, 0, 0.70)
+    cr.setLineWidth(1)
+    cr.stroke()
+  }
 
-  // 5. Shadow (inset-style darkening at edges)
-  traceChamferedRect(cr, 0, 0, w, h, chamfer)
+  // 5. Shadow — inset darkening, always chamfered rect clip
   cr.save()
+  traceChamferedRect(cr, 0, 0, w, h, chamfer)
   cr.clip()
   cr.setSourceRGBA(0, 0, 0, 0.15)
   cr.setLineWidth(3)
-  traceChamferedRect(cr, -1, -1, w + 2, h + 2, chamfer)
+  traceChamferedRect(cr, 0, 0, w, h, chamfer)
   cr.stroke()
   cr.restore()
 }
