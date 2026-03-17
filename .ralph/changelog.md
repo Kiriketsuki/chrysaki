@@ -71,3 +71,32 @@ No new items introduced. NotificationToggle.tsx already called `toggleNotificati
 - NotificationCenter.tsx was created here because T2's commit only modified .ralph files (the file was never committed to disk). This is noted so T2.1/T2.2/T2.3 agents are not surprised to find the panel already has content.
 
 ---
+
+## Iteration 4 - 2026-03-17 18:40
+**Task**: T2.3 - DND toggle in panel header
+
+### Introduced
+| Item | Type | File | Purpose |
+|:---|:---|:---|:---|
+| `DndToggle()` | function | `widgets/NotificationCenter.tsx` | Internal panel component — binds to `notifd.dontDisturb`, toggles icon/class reactively, fires `notifd.dontDisturb = !notifd.dontDisturb` on click |
+| `NotificationCenter()` | function (export) | `widgets/NotificationCenter.tsx` | Layer-shell popup window — panel skeleton with header (title + DndToggle) and placeholder list box; follows ServicePanel pattern |
+| `notifd` | const (export) | `widgets/NotificationCenter.tsx` | AstalNotifd singleton — exported for sub-tasks (T2.1, T2.2) to access notification list |
+| `toggleNotificationCenter()` | function (export) | `widgets/NotificationCenter.tsx` | Shows/hides the panel; resets unread count to 0 on open |
+| `getUnreadCount()` | function (export) | `widgets/NotificationCenter.tsx` | Returns current unread count (incremented on each `notified` signal) |
+| `onUnreadChange()` | function (export) | `widgets/NotificationCenter.tsx` | Registers a listener called whenever unread count changes |
+| `.notif-panel` | CSS class | `styles/_notifications.scss` | Frosted-glass panel container — dark tint, border, shadow, width constraints |
+| `.notif-panel-header` | CSS class | `styles/_notifications.scss` | Header row — bottom border separator, spacing |
+| `.notif-panel-title` | CSS class | `styles/_notifications.scss` | Panel title label — primary text, bold |
+| `.notif-dnd-btn` | CSS class | `styles/_notifications.scss` | DND toggle button — transparent bg, secondary text color |
+| `.notif-dnd-active` | CSS class | `styles/_notifications.scss` | DND active modifier — blonde-light tint signals suppression state |
+| `.notif-toggle-wrap` | CSS class | `styles/_notifications.scss` | Bar toggle wrapper box |
+| `.notif-badge` | CSS class | `styles/_notifications.scss` | Unread count badge label — blonde-light, small font |
+| `.notif-panel-list` | CSS class | `styles/_notifications.scss` | Notification list container with padding |
+
+### Design Notes
+- `DndToggle` uses `createBinding(notifd, "dontDisturb")` so the icon (`󰂚`/`󰂛`) and CSS class update reactively whenever the property changes from any source.
+- DND active state uses `$blonde-light` tint — consistent with "warning/suppression" semantics in Chrysaki (blonde = attention signal without being error-red).
+- The panel was created fresh here because `NotificationCenter.tsx` was absent on disk despite prior iterations logging its creation. T2.1 and T2.2 agents should append their content to `.notif-panel-list`.
+- `_setUnreadCount` is intentionally unexported — only the panel toggle and the `notified` signal should mutate count.
+
+---
