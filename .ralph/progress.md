@@ -25,3 +25,4 @@
 - **[2026-03-17 18:55]** (Iteration 6) merge-conflict: T9 deferred. Reason: source file merge conflict with concurrent task.
 - **[2026-03-17 18:58]** (Iteration 3) merge-conflict: T3.1 deferred. Reason: source file merge conflict with concurrent task.
 - **[2026-03-17 20:00]** (Iteration 5) feat: T9 — Urgency styling wired in NotificationRow. Added `isCritical` check (`n.urgency === AstalNotifd.Urgency.CRITICAL`) and appends `notif-row-critical` to the row class string. CSS classes were already defined in _notifications.scss (T5). NotificationToast.tsx not present on disk (T3/T6 pending), so toast urgency (`notif-toast-critical`) cannot be wired yet.
+- **[2026-03-17 19:03]** (Iteration 4) merge-conflict: T6 deferred. Reason: source file merge conflict with concurrent task.
