@@ -43,6 +43,57 @@ export function toggleNotificationCenter(): void {
 
 // --- Notification list helpers ---
 
+// Sanitize a freedesktop.org HTML notification body to safe Pango markup.
+// The spec allows a small HTML subset (<b>, <i>, <u>, <a>, <img>, <br>).
+// Pango supports <b>, <i>, <u>, <s>, <tt>, <span>, <sub>, <sup>, <big>, <small>.
+// Returns the processed string and whether Pango markup mode should be enabled.
+function sanitizeBodyMarkup(body: string): { markup: string; hasMarkup: boolean } {
+  if (!/<[a-zA-Z]/.test(body)) {
+    return { markup: body, hasMarkup: false }
+  }
+  const PANGO_SAFE = new Set([
+    "b",
+    "i",
+    "u",
+    "s",
+    "tt",
+    "span",
+    "sub",
+    "sup",
+    "big",
+    "small",
+  ])
+  const markup = body
+    // <br> and <br/> → newline
+    .replace(/<br\s*\/?>/gi, "\n")
+    // Strip <img> entirely (no visual equivalent in Pango)
+    .replace(/<img\b[^>]*>/gi, "")
+    // Strip <a> open/close tags — keep link text, Pango has no href rendering
+    .replace(/<a\b[^>]*>/gi, "")
+    .replace(/<\/a>/gi, "")
+    // Pass Pango-safe tags through; strip everything else
+    .replace(
+      /<\/?\s*([a-zA-Z][a-zA-Z0-9]*)(\s[^>]*)?\s*>/g,
+      (match, tag: string) => (PANGO_SAFE.has(tag.toLowerCase()) ? match : ""),
+    )
+  return { markup, hasMarkup: true }
+}
+
+function BodyLabel({ body }: { body: string }) {
+  const { markup, hasMarkup } = sanitizeBodyMarkup(body)
+  return (
+    <label
+      class="notif-row-body"
+      label={markup}
+      useMarkup={hasMarkup}
+      halign={1}
+      xalign={0}
+      wrap
+      ellipsize={3}
+    />
+  )
+}
+
 function formatTimestamp(unixTime: number): string {
   const nowSec = Math.floor(Date.now() / 1000)
   const diff = nowSec - unixTime
@@ -80,16 +131,7 @@ function NotificationRow(n: AstalNotifd.Notification) {
         xalign={0}
         wrap
       />
-      {n.body && (
-        <label
-          class="notif-row-body"
-          label={n.body}
-          halign={1}
-          xalign={0}
-          wrap
-          ellipsize={3}
-        />
-      )}
+      {n.body && <BodyLabel body={n.body} />}
       {n.actions.length > 0 && (
         <box class="notif-actions" spacing={4}>
           {n.actions.map((action) => (

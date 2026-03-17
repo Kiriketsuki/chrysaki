@@ -1,3 +1,19 @@
+## Iteration 3 - 2026-03-17 19:10
+**Task**: T8 - Body markup rendering — formatted text support
+
+### Introduced
+| Item | Type | File | Purpose |
+|:---|:---|:---|:---|
+| `sanitizeBodyMarkup(body)` | function | `ags/.config/ags/widgets/NotificationCenter.tsx` | Converts the freedesktop.org HTML notification body subset to safe Pango markup; strips unsupported tags (`<a>`, `<img>`), converts `<br>` to newlines, passes Pango-safe tags through unchanged; returns `{ markup, hasMarkup }` |
+| `BodyLabel({ body })` | function | `ags/.config/ags/widgets/NotificationCenter.tsx` | Renders a notification body label with conditional `useMarkup` — enables Pango markup only when the body contained HTML, leaving plain-text bodies untouched |
+
+### Design Notes
+- Plain-text bodies (no `<` characters) bypass sanitization entirely and render with `useMarkup={false}`, preventing Pango parser errors from literal `<` in plain text.
+- `<a>` tags are stripped of their wrapper but their inner text is preserved — Pango has no `href` rendering capability.
+- Allowed Pango tags: `b`, `i`, `u`, `s`, `tt`, `span`, `sub`, `sup`, `big`, `small` — the intersection of what freedesktop.org may send and what Pango can render.
+
+---
+
 ## Iteration 1 - 2026-03-17 00:10
 **Task**: T1 - AstalNotifd service setup — import, instantiate, verify D-Bus ownership
 
