@@ -41,8 +41,8 @@ Desktop power user running a Hyprland/Wayland desktop who needs unified notifica
 
 ## Project Status
 - **Overall Status**: IN_PROGRESS
-- **Current Iteration**: 1
-- **Last Update**: 2026-03-17 19:00
+- **Current Iteration**: 2
+- **Last Update**: 2026-03-17 19:30
 - **Task Selection Mode**: scored
 
 <!-- Overall Status flow: IN_PROGRESS -> COUNCIL_PENDING -> VERIFICATION_PENDING -> MISSION_COMPLETE -->
@@ -72,7 +72,7 @@ Desktop power user running a Hyprland/Wayland desktop who needs unified notifica
 | T2.1 | Notification list rendering — summary, body, timestamp, dismiss button per notification | High | 5 | 3 | 1 | 22 | completed | T2 | - |
 | T2.2 | Clear-all button and empty state | High | 5 | 0 | 1 | 16 | completed | T2.1 | - |
 | T2.3 | DND toggle in panel header | High | 5 | 0 | 1 | 16 | completed | T2 | - |
-| T3 | NotificationToast.tsx — toast popup window with auto-dismiss timer | High | 5 | 3 | 2 | 23 | pending | T1 | - |
+| T3 | NotificationToast.tsx — toast popup window with auto-dismiss timer | High | 5 | 3 | 2 | 23 | completed | T1 | - |
 | T3.1 | Toast stacking — max 3-4 visible, queue overflow | Med | 4 | 0 | 2 | 14 | pending | T3 | - |
 | T4 | Unread badge on NotificationToggle — count/dot indicator | Med | 5 | 0 | 1 | 16 | completed | T1, T2 | - |
 | T5 | _notifications.scss — panel, toast, badge styling (Chrysaki tokens, chamfered containers) | High | 5 | 2 | 2 | 21 | pending | T2, T3 | - |

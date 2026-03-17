@@ -1,3 +1,24 @@
+## Iteration 2 - 2026-03-17 19:30
+**Task**: T3 - NotificationToast.tsx — toast popup window with auto-dismiss timer
+
+### Introduced
+| Item | Type | File | Purpose |
+|:---|:---|:---|:---|
+| `NotificationToast()` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Layer-shell window (TOP \| RIGHT, marginTop 48) that hosts the active toast stack; hidden when no toasts are visible |
+| `_enqueueToast(id)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Receives a notification ID from the notifd "notified" signal; skips if DND is on; adds to visible slots (up to MAX_VISIBLE=4) or overflow queue; triggers auto-dismiss timer |
+| `_dismissToastById(id)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Removes a notification from the visible list, promotes the next queued item if any, and rebuilds the toast widget list |
+| `_scheduleAutoDismiss(id)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Registers a GLib.timeout_add of 5000ms that calls _dismissToastById when it fires; returns SOURCE_REMOVE to run only once |
+| `_rebuildToastList()` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Clears all children from the toast container box and re-renders a ToastRow for each currently visible notification ID; hides the window if the list is empty |
+| `ToastRow(id, n)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Renders one toast: app name, dismiss button, summary label, optional body label with ellipsis |
+
+### Design Notes
+- The toast window is a single persistent layer-shell window whose children are rebuilt on every enqueue/dismiss operation, avoiding the complexity of per-notification windows.
+- Module-level `_visibleIds` and `_queue` arrays manage slot state; MAX_VISIBLE=4 caps what is shown at once.
+- DND check is at enqueue time, matching the spec requirement that DND suppresses toasts while still accumulating in the center.
+- `_toastListBox` ref is set via the `$` escape-hatch prop on the container box, following the same pattern used in NotificationToggle.tsx for imperative widget updates.
+
+---
+
 ## Iteration 3 - 2026-03-17 19:10
 **Task**: T8 - Body markup rendering — formatted text support
 
