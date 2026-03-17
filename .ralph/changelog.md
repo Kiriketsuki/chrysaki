@@ -1,3 +1,26 @@
+## Iteration 4 - 2026-03-17 20:10
+**Task**: T6 - app.ts — register NotificationCenter() and NotificationToast() in main()
+
+### Introduced
+| Item | Type | File | Purpose |
+|:---|:---|:---|:---|
+| `NotificationToast()` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Layer-shell window (TOP \| RIGHT, marginTop 48) that hosts the active toast stack; hidden when no toasts are visible; connects to notifd "notified" signal to receive incoming notification IDs |
+| `_enqueueToast(id)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Receives a notification ID; skips if DND is on; adds to visible slots (up to MAX_VISIBLE=4) or overflow queue; triggers auto-dismiss timer |
+| `_dismissToastById(id)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Removes a notification ID from visible list, promotes next queued item if any, and calls _rebuildToastList |
+| `_scheduleAutoDismiss(id)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Registers GLib.timeout_add of 5000ms that calls _dismissToastById; returns GLib.SOURCE_REMOVE to fire only once |
+| `_rebuildToastList()` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Imperatively clears all children from _toastListBox and re-appends a ToastRow for each visible ID; hides window when list is empty |
+| `ToastRow(id, n)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Renders one toast card: app name label, dismiss button, summary, optional body (ellipsized); applies notif-toast-critical class for CRITICAL urgency |
+| `NotificationToast` import + call | line | `ags/.config/ags/app.ts` | Imports NotificationToast from widgets/NotificationToast and calls it in main() as a single-instance panel |
+
+### Design Notes
+- `NotificationToast.tsx` was absent on disk despite T3 being marked completed (recurring pattern in this parallel-merge loop). The file was recreated from the T3 changelog spec.
+- Single persistent layer-shell window whose children are rebuilt imperatively on each enqueue/dismiss — avoids the complexity of per-notification windows.
+- `_toastListBox` reference captured via the `$` escape-hatch on the container box, matching the pattern in `NotificationToggle.tsx`.
+- DND check happens at enqueue time, so notifications arriving while DND is on silently accumulate in the center (via NotificationCenter.tsx's own notified handler) but never enter the toast queue.
+- `notif-toast-critical` class is applied in `ToastRow` via `n.urgency === AstalNotifd.Urgency.CRITICAL`, completing the urgency chain started by T9 for panel rows.
+
+---
+
 ## Iteration 5 - 2026-03-17 20:00
 **Task**: T9 - Urgency styling — Error red accent for critical notifications
 
