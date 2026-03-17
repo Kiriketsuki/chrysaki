@@ -49,3 +49,25 @@ No new items introduced. NotificationToggle.tsx already called `toggleNotificati
 - The `notif-list` box and DND footer are structural placeholders — T2.1 replaces the empty state label with actual notification rows, T2.3 inserts the DND toggle at the bottom.
 
 ---
+
+## Iteration 5 - 2026-03-17 18:30
+**Task**: T4 - Unread badge on NotificationToggle — count/dot indicator
+
+### Introduced
+| Item | Type | File | Purpose |
+|:---|:---|:---|:---|
+| `notifd` | exported constant | `ags/.config/ags/widgets/NotificationCenter.tsx` | AstalNotifd singleton; also registers AGS as D-Bus notification daemon |
+| `onUnreadChange(cb)` | exported function | `ags/.config/ags/widgets/NotificationCenter.tsx` | Registers a callback invoked whenever unread count changes (new notification arrives or panel opened) |
+| `getUnreadCount()` | exported function | `ags/.config/ags/widgets/NotificationCenter.tsx` | Returns `max(0, total − seenCount)`; seenCount resets to total when panel opens |
+| `toggleNotificationCenter()` | exported function | `ags/.config/ags/widgets/NotificationCenter.tsx` | Toggles panel visibility; resets _seenCount to current total before showing, marking all current notifications as read |
+| `NotificationCenter()` | exported function | `ags/.config/ags/widgets/NotificationCenter.tsx` | Layer-shell panel window (top-right, below bar); T2 skeleton with title + empty-state placeholder |
+| `.notif-badge` | CSS class | `ags/.config/ags/styles/_notifications.scss` | Flat-top hexagon badge (Chrysaki badge spec), error-red background, shows numeric unread count |
+| `.notif-toggle-wrap` | CSS class | `ags/.config/ags/styles/_notifications.scss` | Horizontal box wrapping the toggle button and the overlapping badge label |
+
+### Design Notes
+- Unread count uses a module-level `_seenCount` integer rather than per-notification tracking. This avoids complex ID sets and is sufficient for the badge use case: count resets to 0 when the panel opens, decreases when notifications are resolved, increases when new ones arrive.
+- The badge label is updated imperatively via the `$=` escape hatch + `onUnreadChange` callback, mirroring the blinking service icon pattern in ServiceStatus.tsx rather than introducing a new reactive primitive.
+- Badge shape is the flat-top hexagon (`clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)`) as specified in CLAUDE.md for badge/status indicators — zero border-radius maintained.
+- NotificationCenter.tsx was created here because T2's commit only modified .ralph files (the file was never committed to disk). This is noted so T2.1/T2.2/T2.3 agents are not surprised to find the panel already has content.
+
+---
