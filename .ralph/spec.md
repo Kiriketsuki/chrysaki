@@ -74,7 +74,7 @@ Desktop power user running a Hyprland/Wayland desktop who needs unified notifica
 | T2.3 | DND toggle in panel header | High | 5 | 0 | 1 | 16 | pending | T2 | - |
 | T3 | NotificationToast.tsx — toast popup window with auto-dismiss timer | High | 5 | 3 | 2 | 23 | pending | T1 | - |
 | T3.1 | Toast stacking — max 3-4 visible, queue overflow | Med | 4 | 0 | 2 | 14 | pending | T3 | - |
-| T4 | Unread badge on NotificationToggle — count/dot indicator | Med | 5 | 0 | 1 | 16 | pending | T1, T2 | - |
+| T4 | Unread badge on NotificationToggle — count/dot indicator | Med | 5 | 0 | 1 | 16 | completed | T1, T2 | - |
 | T5 | _notifications.scss — panel, toast, badge styling (Chrysaki tokens, chamfered containers) | High | 5 | 2 | 2 | 21 | pending | T2, T3 | - |
 | T5.1 | Register _notifications.scss in style.scss | High | 3 | 0 | 1 | 10 | pending | T5 | - |
 | T6 | app.ts — register NotificationCenter() and NotificationToast() in main() | High | 4 | 0 | 1 | 13 | pending | T2, T3 | - |
