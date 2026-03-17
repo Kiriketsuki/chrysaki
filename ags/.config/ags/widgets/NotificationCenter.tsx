@@ -90,6 +90,18 @@ function NotificationRow(n: AstalNotifd.Notification) {
           ellipsize={3}
         />
       )}
+      {n.actions.length > 0 && (
+        <box class="notif-actions" spacing={4}>
+          {n.actions.map((action) => (
+            <button
+              class="notif-action-btn"
+              label={action.label}
+              hexpand
+              onClicked={() => n.invokeAction(action.id)}
+            />
+          ))}
+        </box>
+      )}
     </box>
   )
 }

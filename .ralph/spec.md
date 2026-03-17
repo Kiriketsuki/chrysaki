@@ -78,7 +78,7 @@ Desktop power user running a Hyprland/Wayland desktop who needs unified notifica
 | T5 | _notifications.scss — panel, toast, badge styling (Chrysaki tokens, chamfered containers) | High | 5 | 2 | 2 | 21 | pending | T2, T3 | - |
 | T5.1 | Register _notifications.scss in style.scss | High | 3 | 0 | 1 | 10 | pending | T5 | - |
 | T6 | app.ts — register NotificationCenter() and NotificationToast() in main() | High | 4 | 0 | 1 | 13 | pending | T2, T3 | - |
-| T7 | Notification actions — render action buttons, fire D-Bus callbacks | Med | 3 | 0 | 2 | 11 | pending | T2.1 | - |
+| T7 | Notification actions — render action buttons, fire D-Bus callbacks | Med | 3 | 0 | 2 | 11 | completed | T2.1 | - |
 | T8 | Body markup rendering — formatted text support | Med | 3 | 0 | 2 | 11 | pending | T2.1 | - |
 | T9 | Urgency styling — Error red accent for critical notifications | Low | 2 | 0 | 1 | 7 | pending | T5 | - |
 
