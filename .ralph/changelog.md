@@ -1,3 +1,25 @@
+## Iteration 3 - 2026-03-17 20:30
+**Task**: T3.1 - Toast stacking — max 3-4 visible, queue overflow
+
+### Introduced
+| Item | Type | File | Purpose |
+|:---|:---|:---|:---|
+| `NotificationToast()` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Layer-shell window (TOP \| RIGHT, marginTop 48) hosting the active toast stack; hidden when empty; wires the notifd "notified" signal to `_enqueueToast` |
+| `_enqueueToast(id)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | DND-aware entry point: adds ID to `_visibleIds` (up to MAX_VISIBLE=4) or `_queue` overflow; schedules auto-dismiss for visible slots; triggers `_rebuildToastList` |
+| `_dismissToastById(id)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Removes ID from `_visibleIds`; promotes head of `_queue` to a visible slot and schedules its auto-dismiss; calls `_rebuildToastList`; no-op if ID already absent (guards auto-dismiss + manual-dismiss race) |
+| `_scheduleAutoDismiss(id)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Registers a one-shot `GLib.timeout_add` of 5000ms that calls `_dismissToastById`; returns `SOURCE_REMOVE` to fire only once |
+| `_rebuildToastList()` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Imperatively removes all GTK4 box children then appends a `ToastRow` for each ID in `_visibleIds`; hides the window when the list is empty |
+| `ToastRow(id, n)` | function | `ags/.config/ags/widgets/NotificationToast.tsx` | Renders one toast card: app name label, close button wired to `_dismissToastById`, summary label, optional body label (ellipsized); applies `notif-toast-critical` class for CRITICAL urgency |
+
+### Design Notes
+- `NotificationToast.tsx` was absent on disk despite T3 and T6 both being logged as completed (parallel-merge pattern). This iteration is the file's first actual on-disk presence; it delivers T3 and T3.1 together.
+- Stacking state is two module-level arrays: `_visibleIds` (currently rendered) and `_queue` (waiting for a slot). Both follow immutable-reassignment style — no `splice` or `push`, always new array values.
+- Queue promotion is FIFO: `const [next, ...rest] = _queue` takes the oldest queued notification first.
+- `_dismissToastById` begins with `if (!_visibleIds.includes(id)) return` to handle the timer/manual-dismiss race cleanly — both paths converge on the same function.
+- Stale queue entries (notifications dismissed from the center while queued) are silently skipped in `_rebuildToastList` via the `if (n)` guard on `notifd.notifications.find(...)`.
+
+---
+
 ## Iteration 4 - 2026-03-17 20:10
 **Task**: T6 - app.ts — register NotificationCenter() and NotificationToast() in main()
 
