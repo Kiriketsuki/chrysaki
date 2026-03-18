@@ -1,0 +1,10 @@
+<svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+  <!-- Pencil body diagonal — tip at bottom-left, eraser at top-right -->
+  <path d="M9.5 2 L14 6.5 L6 14.5 L1.5 14.5 L1.5 10 Z"
+        fill="none" stroke="#e0e2ea" stroke-width="1.2" stroke-linejoin="round"/>
+  <!-- Eraser cap crossline -->
+  <line x1="9.5" y1="2" x2="8" y2="3.5" stroke="#e0e2ea" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="14" y1="6.5" x2="12.5" y2="8" stroke="#e0e2ea" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- Tip -->
+  <path d="M1.5 10 L1.5 14.5 L5 14.5 Z" fill="#e0e2ea"/>
+</svg>

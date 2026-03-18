@@ -9,44 +9,52 @@
 }
 
 // Service panel popup — frosted glass via Hyprland compositor blur
-// Low alpha lets blur show through; dark tint preserves contrast
+// 0.45 alpha: blur shows through richly, text stays readable
 .svc-panel {
-  background-color: rgba(15, 17, 23, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.50);
+  background-color: rgba(22, 24, 33, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
   padding: 10px;
-  min-width: 280px;
+  min-width: 300px;
 }
 
 .svc-panel-title {
   color: $text-primary;
   font-size: 15px;
   font-weight: bold;
-  padding: 4px 0px 6px 0px;
+  padding: 4px 0px 8px 0px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.10);
   margin-bottom: 4px;
 }
 
+// Category section — groups service rows under a labelled header
+.svc-category-section + .svc-category-section {
+  margin-top: 6px;
+}
+
+.svc-category-header {
+  color: $text-secondary;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 6px 2px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 1px;
+}
+
 .svc-panel-row {
-  padding: 6px 6px;
+  padding: 3px 6px;
+  min-height: 0;
 }
 
 // Accent-tinted row backgrounds per service
-.svc-row-svc-emerald {
-  background: rgba($emerald, 0.12);
-}
-
-.svc-row-svc-teal {
-  background: rgba($teal, 0.12);
-}
-
-.svc-row-svc-amethyst {
-  background: rgba($amethyst, 0.12);
-}
-
-.svc-row-svc-blonde {
-  background: rgba($teal-dim, 0.18);
-}
+.svc-row-svc-emerald  { background: rgba($emerald, 0.12); }
+.svc-row-svc-teal     { background: rgba($teal, 0.12); }
+.svc-row-svc-amethyst { background: rgba($amethyst, 0.12); }
+.svc-row-svc-blonde   { background: rgba($teal-dim, 0.18); }
+.svc-row-svc-blue     { background: rgba($blue, 0.22); }
+.svc-row-svc-cerulean { background: rgba($cerulean, 0.12); }
 
 .svc-panel-name {
   color: $text-primary;
@@ -74,21 +82,56 @@
   font-weight: bold;
 }
 
+// Shared base for all action buttons in a service row
+.svc-panel-toggle,
+.svc-panel-gui,
+.svc-panel-eye {
+  min-width: 0;
+  min-height: 0;
+  padding: 1px 5px;
+  font-size: 12px;
+}
+
 .svc-panel-toggle {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: $text-primary;
-  font-size: 14px;
-  padding: 2px 6px;
-  min-width: 0px;
+
+  &:hover { background: rgba(255, 255, 255, 0.10); }
+  &:disabled { opacity: 0.25; }
+}
+
+// GUI open button — launches the service's web UI or app
+// .svc-no-gui: invisible placeholder — keeps column width so all rows align
+.svc-panel-gui {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: $teal-light;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.10);
+    background: rgba(255, 255, 255, 0.12);
+    color: $blonde-light;
+  }
+
+  &.svc-no-gui {
+    opacity: 0;
+    background: transparent;
+    border-color: transparent;
   }
 }
 
-.svc-panel-no-toggle {
+// Eye toggle — controls whether the service icon appears in the bar
+.svc-panel-eye {
+  background: transparent;
+  border: none;
+
+  &:hover { color: $text-secondary; }
+}
+
+.svc-panel-eye.svc-eye-on {
+  color: $teal-light;
+}
+
+.svc-panel-eye.svc-eye-off {
   color: $text-muted;
-  font-size: 11px;
-  padding: 2px 6px;
 }
