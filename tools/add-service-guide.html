@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adding Services — Chrysaki Service Centre</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:           #0b0f16;
+      --surface:      #111722;
+      --surface-2:    #1a2030;
+      --surface-3:    #212b3a;
+      --border:       rgba(70, 130, 200, 0.18);
+      --border-bright:rgba(70, 130, 200, 0.35);
+      --text:         #dce6f0;
+      --text-dim:     #7a90a8;
+      --text-faint:   #4a5a6e;
+      --blue:         #4a90d9;
+      --blue-dim:     rgba(74, 144, 217, 0.12);
+      --green:        #4caf7d;
+      --green-dim:    rgba(76, 175, 125, 0.12);
+      --amber:        #d4a843;
+      --amber-dim:    rgba(212, 168, 67, 0.12);
+      --red:          #d45f5f;
+      --red-dim:      rgba(212, 95, 95, 0.12);
+      --teal:         #3db8b8;
+      --font-body:    'IBM Plex Sans', 'Helvetica Neue', sans-serif;
+      --font-mono:    'IBM Plex Mono', 'Courier New', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(rgba(70, 130, 200, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(70, 130, 200, 0.04) 1px, transparent 1px);
+      background-size: 28px 28px;
+      color: var(--text);
+      min-height: 100vh;
+      padding: 48px 24px 80px;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    .header {
+      margin-bottom: 48px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+
+    .header::before {
+      content: 'CHRYSAKI / SERVICE CENTRE';
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--blue);
+      letter-spacing: 0.2em;
+      margin-bottom: 12px;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .header .lead {
+      margin-top: 10px;
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.6;
+      max-width: 600px;
+    }
+
+    .header .badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--green);
+      background: var(--green-dim);
+      border: 1px solid rgba(76, 175, 125, 0.25);
+      padding: 2px 8px;
+      display: inline-block;
+      margin-top: 14px;
+    }
+
+    /* ── Section labels ── */
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--blue);
+      letter-spacing: 0.15em;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── Step flow ── */
+    .steps {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      margin-bottom: 48px;
+      border: 1px solid var(--border);
+    }
+
+    .step {
+      background: var(--surface);
+      padding: 20px;
+      position: relative;
+      opacity: 0;
+      animation: fadeUp 0.4s ease forwards;
+    }
+
+    .step:nth-child(1) { animation-delay: 0.05s; }
+    .step:nth-child(2) { animation-delay: 0.15s; }
+    .step:nth-child(3) { animation-delay: 0.25s; }
+
+    .step-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--blue);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step-num::before {
+      content: attr(data-n);
+      width: 20px;
+      height: 20px;
+      background: var(--blue);
+      color: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .step h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .step p {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.55;
+    }
+
+    .step code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--blue);
+      background: var(--blue-dim);
+      padding: 1px 4px;
+    }
+
+    .step .cmd {
+      margin-top: 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      background: var(--surface-3);
+      border-left: 2px solid var(--blue);
+      padding: 6px 10px;
+      line-height: 1.5;
+      word-break: break-all;
+    }
+
+    /* ── Field table ── */
+    .table-wrap {
+      overflow-x: auto;
+      margin-bottom: 48px;
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+    }
+
+    thead th {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      color: var(--text-dim);
+      text-align: left;
+      padding: 10px 14px;
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border-bright);
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.12s;
+      opacity: 0;
+      animation: fadeIn 0.3s ease forwards;
+    }
+
+    tbody tr:nth-child(1)  { animation-delay: 0.08s; }
+    tbody tr:nth-child(2)  { animation-delay: 0.11s; }
+    tbody tr:nth-child(3)  { animation-delay: 0.14s; }
+    tbody tr:nth-child(4)  { animation-delay: 0.17s; }
+    tbody tr:nth-child(5)  { animation-delay: 0.20s; }
+    tbody tr:nth-child(6)  { animation-delay: 0.23s; }
+    tbody tr:nth-child(7)  { animation-delay: 0.26s; }
+    tbody tr:nth-child(8)  { animation-delay: 0.29s; }
+    tbody tr:nth-child(9)  { animation-delay: 0.32s; }
+    tbody tr:nth-child(10) { animation-delay: 0.35s; }
+
+    tbody tr:hover { background: var(--surface-2); }
+
+    td {
+      padding: 10px 14px;
+      color: var(--text);
+      vertical-align: top;
+      line-height: 1.5;
+    }
+
+    td.field-name {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--blue);
+      white-space: nowrap;
+    }
+
+    td.field-type {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+
+    td code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--amber);
+      background: var(--amber-dim);
+      padding: 1px 5px;
+    }
+
+    .req { color: var(--red); font-size: 10px; font-family: var(--font-mono); }
+    .opt { color: var(--text-faint); font-size: 10px; font-family: var(--font-mono); }
+
+    .badge-req {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      padding: 1px 5px;
+      background: var(--red-dim);
+      color: var(--red);
+      border: 1px solid rgba(212, 95, 95, 0.25);
+    }
+
+    .badge-opt {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      padding: 1px 5px;
+      background: var(--surface-3);
+      color: var(--text-faint);
+      border: 1px solid var(--border);
+    }
+
+    /* ── Health command patterns ── */
+    .patterns {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+
+    .pattern-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 16px;
+      opacity: 0;
+      animation: fadeUp 0.4s ease forwards;
+    }
+
+    .pattern-card:nth-child(1) { animation-delay: 0.1s; }
+    .pattern-card:nth-child(2) { animation-delay: 0.2s; }
+    .pattern-card:nth-child(3) { animation-delay: 0.3s; }
+
+    .pattern-type {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .type-dot {
+      width: 8px;
+      height: 8px;
+      flex-shrink: 0;
+    }
+
+    .pattern-card h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .pattern-card .desc {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    .pattern-card .cmd {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--text-dim);
+      background: var(--surface-3);
+      padding: 8px 10px;
+      line-height: 1.7;
+      border-left: 2px solid;
+    }
+
+    .daemon .type-dot { background: var(--blue); }
+    .daemon .pattern-type { color: var(--blue); }
+    .daemon .cmd { border-color: var(--blue); }
+
+    .process .type-dot { background: var(--green); }
+    .process .pattern-type { color: var(--green); }
+    .process .cmd { border-color: var(--green); }
+
+    .cli .type-dot { background: var(--amber); }
+    .cli .pattern-type { color: var(--amber); }
+    .cli .cmd { border-color: var(--amber); }
+
+    /* ── Accent swatches ── */
+    .swatches {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+
+    .swatch {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      opacity: 0;
+      animation: fadeIn 0.3s ease forwards;
+    }
+
+    .swatch:nth-child(1) { animation-delay: 0.05s; }
+    .swatch:nth-child(2) { animation-delay: 0.10s; }
+    .swatch:nth-child(3) { animation-delay: 0.15s; }
+    .swatch:nth-child(4) { animation-delay: 0.20s; }
+    .swatch:nth-child(5) { animation-delay: 0.25s; }
+    .swatch:nth-child(6) { animation-delay: 0.30s; }
+
+    .swatch-dot {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+
+    .swatch-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text);
+    }
+
+    /* ── Example JSON ── */
+    .example-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      margin-bottom: 48px;
+      opacity: 0;
+      animation: fadeUp 0.4s ease 0.1s forwards;
+    }
+
+    .example-block .block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .block-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .block-tag {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--blue);
+      background: var(--blue-dim);
+      border: 1px solid rgba(74, 144, 217, 0.25);
+      padding: 1px 6px;
+    }
+
+    pre {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.75;
+      padding: 18px 20px;
+      overflow-x: auto;
+      color: var(--text);
+    }
+
+    .k  { color: var(--blue); }      /* key */
+    .s  { color: var(--green); }     /* string */
+    .n  { color: var(--amber); }     /* null */
+    .c  { color: var(--text-faint); font-style: italic; } /* comment */
+
+    /* ── Category map ── */
+    .cat-map {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-bottom: 48px;
+    }
+
+    .cat-card {
+      background: var(--surface);
+      padding: 14px 16px;
+      opacity: 0;
+      animation: fadeIn 0.3s ease forwards;
+    }
+
+    .cat-card:nth-child(1) { animation-delay: 0.1s; }
+    .cat-card:nth-child(2) { animation-delay: 0.2s; }
+    .cat-card:nth-child(3) { animation-delay: 0.3s; }
+
+    .cat-icon {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--blue);
+      letter-spacing: 0.1em;
+      margin-bottom: 6px;
+    }
+
+    .cat-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .cat-note {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    .cat-note code {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--blue);
+    }
+
+    /* ── Callout ── */
+    .callout {
+      background: var(--amber-dim);
+      border-left: 3px solid var(--amber);
+      padding: 12px 16px;
+      margin-bottom: 48px;
+      font-size: 12.5px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    .callout strong {
+      color: var(--amber);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+    }
+
+    .callout code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text);
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; opacity: 1 !important; }
+    }
+
+    @media (max-width: 640px) {
+      .steps, .patterns, .cat-map { grid-template-columns: 1fr; }
+      .swatches { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <header class="header">
+    <h1>Adding Services to the Centre</h1>
+    <p class="lead">
+      The service centre is fully config-driven — no TypeScript changes needed.
+      Drop an icon, add a JSON entry, restart AGS.
+    </p>
+    <span class="badge">services.json · No compile step · Restart to apply</span>
+  </header>
+
+  <!-- Steps -->
+  <div class="section-label">WORKFLOW · 3 STEPS</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num" data-n="1">ADD ICON</div>
+      <h3>Drop the SVG</h3>
+      <p>Place a symbolic SVG in the icons directory. Name it <code>&lt;name&gt;-symbolic.svg</code> — the <code>-symbolic</code> suffix is required for GTK theming.</p>
+      <div class="cmd">ags/.config/ags/icons/hicolor/scalable/status/<br>└── myservice-symbolic.svg</div>
+    </div>
+    <div class="step">
+      <div class="step-num" data-n="2">EDIT JSON</div>
+      <h3>Add the entry</h3>
+      <p>Append a service object to <code>services.json</code>. The file is stow-symlinked to <code>~/.config/ags/services.json</code> — edit either path.</p>
+      <div class="cmd">chrysaki/ags/.config/ags/services.json</div>
+    </div>
+    <div class="step">
+      <div class="step-num" data-n="3">RESTART</div>
+      <h3>Kill &amp; relaunch AGS</h3>
+      <p>Services load at startup only. After any icon or JSON change, restart the process. New icons also need a stow re-run if you added the file fresh.</p>
+      <div class="cmd">stow -d ~/dots/chrysaki -t ~ ags -v<br><br>kill $(pgrep -f "gjs.*ags.js")<br>WAYLAND_DISPLAY=wayland-1 ags run \<br>  ~/.config/ags/app.ts &amp;</div>
+    </div>
+  </div>
+
+  <!-- Callout: stow note -->
+  <div class="callout">
+    <strong>STOW NOTE</strong>&nbsp; Only re-run stow when you add a <em>new file</em> to the package. Editing an existing file (<code>services.json</code> already symlinked) takes effect immediately — no stow needed.
+  </div>
+
+  <!-- Field reference table -->
+  <div class="section-label">FIELD REFERENCE · services.json</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Type</th>
+          <th></th>
+          <th>Description &amp; accepted values</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="field-name">name</td>
+          <td class="field-type">string</td>
+          <td><span class="badge-req">required</span></td>
+          <td>Display name shown in the panel row and used as the tooltip on the bar icon. Also the key in <code>service-prefs.json</code> — must be unique.</td>
+        </tr>
+        <tr>
+          <td class="field-name">type</td>
+          <td class="field-type">enum</td>
+          <td><span class="badge-req">required</span></td>
+          <td>
+            <code>"daemon"</code> — systemd unit or HTTP service<br>
+            <code>"process"</code> — background process (pgrep-checkable)<br>
+            <code>"cli"</code> — installed CLI tool (version-check)
+          </td>
+        </tr>
+        <tr>
+          <td class="field-name">category</td>
+          <td class="field-type">string</td>
+          <td><span class="badge-req">required</span></td>
+          <td>Groups rows in the panel under a header. Use an existing category or introduce a new one — the icon for new categories defaults to a circle unless added to <code>CATEGORY_ICONS</code> in ServiceStatus.tsx.</td>
+        </tr>
+        <tr>
+          <td class="field-name">icon</td>
+          <td class="field-type">string</td>
+          <td><span class="badge-req">required</span></td>
+          <td>Filename without the <code>-symbolic.svg</code> suffix. Falls back to <code>application-x-executable-symbolic</code> if the file is missing. Example: <code>"myservice-symbolic"</code> → use <code>"myservice"</code>.</td>
+        </tr>
+        <tr>
+          <td class="field-name">healthCmd</td>
+          <td class="field-type">string</td>
+          <td><span class="badge-req">required</span></td>
+          <td>Bash command that outputs <code>ok</code> or <code>fail</code> to stdout. Must be self-contained — runs via <code>bash -c</code>. See health patterns below.</td>
+        </tr>
+        <tr>
+          <td class="field-name">startCmd</td>
+          <td class="field-type">string | null</td>
+          <td><span class="badge-req">required</span></td>
+          <td>Command to start the service when it's unhealthy. Set <code>null</code> to disable the toggle button in the unhealthy state.</td>
+        </tr>
+        <tr>
+          <td class="field-name">stopCmd</td>
+          <td class="field-type">string | null</td>
+          <td><span class="badge-req">required</span></td>
+          <td>Command to stop the service when it's healthy. Set <code>null</code> to disable the toggle button in the healthy state.</td>
+        </tr>
+        <tr>
+          <td class="field-name">guiCmd</td>
+          <td class="field-type">string | null</td>
+          <td><span class="badge-req">required</span></td>
+          <td>Command to open the service's web UI or desktop app. Renders a link button (⧉) in the row. Set <code>null</code> to hide — an invisible placeholder preserves column alignment.</td>
+        </tr>
+        <tr>
+          <td class="field-name">cssAccent</td>
+          <td class="field-type">string</td>
+          <td><span class="badge-req">required</span></td>
+          <td>Row background tint class. See accent palette below.</td>
+        </tr>
+        <tr>
+          <td class="field-name">interval</td>
+          <td class="field-type">number</td>
+          <td><span class="badge-req">required</span></td>
+          <td>Health check poll interval in milliseconds. Recommended: <code>5000</code> for HTTP, <code>10000</code> for process, <code>15000–30000</code> for slow checks.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Health patterns -->
+  <div class="section-label">HEALTH COMMAND PATTERNS · by type</div>
+  <div class="patterns">
+    <div class="pattern-card daemon">
+      <div class="pattern-type"><span class="type-dot"></span>DAEMON</div>
+      <h4>HTTP health endpoint</h4>
+      <p class="desc">Curl the service's health URL. Suppress all output — only the echo matters.</p>
+      <div class="cmd">curl -sf http://localhost:PORT/health \<br>  &gt;/dev/null 2&gt;&amp;1 \<br>  &amp;&amp; echo ok || echo fail</div>
+    </div>
+    <div class="pattern-card daemon">
+      <div class="pattern-type"><span class="type-dot"></span>DAEMON</div>
+      <h4>systemd unit</h4>
+      <p class="desc">Use <code>is-active</code> for user units, drop <code>--user</code> for system units.</p>
+      <div class="cmd">systemctl --user is-active SERVICE \<br>  &gt;/dev/null 2&gt;&amp;1 \<br>  &amp;&amp; echo ok || echo fail</div>
+    </div>
+    <div class="pattern-card process">
+      <div class="pattern-type"><span class="type-dot"></span>PROCESS</div>
+      <h4>pgrep match</h4>
+      <p class="desc">Match on a unique fragment of the process command line.</p>
+      <div class="cmd">pgrep -f 'PROCESS_PATTERN' \<br>  &gt;/dev/null 2&gt;&amp;1 \<br>  &amp;&amp; echo ok || echo fail</div>
+    </div>
+    <div class="pattern-card cli">
+      <div class="pattern-type"><span class="type-dot"></span>CLI</div>
+      <h4>Version check</h4>
+      <p class="desc">Any command that exits 0 when the tool is installed. Most tools accept <code>--version</code>.</p>
+      <div class="cmd">TOOL --version \<br>  &gt;/dev/null 2&gt;&amp;1 \<br>  &amp;&amp; echo ok || echo fail</div>
+    </div>
+  </div>
+
+  <!-- Accent swatches -->
+  <div class="section-label">ACCENT PALETTE · cssAccent values</div>
+  <div class="swatches">
+    <div class="swatch">
+      <div class="swatch-dot" style="background:#14664e;"></div>
+      <span class="swatch-label">svc-emerald</span>
+    </div>
+    <div class="swatch">
+      <div class="swatch-dot" style="background:#197278;"></div>
+      <span class="swatch-label">svc-teal</span>
+    </div>
+    <div class="swatch">
+      <div class="swatch-dot" style="background:#3a2068;"></div>
+      <span class="swatch-label">svc-amethyst</span>
+    </div>
+    <div class="swatch">
+      <div class="swatch-dot" style="background:#2a5060;"></div>
+      <span class="swatch-label">svc-blonde</span>
+    </div>
+    <div class="swatch">
+      <div class="swatch-dot" style="background:#122858;"></div>
+      <span class="swatch-label">svc-blue</span>
+    </div>
+    <div class="swatch">
+      <div class="swatch-dot" style="background:#0d4050;"></div>
+      <span class="swatch-label">svc-cerulean</span>
+    </div>
+  </div>
+
+  <!-- Category map -->
+  <div class="section-label">CATEGORIES · existing + adding new</div>
+  <div class="cat-map">
+    <div class="cat-card">
+      <div class="cat-icon">SYSTEM</div>
+      <div class="cat-name">System</div>
+      <div class="cat-note">Daemons and background infrastructure. Use <code>"category": "System"</code>.</div>
+    </div>
+    <div class="cat-card">
+      <div class="cat-icon">MCP</div>
+      <div class="cat-name">MCP</div>
+      <div class="cat-note">Model Context Protocol servers. Use <code>"category": "MCP"</code>.</div>
+    </div>
+    <div class="cat-card">
+      <div class="cat-icon">CLI TOOLS</div>
+      <div class="cat-name">CLI Tools</div>
+      <div class="cat-note">Installed binaries with no daemon. Use <code>"category": "CLI Tools"</code>.</div>
+    </div>
+  </div>
+
+  <!-- New category note -->
+  <div class="callout">
+    <strong>NEW CATEGORY</strong>&nbsp; Use any string for <code>category</code>. A new category header renders automatically with a default bullet icon. To assign a Nerd Font glyph, add one entry to <code>CATEGORY_ICONS</code> in <code>ServiceStatus.tsx</code>:
+    <br><br>
+    <code>"My Category": "\uf???",  // nf-fa-something</code>
+    <br><br>
+    That's the only TypeScript change ever needed.
+  </div>
+
+  <!-- Example JSON -->
+  <div class="section-label">COMPLETE EXAMPLE · new HTTP daemon</div>
+  <div class="example-block">
+    <div class="block-header">
+      <span class="block-title">services.json — append to array</span>
+      <span class="block-tag">JSON</span>
+    </div>
+    <pre>{
+  <span class="k">"name"</span>:      <span class="s">"MyService"</span>,
+  <span class="k">"type"</span>:      <span class="s">"daemon"</span>,
+  <span class="k">"category"</span>: <span class="s">"System"</span>,
+  <span class="k">"icon"</span>:      <span class="s">"myservice-symbolic"</span>,  <span class="c">// → icons/.../myservice-symbolic.svg</span>
+
+  <span class="k">"healthCmd"</span>: <span class="s">"curl -sf http://localhost:8080/health &gt;/dev/null 2&gt;&amp;1 &amp;&amp; echo ok || echo fail"</span>,
+  <span class="k">"startCmd"</span>:  <span class="s">"systemctl --user start myservice"</span>,
+  <span class="k">"stopCmd"</span>:   <span class="s">"systemctl --user stop myservice"</span>,
+  <span class="k">"guiCmd"</span>:    <span class="s">"xdg-open http://localhost:8080"</span>,  <span class="c">// or null</span>
+
+  <span class="k">"cssAccent"</span>: <span class="s">"svc-emerald"</span>,
+  <span class="k">"interval"</span>:  <span class="n">5000</span>
+}</pre>
+  </div>
+
+</div>
+</body>
+</html>
