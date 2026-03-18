@@ -53,6 +53,9 @@
   font-size: 12px;
 }
 
+// Bar icon error state
+.svc-icon.svc-error { color: $error; }
+
 // Force service icons white in the panel
 .svc-panel-row .svc-icon {
   -gtk-icon-style: symbolic;

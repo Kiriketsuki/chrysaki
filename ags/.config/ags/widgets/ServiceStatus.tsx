@@ -41,7 +41,7 @@ const SERVICES: readonly ServiceDef[] = [
     iconFile: `${ICON_DIR}/gitnexus-symbolic.svg`,
     interval: 10000,
     command:
-      "/home/kiriketsuki/.nvm/versions/node/v24.14.0/bin/gitnexus status >/dev/null 2>&1 && echo ok || echo fail",
+      "pgrep -f 'gitnexus' >/dev/null 2>&1 && echo ok || echo fail",
     cssOk: "svc-teal",
     startCmd: null,
     stopCmd: null,
@@ -79,6 +79,7 @@ function togglePanel(): void {
 function ServiceIcon({ name, iconFile, interval, command, cssOk }: ServiceDef) {
   const status = createPoll("ok", interval, ["bash", "-c", command])
   const isOk = createComputed(() => status().trim() === "ok")
+  const iconClass = createComputed(() => isOk() ? "svc-icon" : "svc-icon svc-error")
   const gicon = Gio.FileIcon.new(Gio.File.new_for_path(iconFile))
 
   return (
@@ -90,7 +91,7 @@ function ServiceIcon({ name, iconFile, interval, command, cssOk }: ServiceDef) {
       <image
         gicon={gicon}
         pixelSize={16}
-        class="svc-icon"
+        class={iconClass}
         valign={3}
         $={(self: any) => {
           let blinkOn = true
