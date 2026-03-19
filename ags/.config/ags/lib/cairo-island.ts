@@ -703,10 +703,14 @@ export function drawIslandBackground(
 
   // 1b. Wave gradient + ripple fill (drawn before glass fill for depth)
   if (gradientColors && gradientColors.length > 0 && gradientFrame !== undefined) {
-    cr.setSourceRGBA(0, 0, 0, 0.3)
+    cr.setSourceRGBA(0, 0, 0, 0.85)
     cr.fillPreserve()
     drawRadialRippleFill(cr, w, h, chamfer, gradientColors, gradientFrame, ripples ?? [])
     traceChamferedRect(cr, 0, 0, w, h, chamfer)
+  } else {
+    // Static islands (no wave animation) — Abyss dark base so the island is readable
+    cr.setSourceRGBA(0.059, 0.067, 0.090, 0.90)  // #0f1117 at 90% opacity
+    cr.fillPreserve()
   }
 
   // 2. Glass fill

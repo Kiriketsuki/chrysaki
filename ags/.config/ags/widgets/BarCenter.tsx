@@ -25,7 +25,7 @@ export function BarCenter(gdkmonitor: Gdk.Monitor) {
           self.setChamfer({ tl: true, tr: true, bl: true, br: true })
         }
       >
-        <WorkspaceIndicator />
+        <WorkspaceIndicator gdkmonitor={gdkmonitor} />
       </ChamferedBar>
     </window>
   )

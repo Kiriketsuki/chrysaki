@@ -1,11 +1,33 @@
+import GLib from "gi://GLib?version=2.0"
 import app from "ags/gtk4/app"
 import { createBinding } from "ags"
 import { Astal } from "ags/gtk4"
 import AstalNotifd from "gi://AstalNotifd"
+import AstalHyprland from "gi://AstalHyprland"
+
+const hyprland = AstalHyprland.get_default()!
 
 const PANEL_NAME = "chrysaki-notification-center"
 
 export const notifd = AstalNotifd.get_default()!
+
+// --- Panel list imperative state ---
+
+let _panelList: any = null
+const _panelRows: Map<number, any> = new Map()
+
+function rebuildPanelRows(): void {
+  if (!_panelList) return
+  for (const row of _panelRows.values()) {
+    _panelList.remove(row)
+  }
+  _panelRows.clear()
+  for (const n of [...notifd.notifications].reverse()) {
+    const row = NotificationRow(n)
+    _panelRows.set(n.id, row)
+    _panelList.append(row)
+  }
+}
 
 // --- Unread count (module-level state, no GObject needed) ---
 
@@ -144,7 +166,15 @@ function NotificationRow(n: AstalNotifd.Notification) {
               class="notif-action-btn"
               label={action.label}
               hexpand
-              onClicked={() => n.invokeAction(action.id)}
+              onClicked={() => {
+                n.invoke(action.id)
+                const needle = (n.desktopEntry || n.appName || "").toLowerCase()
+                if (!needle) return
+                const client = (hyprland.clients as AstalHyprland.Client[]).find(
+                  (c) => c.initialClass.toLowerCase().includes(needle) || needle.includes(c.initialClass.toLowerCase()),
+                )
+                if (client) hyprland.dispatch("focuswindow", `address:0x${client.address}`)
+              }}
             />
           ))}
         </box>
@@ -217,19 +247,28 @@ export function NotificationCenter() {
           <ClearAllButton />
           <DndToggle />
         </box>
-        <box class="notif-panel-list" orientation={1} spacing={4}>
-          {notifications.as((list) =>
-            list.length === 0
-              ? [
-                  <label
-                    class="notif-empty"
-                    label="No notifications"
-                    halign={3}
-                    valign={3}
-                  />,
-                ]
-              : [...list].reverse().map((n) => NotificationRow(n)),
-          )}
+        <box
+          class="notif-panel-list"
+          orientation={1}
+          spacing={4}
+          $={(box: any) => {
+            _panelList = box
+            rebuildPanelRows()
+            notifd.connect("notify::notifications", () => {
+              GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                rebuildPanelRows()
+                return GLib.SOURCE_REMOVE
+              })
+            })
+          }}
+        >
+          <label
+            class="notif-empty"
+            label="No notifications"
+            halign={3}
+            valign={3}
+            visible={notifications.as((list) => list.length === 0)}
+          />
         </box>
       </box>
     </window>
