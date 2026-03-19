@@ -1,11 +1,14 @@
 @use "palette" as *;
 
-.utility-button {
+.utility-button,
+.power-button {
   color: $text-primary;
   font-size: 14px;
   background: transparent;
   border: none;
   padding: 0px 4px;
+  min-height: 0px;
+  min-width: 0px;
 
   &:hover {
     color: $text-secondary;

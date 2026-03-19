@@ -33,15 +33,21 @@ export function SystemTray() {
         onClicked={() => setExpanded((v) => !v)}
         tooltipText={toggleTip}
       />
-      <box visible={expanded} spacing={4}>
-        <For each={filtered}>
-          {(item: AstalTray.TrayItem) => (
-            <menubutton tooltipText={item.tooltipText ?? item.id}>
-              <image gicon={item.gicon} pixelSize={16} />
-            </menubutton>
-          )}
-        </For>
-      </box>
+      <revealer
+        revealChild={expanded}
+        transitionType={2}
+        transitionDuration={180}
+      >
+        <box spacing={4}>
+          <For each={filtered}>
+            {(item: AstalTray.TrayItem) => (
+              <menubutton tooltipText={item.tooltipText ?? item.id}>
+                <image gicon={item.gicon} pixelSize={16} />
+              </menubutton>
+            )}
+          </For>
+        </box>
+      </revealer>
     </box>
   )
 }

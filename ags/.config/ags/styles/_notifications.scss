@@ -1,0 +1,261 @@
+@use "palette" as *;
+
+// ============================================================
+// Bar toggle button + unread badge
+// ============================================================
+
+// Wrapper box (no position: relative — not supported in GTK CSS)
+.notif-toggle-wrap {
+  padding: 0px;
+}
+
+// Badge label — flat rectangle (clip-path not supported in GTK CSS)
+.notif-badge {
+  background: $error;
+  color: $text-primary;
+  font-size: 9px;
+  font-weight: bold;
+  min-width: 16px;
+  min-height: 14px;
+  padding: 0px 3px;
+}
+
+// ============================================================
+// Panel window
+// ============================================================
+
+.notif-panel {
+  background-color: rgba(15, 17, 23, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.50);
+  padding: 10px;
+  min-width: 320px;
+}
+
+// --- Panel header ---
+
+.notif-panel-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+}
+
+.notif-panel-title {
+  color: $text-primary;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 4px 0px;
+}
+
+.notif-clear-all-btn {
+  background: transparent;
+  border: none;
+  color: $text-muted;
+  font-size: 11px;
+  padding: 2px 6px;
+  min-width: 0px;
+
+  &:hover {
+    color: $error;
+  }
+}
+
+.notif-dnd-btn {
+  background: transparent;
+  border: none;
+  color: $text-secondary;
+  font-size: 16px;
+  padding: 2px 4px;
+  min-width: 0px;
+
+  &:hover {
+    color: $text-primary;
+  }
+}
+
+.notif-dnd-active {
+  color: $blonde-light;
+}
+
+// ============================================================
+// Panel notification list
+// ============================================================
+
+.notif-panel-list {
+  padding: 4px 0px;
+}
+
+.notif-empty {
+  color: $text-muted;
+  font-size: 12px;
+  padding: 16px 0px;
+}
+
+// ============================================================
+// Notification row
+// ============================================================
+
+.notif-row {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 8px 12px;
+  margin-bottom: 4px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+}
+
+.notif-row-critical {
+  background: rgba(140, 47, 57, 0.18);
+  border-color: rgba(140, 47, 57, 0.35);
+
+  &:hover {
+    background: rgba(140, 47, 57, 0.28);
+  }
+
+  .notif-row-app {
+    color: $blonde-light;
+  }
+}
+
+.notif-row-header {
+  margin-bottom: 2px;
+}
+
+.notif-row-app {
+  color: $teal-light;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.notif-row-time {
+  color: $text-muted;
+  font-size: 10px;
+}
+
+.notif-dismiss-btn {
+  background: transparent;
+  border: none;
+  color: $text-muted;
+  font-size: 12px;
+  padding: 0px 2px;
+  min-width: 0px;
+
+  &:hover {
+    color: $error;
+  }
+}
+
+.notif-row-summary {
+  color: $text-primary;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.notif-row-body {
+  color: $text-secondary;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+// ============================================================
+// Notification action buttons
+// ============================================================
+
+.notif-actions {
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.notif-action-btn {
+  background: rgba(26, 138, 106, 0.15);
+  border: 1px solid rgba(26, 138, 106, 0.30);
+  color: $emerald-light;
+  font-size: 11px;
+  padding: 3px 8px;
+  min-width: 0px;
+
+  &:hover {
+    background: rgba(26, 138, 106, 0.30);
+    border-color: $emerald-light;
+    color: $text-primary;
+  }
+
+  &:active {
+    background: rgba(26, 138, 106, 0.45);
+  }
+}
+
+// ============================================================
+// Toast popup window (layer-shell, TOP | RIGHT)
+// Solid high-alpha background — toasts float without blur.
+// ============================================================
+
+.notif-toast-list {
+  padding: 4px;
+}
+
+.notif-toast {
+  background: rgba(28, 31, 43, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.60);
+  padding: 10px 14px;
+  min-width: 300px;
+  margin-bottom: 4px;
+
+  &:hover {
+    background: rgba(37, 40, 54, 0.98);
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+}
+
+.notif-toast-critical {
+  background: rgba(140, 47, 57, 0.92);
+  border-color: rgba(181, 63, 74, 0.50);
+
+  &:hover {
+    background: rgba(181, 63, 74, 0.95);
+  }
+
+  .notif-toast-app {
+    color: $blonde-light;
+  }
+}
+
+.notif-toast-header {
+  margin-bottom: 3px;
+}
+
+.notif-toast-app {
+  color: $emerald-light;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.notif-toast-close {
+  background: transparent;
+  border: none;
+  color: $text-muted;
+  font-size: 12px;
+  padding: 0px 2px;
+  min-width: 0px;
+
+  &:hover {
+    color: $error;
+  }
+}
+
+.notif-toast-summary {
+  color: $text-primary;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.notif-toast-body {
+  color: $text-secondary;
+  font-size: 12px;
+  margin-top: 2px;
+}

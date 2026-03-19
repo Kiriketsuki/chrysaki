@@ -33,6 +33,24 @@
   border: none;
   padding: 0px 2px;
   min-width: 0px;
+  min-height: 0px;
+  margin: 0px; // override Adwaita margin-top/bottom: 6px
+}
+
+// Override Adwaita internal button defaults (min-height: 20px; padding: 4px)
+.segment-tray menubutton > button {
+  min-height: 0px;
+  min-width: 0px;
+  padding: 0px;
+  margin: 0px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+// Override Adwaita border-spacing on internal box
+.segment-tray menubutton > button > box {
+  border-spacing: 0px;
 }
 
 .segment-tray menubutton > box > image:last-child {

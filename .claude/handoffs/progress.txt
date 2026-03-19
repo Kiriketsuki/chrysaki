@@ -423,3 +423,22 @@
 - Branch: feat/ags-bar
 
 ---
+## 2026-03-18 Handoff
+
+### Decisions
+- gnim reactive primitive for writable state is `createState`, not `createSignal`
+- Module-level `createState` acceptable for app-lifetime bar prefs signal
+- `service-prefs.json` runtime-only (not stow), `services.json` stow-managed
+- New stow files need `stow -d ~/dots/chrysaki -t /home/kiriketsuki ags -v` to link
+- pkill commands for GitNexus/OpenPencil; gws toggle always disabled (CLI tool)
+
+### Failed Approaches
+- `createSignal` import from "ags" — doesn't exist in gnim
+- `visible={() => fn()}` plain function as JSX prop — not reactive in gnim (needs Accessor)
+- `GLib.file_get_contents` without try-catch — throws on missing file, not returns false
+
+### Handoff Target
+- Plan file: .claude/handoffs/2026-03-18-11h30-ags-service-centre.md
+- Branch: feat/6-ags-service-centre
+
+---

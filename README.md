@@ -192,6 +192,14 @@ Or in VS Code with the Marp extension, add to `.vscode/settings.json`:
 }
 ```
 
+### AGS Notification Center
+
+The AGS shell includes a native notification center (toast popups + history panel) that replaces swaync. Before starting AGS, stop and disable swaync so AGS can claim D-Bus notification ownership:
+
+```bash
+systemctl --user stop swaync && systemctl --user disable swaync
+```
+
 ---
 
 ## CSS Custom Properties
