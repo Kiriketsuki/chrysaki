@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Pytest suite for thermal.py — CWD-independent via importlib by absolute path.
 
-Covers the council-mandated crash guards and threshold behavior. Also runnable
-directly without pytest via the ``__main__`` block at the bottom.
+Covers the council-mandated crash guards and threshold behavior. The ``__main__``
+block at the bottom runs fixture-free tests only; tests that require pytest
+fixtures (``monkeypatch``, ``capsys``) are skipped in the standalone runner and
+must be exercised via ``pytest``.
 """
 
 import importlib.util
@@ -143,22 +145,61 @@ def test_max_fan_ignores_zero():
     assert result == 3400.0
 
 
+import io as _io
+import inspect as _inspect
+
+
+def _needs_fixtures(fn: object) -> bool:
+    """Return True if the function declares any pytest fixture parameters."""
+    try:
+        params = list(_inspect.signature(fn).parameters)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return False
+    return bool(params)
+
+
+# -- _build_frame battery N/A path -------------------------------------------
+
+def test_build_frame_battery_none_shows_na_muted(monkeypatch, capsys):
+    """When _read_battery returns None the rendered frame must contain a muted
+    'Battery N/A' row — verifies the else-branch at thermal.py:427-428 against
+    regression."""
+    monkeypatch.setattr(thermal, "_read_sensors", lambda: {})
+    monkeypatch.setattr(thermal, "_read_battery", lambda: None)
+    monkeypatch.setattr(thermal, "_get_top_procs", lambda _sort: [])
+
+    frame = thermal._build_frame()
+
+    assert "Battery" in frame
+    assert "N/A" in frame
+    # The row must carry the MUTED color escape (ANSI 24-bit), not an accent color
+    r, g, b = thermal._hex_to_rgb(thermal.MUTED)
+    muted_ansi = f"\033[38;2;{r};{g};{b}m"
+    assert muted_ansi in frame
+
+
 def _run_standalone() -> int:
-    """Run every test_* function in this module; return non-zero on failure."""
+    """Run fixture-free test_* functions; skip those requiring pytest fixtures."""
     failures: list[str] = []
+    skipped: list[str] = []
     funcs = sorted(
         (name, obj)
         for name, obj in globals().items()
         if name.startswith("test_") and callable(obj)
     )
     for name, fn in funcs:
+        if _needs_fixtures(fn):
+            skipped.append(name)
+            print(f"SKIP {name}  (requires pytest fixtures)")
+            continue
         try:
             fn()
             print(f"PASS {name}")
         except Exception as exc:  # noqa: BLE001 — report any failure
             failures.append(name)
             print(f"FAIL {name}: {exc.__class__.__name__}: {exc}")
-    print(f"\n{len(funcs) - len(failures)}/{len(funcs)} passed")
+    runnable = len(funcs) - len(skipped)
+    print(f"\n{runnable - len(failures)}/{runnable} passed  ({len(skipped)} skipped — run pytest for full suite)")
     return 1 if failures else 0
 
 

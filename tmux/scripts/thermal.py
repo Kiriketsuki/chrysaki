@@ -282,6 +282,8 @@ def _get_top_procs(sort_field: str) -> list[ProcInfo]:
              f"--sort=-{sort_field}", "--no-headers"],
             capture_output=True, text=True, timeout=3,
         )
+        if result.returncode != 0:
+            return []
         procs: list[ProcInfo] = []
         for line in result.stdout.strip().splitlines():
             parts = line.split(None, 4)
@@ -351,7 +353,7 @@ def _build_frame() -> str:
     hb = _heat_bar(sd.cpu_temp, bar_w, tc)
     lines.append(_row(ICON_CPU, "CPU Temp", temp_v, tc, hb))
     lines.append(_row(ICON_FAN, "CPU Fan", _rpm(sd.cpu_fan), fan_color(sd.cpu_fan)))
-    lines.append(_row(ICON_FAN, "GPU Fan", _rpm(sd.gpu_fan), fan_color(sd.gpu_fan)))
+    lines.append(_row(ICON_GPU, "GPU Fan", _rpm(sd.gpu_fan), fan_color(sd.gpu_fan)))
 
     if (
         not _is_fan_duplicate(sd.acpi_fan, sd.cpu_fan)
