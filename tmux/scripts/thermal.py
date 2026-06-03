@@ -198,7 +198,10 @@ def _max_fan(sd: SensorData) -> Optional[float]:
 def bar_mode() -> None:
     data = _read_sensors()
     if not data:
-        print(f"#[fg={MUTED}] {ICON_TEMP} N/A")
+        print(
+            f"#[fg={MUTED},bg=#1c1f2b]{ICON_TEMP} N/A  "
+            f"#[fg={MUTED},bg=#1c1f2b]{ICON_FAN} N/A"
+        )
         return
     sd = parse_sensors(data)
     tc = temp_color(sd.cpu_temp)

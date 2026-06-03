@@ -314,6 +314,86 @@ def test_build_frame_acpi_fan_shown_when_not_duplicate(monkeypatch):
     assert "ACPI Fan" in frame
 
 
+# -- _heat_bar edge cases --------------------------------------------------------
+
+def test_heat_bar_clamps_above_100():
+    """temp > 100 must clamp to full width (all filled, no empty blocks)."""
+    result = thermal._heat_bar(110.0, 10, thermal.TEAL_LT)
+    # fraction = min(110/100, 1.0) = 1.0 → filled=10, empty=0
+    assert "░" not in result
+    assert "█" in result
+
+
+def test_heat_bar_width_less_than_2_returns_empty():
+    """width < 2 must return '' to avoid degenerate one-char bars."""
+    assert thermal._heat_bar(55.0, 1, thermal.TEAL_LT) == ""
+    assert thermal._heat_bar(55.0, 0, thermal.TEAL_LT) == ""
+
+
+def test_heat_bar_none_temp_returns_empty():
+    """temp=None must return '' (no bar to render when value is unknown)."""
+    assert thermal._heat_bar(None, 10, thermal.TEAL_LT) == ""
+
+
+# -- bar_mode: data present but cpu_temp is None --------------------------------
+
+def test_bar_mode_data_present_cpu_temp_none_shows_muted_na(monkeypatch, capsys):
+    """When _read_sensors returns a non-empty dict but parse_sensors resolves
+    cpu_temp to None, bar_mode must emit muted N/A output with explicit bg tags
+    for both temp and fan (thermal.py:204-213 branch)."""
+    monkeypatch.setattr(thermal, "_read_sensors", lambda: {"_sentinel": True})
+    monkeypatch.setattr(
+        thermal,
+        "parse_sensors",
+        lambda _data: thermal.SensorData(
+            cpu_temp=None,
+            cpu_fan=None,
+            gpu_fan=None,
+            acpi_fan=None,
+            nvme=(),
+            ram_temp=None,
+            ram_alarm=False,
+        ),
+    )
+    thermal.bar_mode()
+    out = capsys.readouterr().out
+    assert "N/A" in out
+    assert thermal.MUTED in out
+    assert "\033[" not in out  # no raw ANSI — tmux format tags only
+
+
+# -- _build_frame: ACPI fan close to gpu_fan but far from cpu_fan ---------------
+
+def test_build_frame_acpi_fan_suppressed_when_near_gpu(monkeypatch):
+    """When acpi_fan is within FAN_DUP_THRESHOLD of gpu_fan (but far from
+    cpu_fan), the ACPI Fan row must be absent — the gpu_fan arm of the guard
+    at thermal.py:360 must fire."""
+    cpu_fan_val = 2500.0
+    gpu_fan_val = 3800.0
+    # acpi close to gpu, far from cpu
+    acpi_fan_val = gpu_fan_val + thermal.FAN_DUP_THRESHOLD  # at boundary → duplicate of gpu
+
+    monkeypatch.setattr(thermal, "_read_sensors", lambda: {"_sentinel": True})
+    monkeypatch.setattr(thermal, "_read_battery", lambda: None)
+    monkeypatch.setattr(thermal, "_get_top_procs", lambda _sort: [])
+    monkeypatch.setattr(
+        thermal,
+        "parse_sensors",
+        lambda _data: thermal.SensorData(
+            cpu_temp=55.0,
+            cpu_fan=cpu_fan_val,
+            gpu_fan=gpu_fan_val,
+            acpi_fan=acpi_fan_val,
+            nvme=(),
+            ram_temp=None,
+            ram_alarm=False,
+        ),
+    )
+
+    frame = thermal._build_frame()
+    assert "ACPI Fan" not in frame
+
+
 def _run_standalone() -> int:
     """Run fixture-free test_* functions; skip those requiring pytest fixtures."""
     failures: list[str] = []
