@@ -51,7 +51,7 @@ class SensorData:
     cpu_fan: Optional[float]
     gpu_fan: Optional[float]
     acpi_fan: Optional[float]
-    nvme: list[tuple[str, float]]
+    nvme: tuple[tuple[str, float], ...]
     ram_temp: Optional[float]
     ram_alarm: bool
 
@@ -184,7 +184,7 @@ def parse_sensors(data: dict) -> SensorData:
         cpu_fan=cpu_fan,
         gpu_fan=gpu_fan,
         acpi_fan=acpi_fan,
-        nvme=nvme_temps,
+        nvme=tuple(nvme_temps),
         ram_temp=ram_temp,
         ram_alarm=ram_alarm,
     )
@@ -209,8 +209,8 @@ def bar_mode() -> None:
     fan_display = f"{fan_str} RPM" if fan_str != "N/A" else "N/A"
     fc = fan_color(max_rpm)
     print(
-        f"#[fg={tc}]{ICON_TEMP} {temp_display}  "
-        f"#[fg={fc}]{ICON_FAN} {fan_display}"
+        f"#[fg={tc},bg=#1c1f2b]{ICON_TEMP} {temp_display}  "
+        f"#[fg={fc},bg=#1c1f2b]{ICON_FAN} {fan_display}"
     )
 
 
@@ -335,7 +335,7 @@ def _build_frame() -> str:
     name_w = max(8, min(20, cols - 24))
     data = _read_sensors()
     sd = parse_sensors(data) if data else SensorData(
-        None, None, None, None, [], None, False
+        None, None, None, None, (), None, False
     )
     bat = _read_battery()
     load = os.getloadavg()

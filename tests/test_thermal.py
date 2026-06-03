@@ -88,7 +88,7 @@ def test_parse_sensors_empty_dict():
     sd = thermal.parse_sensors({})
     assert isinstance(sd, thermal.SensorData)
     assert sd.cpu_temp is None
-    assert sd.nvme == []
+    assert sd.nvme == ()
 
 
 # -- temp_color thresholds ----------------------------------------------------
@@ -137,7 +137,7 @@ def test_max_fan_ignores_zero():
         cpu_fan=3300.0,
         gpu_fan=3400.0,
         acpi_fan=0.0,
-        nvme=[],
+        nvme=(),
         ram_temp=None,
         ram_alarm=False,
     )
@@ -176,6 +176,142 @@ def test_build_frame_battery_none_shows_na_muted(monkeypatch, capsys):
     r, g, b = thermal._hex_to_rgb(thermal.MUTED)
     muted_ansi = f"\033[38;2;{r};{g};{b}m"
     assert muted_ansi in frame
+
+
+# -- _nvme_model_map: PCI-key construction ------------------------------------
+
+def test_nvme_model_map_pci_key_format(monkeypatch, tmp_path):
+    """_nvme_model_map must produce keys matching 'nvme-pci-<bus><dev>' from the
+    resolved PCI path, omitting the function nibble (the last hex char of
+    slot group).  Verified against the regex in thermal.py:154-157."""
+    import pathlib
+
+    # Construct a fake /sys/class/nvme/nvme0 with model and device symlink
+    nvme_class = tmp_path / "sys" / "class" / "nvme"
+    nvme_class.mkdir(parents=True)
+    nvme0 = nvme_class / "nvme0"
+    nvme0.mkdir()
+    # model file
+    (nvme0 / "model").write_text("SAMSUNG MZVL21T0HCLR-00B00  \n")
+    # device symlink → path containing a PCI slot "03:00.0"
+    pci_target = tmp_path / "sys" / "devices" / "pci0000:00" / "0000:03:00.0"
+    pci_target.mkdir(parents=True)
+    (nvme0 / "device").symlink_to(pci_target)
+
+    # Patch Path("/sys/class/nvme") to use tmp_path tree
+    original_path_class = thermal.Path
+
+    class _PatchedPath(pathlib.Path):
+        _flavour = pathlib.Path(".")._flavour  # type: ignore[attr-defined]
+
+        def __new__(cls, *args, **kwargs):
+            return super().__new__(cls, *args, **kwargs)
+
+    monkeypatch.setattr(
+        thermal,
+        "Path",
+        lambda p: pathlib.Path(str(p).replace("/sys/class/nvme", str(nvme_class))),
+    )
+
+    result = thermal._nvme_model_map()
+
+    # The regex extracts groups (03, 00, 0) → pci_slot = "03000"
+    # chip_key = f"nvme-pci-{pci_slot[:-1]}" = "nvme-pci-0300"
+    assert "nvme-pci-0300" in result
+    assert result["nvme-pci-0300"] == "SAMSUNG MZVL21T0HCLR-00B00"
+
+
+def test_nvme_model_map_no_sysfs(monkeypatch):
+    """_nvme_model_map must return an empty dict when /sys/class/nvme does not
+    exist (e.g. inside CI without NVMe hardware)."""
+    import pathlib
+
+    monkeypatch.setattr(
+        thermal,
+        "Path",
+        lambda p: type("_FakePath", (), {"exists": lambda self: False})(),
+    )
+    result = thermal._nvme_model_map()
+    assert result == {}
+
+
+# -- _is_fan_duplicate: ACPI-fan suppression ----------------------------------
+
+def test_is_fan_duplicate_suppresses_acpi_near_cpu():
+    """ACPI fan within FAN_DUP_THRESHOLD of cpu_fan must be flagged as
+    duplicate — the _build_frame guard at thermal.py:358-364 relies on this
+    returning True to omit the ACPI row."""
+    # Exactly at threshold boundary (abs diff == FAN_DUP_THRESHOLD → duplicate)
+    assert thermal._is_fan_duplicate(2000.0, 2000.0 + thermal.FAN_DUP_THRESHOLD) is True
+    # One RPM above threshold → not a duplicate
+    assert thermal._is_fan_duplicate(2000.0, 2000.0 + thermal.FAN_DUP_THRESHOLD + 1) is False
+
+
+def test_is_fan_duplicate_none_inputs():
+    """_is_fan_duplicate must return False when either input is None (guard
+    against None fan readings that arrive when the sensor is absent)."""
+    assert thermal._is_fan_duplicate(None, 1000.0) is False
+    assert thermal._is_fan_duplicate(1000.0, None) is False
+    assert thermal._is_fan_duplicate(None, None) is False
+
+
+def test_build_frame_acpi_fan_suppressed_when_duplicate(monkeypatch):
+    """When acpi_fan is within FAN_DUP_THRESHOLD of cpu_fan, the ACPI Fan row
+    must be absent from the rendered frame (spec §3.4 duplicate-fan guard)."""
+    cpu_fan_val = 2500.0
+    acpi_fan_val = cpu_fan_val + thermal.FAN_DUP_THRESHOLD  # at boundary → duplicate
+
+    # Return a non-empty dict so _build_frame calls parse_sensors (not the fallback)
+    monkeypatch.setattr(thermal, "_read_sensors", lambda: {"_sentinel": True})
+    monkeypatch.setattr(thermal, "_read_battery", lambda: None)
+    monkeypatch.setattr(thermal, "_get_top_procs", lambda _sort: [])
+
+    # Patch parse_sensors to return a controlled SensorData
+    monkeypatch.setattr(
+        thermal,
+        "parse_sensors",
+        lambda _data: thermal.SensorData(
+            cpu_temp=55.0,
+            cpu_fan=cpu_fan_val,
+            gpu_fan=2400.0,
+            acpi_fan=acpi_fan_val,
+            nvme=(),
+            ram_temp=None,
+            ram_alarm=False,
+        ),
+    )
+
+    frame = thermal._build_frame()
+    assert "ACPI Fan" not in frame
+
+
+def test_build_frame_acpi_fan_shown_when_not_duplicate(monkeypatch):
+    """When acpi_fan differs from both cpu_fan and gpu_fan by more than
+    FAN_DUP_THRESHOLD and is > 0, the ACPI Fan row must appear in the frame."""
+    cpu_fan_val = 2500.0
+    gpu_fan_val = 2400.0
+    acpi_fan_val = cpu_fan_val + thermal.FAN_DUP_THRESHOLD + 500  # clearly distinct
+
+    # Return a non-empty dict so _build_frame calls parse_sensors (not the fallback)
+    monkeypatch.setattr(thermal, "_read_sensors", lambda: {"_sentinel": True})
+    monkeypatch.setattr(thermal, "_read_battery", lambda: None)
+    monkeypatch.setattr(thermal, "_get_top_procs", lambda _sort: [])
+    monkeypatch.setattr(
+        thermal,
+        "parse_sensors",
+        lambda _data: thermal.SensorData(
+            cpu_temp=55.0,
+            cpu_fan=cpu_fan_val,
+            gpu_fan=gpu_fan_val,
+            acpi_fan=acpi_fan_val,
+            nvme=(),
+            ram_temp=None,
+            ram_alarm=False,
+        ),
+    )
+
+    frame = thermal._build_frame()
+    assert "ACPI Fan" in frame
 
 
 def _run_standalone() -> int:
