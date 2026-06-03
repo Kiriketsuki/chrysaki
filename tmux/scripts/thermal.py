@@ -155,7 +155,7 @@ def _nvme_model_map() -> dict[str, str]:
             if match:
                 pci_slot = match.group(1) + match.group(2) + match.group(3)
                 chip_key = f"nvme-pci-{pci_slot[:-1]}"
-                mapping[chip_key] = model_path.read_text().strip()
+                mapping[chip_key] = _sanitize(model_path.read_text().strip())
         except OSError:
             continue
     return mapping
@@ -203,12 +203,14 @@ def bar_mode() -> None:
     sd = parse_sensors(data)
     tc = temp_color(sd.cpu_temp)
     temp_str = f"{sd.cpu_temp:.0f}" if sd.cpu_temp is not None else "N/A"
+    temp_display = f"{temp_str}°C" if temp_str != "N/A" else "N/A"
     max_rpm = _max_fan(sd)
     fan_str = f"{max_rpm:.0f}" if max_rpm is not None else "N/A"
+    fan_display = f"{fan_str} RPM" if fan_str != "N/A" else "N/A"
     fc = fan_color(max_rpm)
     print(
-        f"#[fg={tc}]{ICON_TEMP} {temp_str}°C  "
-        f"#[fg={fc}]{ICON_FAN} {fan_str} RPM"
+        f"#[fg={tc}]{ICON_TEMP} {temp_display}  "
+        f"#[fg={fc}]{ICON_FAN} {fan_display}"
     )
 
 
@@ -348,7 +350,12 @@ def _build_frame() -> str:
     lines.append(_row(ICON_FAN, "CPU Fan", _rpm(sd.cpu_fan), fan_color(sd.cpu_fan)))
     lines.append(_row(ICON_FAN, "GPU Fan", _rpm(sd.gpu_fan), fan_color(sd.gpu_fan)))
 
-    if not _is_fan_duplicate(sd.acpi_fan, sd.cpu_fan) and sd.acpi_fan and sd.acpi_fan > 0:
+    if (
+        not _is_fan_duplicate(sd.acpi_fan, sd.cpu_fan)
+        and not _is_fan_duplicate(sd.acpi_fan, sd.gpu_fan)
+        and sd.acpi_fan
+        and sd.acpi_fan > 0
+    ):
         lines.append(_row(ICON_FAN, "ACPI Fan", _rpm(sd.acpi_fan), fan_color(sd.acpi_fan)))
 
     mf = _max_fan(sd)
@@ -414,6 +421,8 @@ def _build_frame() -> str:
             f"{_ansi(MUTED)}{volt_s} {curr_s}{RST}"
         )
         lines.append(f"  {_ansi(bc)}{bi} {RST}{_ansi(SECONDARY)}{'Battery'.ljust(LABEL_W)}{RST} {_ansi(bc)}{bat_v}")
+    else:
+        lines.append(_row(ICON_BAT_FULL, "Battery", "N/A", MUTED))
 
     lines.append("")
     lines.append(_full_rule(cols))

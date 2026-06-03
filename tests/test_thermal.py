@@ -8,7 +8,7 @@ directly without pytest via the ``__main__`` block at the bottom.
 import importlib.util
 import pathlib
 
-_THERMAL_PATH = "/home/kiriketsuki/dots/chrysaki/tmux/scripts/thermal.py"
+_THERMAL_PATH = str(pathlib.Path(__file__).parent.parent / "tmux" / "scripts" / "thermal.py")
 
 spec = importlib.util.spec_from_file_location("thermal", _THERMAL_PATH)
 assert spec is not None and spec.loader is not None
