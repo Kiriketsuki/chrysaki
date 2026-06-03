@@ -231,7 +231,10 @@ def _read_battery() -> Optional[dict[str, str]]:
     for key in ("status", "capacity", "voltage_now", "current_now"):
         p = bat / key
         if p.exists():
-            info[key] = p.read_text().strip()
+            try:
+                info[key] = p.read_text().strip()
+            except OSError:
+                continue
     return info if info else None
 
 

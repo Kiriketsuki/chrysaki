@@ -112,6 +112,37 @@ def test_fan_color_boundaries():
     assert thermal.fan_color(6000) == thermal.BLONDE
 
 
+# -- bar_mode integration: empty sensor data ----------------------------------
+
+def test_bar_mode_no_sensors_shows_na_muted(monkeypatch, capsys):
+    """When _read_sensors returns {}, bar_mode must print N/A in MUTED color
+    with only #[fg=...] tmux tags — no raw ANSI escape sequences."""
+    monkeypatch.setattr(thermal, "_read_sensors", lambda: {})
+    thermal.bar_mode()
+    out = capsys.readouterr().out
+    assert "N/A" in out
+    assert thermal.MUTED in out
+    assert "\033[" not in out  # no raw ANSI — tmux format tags only
+
+
+# -- _max_fan: zero-RPM fan excluded from max ---------------------------------
+
+def test_max_fan_ignores_zero():
+    """A zero-RPM fan entry must not suppress valid readings from other fans
+    and must not affect the max calculation (spec: 3300/3400/0 → 3400)."""
+    sd = thermal.SensorData(
+        cpu_temp=None,
+        cpu_fan=3300.0,
+        gpu_fan=3400.0,
+        acpi_fan=0.0,
+        nvme=[],
+        ram_temp=None,
+        ram_alarm=False,
+    )
+    result = thermal._max_fan(sd)
+    assert result == 3400.0
+
+
 def _run_standalone() -> int:
     """Run every test_* function in this module; return non-zero on failure."""
     failures: list[str] = []
