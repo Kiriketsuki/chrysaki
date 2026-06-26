@@ -195,13 +195,17 @@ def _max_fan(sd: SensorData) -> Optional[float]:
     return max(fans) if fans else None
 
 
-def bar_mode() -> None:
+def bar_mode(term_width: int = 200) -> None:
+    compact = term_width < 120
     data = _read_sensors()
     if not data:
-        print(
-            f"#[fg={MUTED},bg=#1c1f2b]{ICON_TEMP} N/A  "
-            f"#[fg={MUTED},bg=#1c1f2b]{ICON_FAN} N/A"
-        )
+        if compact:
+            print(f"#[fg={MUTED},bg=#1c1f2b]N/A")
+        else:
+            print(
+                f"#[fg={MUTED},bg=#1c1f2b]{ICON_TEMP} N/A  "
+                f"#[fg={MUTED},bg=#1c1f2b]{ICON_FAN} N/A"
+            )
         return
     sd = parse_sensors(data)
     tc = temp_color(sd.cpu_temp)
@@ -211,9 +215,48 @@ def bar_mode() -> None:
     fan_str = f"{max_rpm:.0f}" if max_rpm is not None else "N/A"
     fan_display = f"{fan_str} RPM" if fan_str != "N/A" else "N/A"
     fc = fan_color(max_rpm)
+    if compact:
+        print(
+            f"#[fg={tc},bg=#1c1f2b]{temp_display} "
+            f"#[fg={fc},bg=#1c1f2b]{fan_display}"
+        )
+    else:
+        print(
+            f"#[fg={tc},bg=#1c1f2b]{ICON_TEMP} {temp_display}  "
+            f"#[fg={fc},bg=#1c1f2b]{ICON_FAN} {fan_display}"
+        )
+
+
+def bar_mode_ascii() -> None:
+    """ASCII-only bar segment for Termius / mobile SSH.
+
+    Identical data as bar_mode() but replaces every EAW=Ambiguous Unicode
+    character with plain ASCII equivalents:
+      - Nerd Font thermometer (U+F050F) -> 'T:'
+      - Nerd Font fan (U+F0210)          -> 'F:'
+      - Degree sign (U+00B0) in '58°C'   -> '58C'
+
+    Without these substitutions, Termius renders each EAW=A glyph as 2 cells
+    wide while tmux counts them as 1 cell wide, causing the status bar to
+    overflow on each status-interval redraw and scroll the screen upward
+    (the 'Tetris' bug).
+    """
+    data = _read_sensors()
+    if not data:
+        print(
+            f"#[fg={MUTED},bg=#1c1f2b] T:N/A  "
+            f"#[fg={MUTED},bg=#1c1f2b]F:N/A"
+        )
+        return
+    sd = parse_sensors(data)
+    tc = temp_color(sd.cpu_temp)
+    temp_str = f"{sd.cpu_temp:.0f}C" if sd.cpu_temp is not None else "N/A"
+    max_rpm = _max_fan(sd)
+    fan_str = f"{max_rpm:.0f}rpm" if max_rpm is not None else "N/A"
+    fc = fan_color(max_rpm)
     print(
-        f"#[fg={tc},bg=#1c1f2b]{ICON_TEMP} {temp_display}  "
-        f"#[fg={fc},bg=#1c1f2b]{ICON_FAN} {fan_display}"
+        f"#[fg={tc},bg=#1c1f2b] T:{temp_str}  "
+        f"#[fg={fc},bg=#1c1f2b]F:{fan_str}"
     )
 
 
@@ -505,10 +548,15 @@ def _render_proc_table(
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2 or sys.argv[1] not in ("--bar", "--popup"):
-        print(f"Usage: {sys.argv[0]} --bar | --popup", file=sys.stderr)
+    if len(sys.argv) < 2 or sys.argv[1] not in ("--bar", "--bar-ascii", "--popup"):
+        print(f"Usage: {sys.argv[0]} --bar [width] | --bar-ascii | --popup", file=sys.stderr)
         sys.exit(1)
     if sys.argv[1] == "--bar":
-        bar_mode()
+        tw = 200
+        if len(sys.argv) > 2:
+            tw = _safe_int(sys.argv[2]) or 200
+        bar_mode(tw)
+    elif sys.argv[1] == "--bar-ascii":
+        bar_mode_ascii()
     else:
         popup_mode()
