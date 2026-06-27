@@ -155,27 +155,36 @@ function WorkspacePip({ id }: PipProps) {
             cr.showText(numStr)
           })
 
-          // Initialize rotation based on current active state at mount time
+          // Initialize rotation flat — active pips animate in after realization
           if (!pipCurrentRot.has(id)) {
-            pipCurrentRot.set(id, isActiveOnMonitor(id) ? ACTIVE_ROT : INACTIVE_ROT)
+            pipCurrentRot.set(id, INACTIVE_ROT)
           }
 
-          // Track per-pip active state to detect activation / deactivation
-          let wasActive = isActiveOnMonitor(id)
+          let wasActive = false
+
+          // Animate active pips once widget is realized and monitor state is available
+          GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+            const active = isActiveOnMonitor(id)
+            if (active) startRotationAnim(id, da, ACTIVE_ROT)
+            wasActive = active
+            return GLib.SOURCE_REMOVE
+          })
 
           const hFocus = hyprland.connect("notify::focused-workspace", () => {
-            const nowActive = isActiveOnMonitor(id)
+            // Defer to next idle — monitor activeWorkspace may not be settled yet
+            GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+              const nowActive = isActiveOnMonitor(id)
 
-            if (nowActive && !wasActive) {
-              // This pip just became active — rotate to corner-up
-              startRotationAnim(id, da, ACTIVE_ROT)
-            } else if (!nowActive && wasActive) {
-              // This pip just became inactive — rotate back to flat-top
-              startRotationAnim(id, da, INACTIVE_ROT)
-            }
+              if (nowActive && !wasActive) {
+                startRotationAnim(id, da, ACTIVE_ROT)
+              } else if (!nowActive && wasActive) {
+                startRotationAnim(id, da, INACTIVE_ROT)
+              }
 
-            wasActive = nowActive
-            da.queue_draw()
+              wasActive = nowActive
+              da.queue_draw()
+              return GLib.SOURCE_REMOVE
+            })
           })
 
           const hWs = hyprland.connect("notify::workspaces", () => da.queue_draw())

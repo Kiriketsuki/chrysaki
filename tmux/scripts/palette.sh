@@ -67,6 +67,7 @@ Show environment variables	show-environment
 Open tmux command prompt	command-prompt
 Reload tmux config	source-file ~/.tmux.conf
 Help popup	display-popup -E -T " ⬢  Chrysaki tmux Help " -h 90% -w 62 "~/.config/tmux/help.sh"
+Open thermal monitor	display-popup -E -T " ⬢  Thermal Monitor " -w 60% -h 70% -b heavy -S "fg=#1a8a6a" "~/.config/tmux/scripts/thermal.py --popup"
 EOF
 )
 

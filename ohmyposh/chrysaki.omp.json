@@ -1,0 +1,132 @@
+{
+  "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json",
+  "version": 2,
+  "final_space": false,
+  "blocks": [
+    {
+      "type": "prompt",
+      "alignment": "left",
+      "segments": [
+        {
+          "type": "session",
+          "style": "powerline",
+          "powerline_symbol": "",
+          "foreground": "#e0e2ea",
+          "background": "#8C2F39",
+          "template": "{{ if .SSHSession }}  {{ .UserName }}@{{ .HostName }} {{ end }}"
+        },
+        {
+          "type": "path",
+          "style": "powerline",
+          "powerline_symbol": "",
+          "foreground": "#e0e2ea",
+          "background": "#1c3d7a",
+          "properties": {
+            "style": "agnoster_short",
+            "folder_separator_icon": "  ",
+            "home_icon": "~",
+            "max_depth": 4
+          },
+          "template": "  {{ .Path }} "
+        },
+        {
+          "type": "git",
+          "style": "powerline",
+          "powerline_symbol": "",
+          "foreground": "#0f1117",
+          "background": "#1a8a6a",
+          "background_templates": [
+            "{{ if or (.Working.Changed) (.Staging.Changed) (gt .Behind 0) }}#FBB13C{{ end }}"
+          ],
+          "properties": {
+            "fetch_status": true,
+            "fetch_stash_count": true,
+            "fetch_upstream_icon": true,
+            "branch_icon": "  "
+          },
+          "template": " {{ .UpstreamIcon }}{{ .HEAD }}{{ if gt .Ahead 0 }}  {{ .Ahead }}{{ end }}{{ if gt .Behind 0 }}  {{ .Behind }}{{ end }}{{ if .Staging.Changed }}  {{ .Staging.String }}{{ end }}{{ if .Working.Changed }}  {{ .Working.String }}{{ end }}{{ if gt .StashCount 0 }}  {{ .StashCount }}{{ end }} "
+        }
+      ]
+    },
+    {
+      "type": "rprompt",
+      "alignment": "right",
+      "segments": [
+        {
+          "type": "status",
+          "style": "powerline",
+          "powerline_symbol": "",
+          "foreground": "#e0e2ea",
+          "background": "#8C2F39",
+          "properties": {
+            "always_enabled": false
+          },
+          "template": "  {{ .Code }} "
+        },
+        {
+          "type": "executiontime",
+          "style": "powerline",
+          "powerline_symbol": "",
+          "foreground": "#a0a4b8",
+          "background": "#252836",
+          "properties": {
+            "threshold": 2000,
+            "style": "roundrock",
+            "always_enabled": false
+          },
+          "template": "  {{ .FormattedMs }} "
+        },
+        {
+          "type": "jobs",
+          "style": "powerline",
+          "powerline_symbol": "",
+          "foreground": "#a0a4b8",
+          "background": "#252836",
+          "template": "  {{ .Jobs }} "
+        },
+        {
+          "type": "python",
+          "style": "powerline",
+          "powerline_symbol": "",
+          "foreground": "#0f1117",
+          "background": "#197278",
+          "properties": {
+            "fetch_version": true,
+            "display_mode": "context",
+            "fetch_virtual_env": true
+          },
+          "template": "  {{ if .Venv }}({{ .Venv }}) {{ end }}{{ .Full }} "
+        },
+        {
+          "type": "node",
+          "style": "powerline",
+          "powerline_symbol": "",
+          "foreground": "#0f1117",
+          "background": "#197278",
+          "properties": {
+            "fetch_version": true,
+            "display_mode": "context"
+          },
+          "template": "  {{ .Full }} "
+        }
+      ]
+    },
+    {
+      "type": "prompt",
+      "alignment": "left",
+      "newline": true,
+      "segments": [
+        {
+          "type": "text",
+          "style": "plain",
+          "foreground": "#1a8a6a",
+          "foreground_templates": [
+            "{{ if gt .Code 0 }}#b53f4a{{ end }}"
+          ],
+          "background": "transparent",
+          "template": "❯ "
+        }
+      ]
+    }
+  ]
+}

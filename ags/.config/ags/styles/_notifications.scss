@@ -1,35 +1,33 @@
 @use "palette" as *;
+@use "glass" as *;
 
 // ============================================================
-// Bar toggle button + unread badge
+// Bar toggle button + hexagonal badge
 // ============================================================
 
-// Wrapper box (no position: relative — not supported in GTK CSS)
 .notif-toggle-wrap {
   padding: 0px;
 }
 
-// Badge label — flat rectangle (clip-path not supported in GTK CSS)
-.notif-badge {
-  background: $error;
-  color: $text-primary;
-  font-size: 9px;
-  font-weight: bold;
-  min-width: 16px;
-  min-height: 14px;
-  padding: 0px 3px;
+// DrawingArea badge — hexagonal shape drawn via Cairo
+.notif-badge-da {
+  margin-left: -4px;
+  margin-top: -2px;
 }
 
 // ============================================================
-// Panel window
+// Panel (ChamferedPanel — Cairo draws background)
 // ============================================================
 
 .notif-panel {
-  background-color: rgba(15, 17, 23, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.50);
+  // No CSS background — ChamferedPanel draws the chamfered gradient via Cairo
+  min-width: 360px;
+  padding: 0px;
+}
+
+.notif-panel-inner {
+  @include glass;
   padding: 10px;
-  min-width: 320px;
 }
 
 // --- Panel header ---
@@ -78,17 +76,58 @@
 }
 
 // ============================================================
-// Panel notification list
+// Critical lane
 // ============================================================
 
-.notif-panel-list {
-  padding: 4px 0px;
+.notif-critical-lane {
+  padding: 0px 0px 4px 0px;
 }
 
-.notif-empty {
+// ============================================================
+// Group
+// ============================================================
+
+.notif-group {
+  margin-bottom: 4px;
+}
+
+.notif-group-header {
+  padding: 4px 6px;
+  margin-bottom: 2px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+// 3px jewel-tone accent stripe on group header
+.notif-group-accent {
+  min-width: 3px;
+  min-height: 16px;
+  // background set inline per app via JEWEL_ACCENT_CSS
+}
+
+.notif-group-name {
+  color: $text-primary;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.notif-group-count {
+  color: $text-muted;
+  font-size: 11px;
+}
+
+.notif-group-chevron {
   color: $text-muted;
   font-size: 12px;
-  padding: 16px 0px;
+  min-width: 0px;
+  padding: 0px 2px;
+  transition: 200ms;
+}
+
+.notif-group-body {
+  padding-left: 4px;
 }
 
 // ============================================================
@@ -100,11 +139,40 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 8px 12px;
   margin-bottom: 4px;
+  // Entry animation transitions
+  transition: opacity 150ms ease-out, margin-left 150ms ease-out;
 
   &:hover {
     background: rgba(255, 255, 255, 0.09);
     border-color: rgba(255, 255, 255, 0.14);
   }
+}
+
+// 3px left accent stripe per row
+.notif-row-accent {
+  min-width: 3px;
+  min-height: 24px;
+  margin-right: 8px;
+  // background set inline per app via JEWEL_ACCENT_CSS
+  transition: box-shadow 500ms ease-out;
+}
+
+// Unread glow on accent stripe
+.notif-row-unread .notif-row-accent {
+  box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.15);
+}
+
+// Entry stagger animation
+.notif-row-entering {
+  opacity: 0;
+  margin-left: 20px;
+}
+
+// Dismiss slide-out animation
+.notif-row-dismissing {
+  margin-left: 400px;
+  opacity: 0;
+  transition: margin-left 200ms ease-in, opacity 200ms ease-in;
 }
 
 .notif-row-critical {
@@ -154,6 +222,11 @@
   font-weight: bold;
 }
 
+// Read notifications have dimmer summary
+.notif-row-read .notif-row-summary {
+  color: $text-secondary;
+}
+
 .notif-row-body {
   color: $text-secondary;
   font-size: 12px;
@@ -190,8 +263,25 @@
 }
 
 // ============================================================
-// Toast popup window (layer-shell, TOP | RIGHT)
-// Solid high-alpha background — toasts float without blur.
+// Empty state
+// ============================================================
+
+.notif-empty {
+  color: $text-muted;
+  font-size: 12px;
+  padding: 16px 0px;
+}
+
+// ============================================================
+// Panel scrollbar
+// ============================================================
+
+.notif-scroll {
+  min-height: 0px;
+}
+
+// ============================================================
+// Toast popup window
 // ============================================================
 
 .notif-toast-list {
@@ -205,11 +295,19 @@
   padding: 10px 14px;
   min-width: 300px;
   margin-bottom: 4px;
+  // Slide-in animation
+  transition: margin-right 300ms ease-out, opacity 300ms ease-out;
 
   &:hover {
     background: rgba(37, 40, 54, 0.98);
     border-color: rgba(255, 255, 255, 0.18);
   }
+}
+
+// Toast slide-in initial state
+.notif-toast-entering {
+  margin-right: -380px;
+  opacity: 0;
 }
 
 .notif-toast-critical {
@@ -258,4 +356,18 @@
   color: $text-secondary;
   font-size: 12px;
   margin-top: 2px;
+}
+
+// Toast progress bar (Cairo DrawingArea)
+.notif-toast-progress {
+  min-height: 2px;
+  margin-top: 4px;
+}
+
+// ============================================================
+// DND indicator on toggle
+// ============================================================
+
+.notif-toggle-dnd {
+  color: $blonde-light;
 }

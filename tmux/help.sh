@@ -78,6 +78,7 @@ render_help() {
   printf "${TL}${BD}  UTILITY${RS}\n"
   printf "${HR}\n"
   printf "  ${PR}Prefix + r${RS}         ${SC}Reload tmux config (after editing ~/.tmux.conf)${RS}\n"
+  printf "  ${PR}Prefix + m${RS}         ${SC}Thermal monitor popup${RS}\n"
   printf "  ${PR}Prefix + :${RS}         ${SC}tmux command prompt (like a shell for tmux)${RS}\n"
   printf "  ${PR}Prefix + t${RS}         ${SC}Show a clock in the current pane${RS}\n"
   printf "\n"
