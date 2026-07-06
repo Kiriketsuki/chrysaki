@@ -420,6 +420,8 @@
   background: transparent !important;
   border: none !important;
   margin-bottom: -2px !important;
+  /* Clear the 11px trapezoid slants so icon/label don't sit in the cut. */
+  padding: 0 16px !important;
   color: var(--ck-fg1) !important;
   /* Isolate so the shape pseudos can use z-index:-1 — below ALL tab content
      (label nesting varies between VS Code versions) but above the ground. */
