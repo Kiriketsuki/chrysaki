@@ -200,8 +200,7 @@
 .part.activitybar { border-right: 2px solid var(--ink) !important; }
 
 /* Kill VS Code's default active pill/border — geometry is ours. */
-.part.activitybar .action-item.checked .active-item-indicator,
-.part.activitybar .action-item.active .active-item-indicator {
+.part.activitybar .active-item-indicator {
   display: none !important;
 }
 .part.activitybar .action-item.checked,
@@ -249,23 +248,36 @@
   background: transparent !important;
 }
 
-/* Badge → blonde flat hexagon with ink text. */
+/* Badge → blonde flat hexagon with ink text, pinned to the item's top-right
+   corner ABOVE the hex chip.
+   NOTE: don't add margin or change display on .badge-content — VS Code
+   positions it absolutely inside the .badge overlay; overriding its box
+   model smears it behind the active hexagon. Pin it explicitly instead. */
+.part.activitybar .action-item .badge {
+  z-index: 3 !important;
+  pointer-events: none !important;
+}
 .part.activitybar .monaco-count-badge,
 .part.activitybar .badge-content {
+  position: absolute !important;
+  top: 2px !important;
+  right: 2px !important;
+  bottom: auto !important;
+  left: auto !important;
+  margin: 0 !important;
   clip-path: var(--hexF) !important;
   background: var(--ck-blonde) !important;
   color: var(--ink) !important;
   /* Regular flat-top proportions (≈1.155:1) + side padding so digits clear
-     the 25% corner cuts; margin keeps the badge off the icon edge. */
+     the 25% corner cuts. */
   min-width: 20px !important;
   height: 17px !important;
   line-height: 17px !important;
   padding: 0 5px !important;
-  margin: 2px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  box-shadow: var(--drop) !important;
+  box-shadow: none !important;
 }
 
 /* =============================================================================
