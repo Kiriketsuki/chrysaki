@@ -157,7 +157,9 @@
     border: none !important;
     box-shadow: none !important;
     margin: 0 !important;
-    position: relative !important;   /* containing block for the 2-layer stack */
+    /* NOTE: never position or z-index .tab-background — it is a SIBLING of
+       .tab-content inside .tab-stack, and lifting it paints over the label
+       and favicon. */
 }
 
 /* ---- Inactive tabs -------------------------------------------------------- */
@@ -198,7 +200,6 @@
     clip-path: polygon(11px 0, calc(100% - 11px) 0, 100% 100%, 0 100%) !important;
     /* Reach across the 2px ink strip so the tab merges with the toolbar. */
     margin-bottom: -2px !important;
-    z-index: 3 !important;
     /* Synthetic 2px ink outline, following the trapezoid clip-path. */
     filter:
         drop-shadow( 2px 0 0 var(--ck-ink)) drop-shadow(-2px 0 0 var(--ck-ink))
