@@ -447,8 +447,10 @@
   z-index: -1 !important;
   pointer-events: none !important;
 }
-/* Tab contents ride above the shape layers. */
-.tabs-container .tab > * { position: relative !important; z-index: 1 !important; }
+/* Tab contents need no z-index lift — the shape pseudos sit at z-index -1
+   inside the tab's isolated stacking context. NOTE: never force position on
+   the tab's children; VS Code absolutely positions some of them (label /
+   border containers) and overriding breaks their layout. */
 
 /* Dirty tab dot → blonde diamond (VS Code shows it on the close action slot). */
 .tabs-container .tab.dirty:not(:hover) .tab-actions .action-label.codicon-close {
