@@ -421,6 +421,9 @@
   border: none !important;
   margin-bottom: -2px !important;
   color: var(--ck-fg1) !important;
+  /* Isolate so the shape pseudos can use z-index:-1 — below ALL tab content
+     (label nesting varies between VS Code versions) but above the ground. */
+  isolation: isolate !important;
 }
 .tabs-container .tab.active::before,
 .tabs-container .tab.selected::before {
@@ -429,7 +432,7 @@
   inset: 0 !important;
   background: var(--ink) !important;
   clip-path: polygon(11px 0, calc(100% - 11px) 0, 100% 100%, 0 100%) !important;
-  z-index: 0 !important;
+  z-index: -1 !important;
   pointer-events: none !important;
 }
 .tabs-container .tab.active::after,
@@ -441,7 +444,7 @@
   clip-path: polygon(12.5px 0, calc(100% - 12.5px) 0,
                      calc(100% - 2.1px) 100%, 2.1px 100%) !important;
   box-shadow: inset 2px 2px 0 rgba(255,255,255,.07) !important;
-  z-index: 0 !important;
+  z-index: -1 !important;
   pointer-events: none !important;
 }
 /* Tab contents ride above the shape layers. */
