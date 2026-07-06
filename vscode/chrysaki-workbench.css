@@ -1,707 +1,666 @@
-/* Chrysaki VSCode Workbench CSS */
-/* Inject via Custom CSS and JS Loader (be5invis.vscode-custom-css) */
-/* Version: 2.1.0 — merged: texture system (main) + geometry (feat/vscode-v2-redesign) */
+/* =============================================================================
+   Chrysaki — VS Code Workbench CSS  ·  "Manga-Ink" v2
+   Inject via Custom CSS and JS Loader (be5invis.vscode-custom-css)
+   -----------------------------------------------------------------------------
+   Division of labour:
+     chrysaki-color-theme.json  → all flat coloring (editor, syntax, ANSI, chrome
+                                   base fills, git decorations, cursor)
+     THIS FILE                  → geometry the JSON cannot express — hard ink
+                                   outlines, notched shapes, trapezoid tabs,
+                                   zigzag status segments, hex activity indicator,
+                                   flow gradient strips, screentone textures,
+                                   chiseled inset bevels, manga hard drop-shadows.
 
+   Manga-ink construction language (see DESIGN-SPEC.md):
+     · ink borders          — 2px solid var(--ink) on every major chrome seam
+     · notched shapes        — 2-layer clip-path (ink outer / fill inner) = outline
+     · trapezoid active tabs — tab flows INTO the content below it
+     · chiseled bevels       — hard inset shadows, zero blur (print-press feel)
+     · flow strip            — 2px animated jewel gradient along region top edges
+     · screentone            — --scr2 dot texture drifting over surfaces
+     · zero border-radius     — non-negotiable; geometry via clip-path only
 
-/* ==========================================================
-   STACKING CONTEXT SETUP
-   ========================================================== */
+   Defensive notes: VS Code's workbench DOM shifts between versions. Rules that
+   depend on volatile structure (status bar item ids, tab internals) are grouped
+   under "RISKY" banners and degrade gracefully (a missed selector just falls
+   back to the JSON flat color — never a broken layout).
+   ========================================================================== */
 
+/* -----------------------------------------------------------------------------
+   TOKENS — single source for every color / texture / motion value used below.
+   Kept in sync with chrysaki-color-theme.json and DESIGN-SPEC.md.
+   -------------------------------------------------------------------------- */
+:root {
+  /* Ink + surfaces */
+  --ink:        #06070d;   /* hard outline — stays pitch so contrast anchors hold */
+  --ck-abyss:   #121420;
+  --ck-base:    #191b26;
+  --ck-surface: #202330;
+  --ck-raised:  #2a2d3c;
+  --ck-elevated:#333648;
+  --ck-border:  #3d4158;   /* subtle inner dividers only */
+
+  /* Jewel accents (light/glow variants are the text-safe ones) */
+  --ck-emerald:      #14664e;
+  --ck-emerald-lt:   #1a8a6a;
+  --ck-emerald-glow: #2bb488;
+  --ck-blue-lt:      #1c3d7a;   /* fill / gradient ONLY — never text */
+  --ck-amethyst:     #3a2068;   /* fill ONLY — never text */
+  --ck-amethyst-glow:#7a52b3;   /* accent-safe */
+  --ck-teal:         #197278;
+  --ck-teal-lt:      #20969c;
+  --ck-blonde:       #FBB13C;
+  --ck-blonde-lt:    #FCC96A;
+  --ck-blonde-dim:   #C4861C;
+  --ck-error:        #8C2F39;
+  --ck-error-lt:     #b53f4a;
+
+  /* Text */
+  --ck-fg1: #eaecf4;
+  --ck-fg2: #b0b4c8;
+  --ck-fg3: #7d8298;
+
+  /* Textures (manga screentone / hatching) — chrome regions only, never the
+     editor canvas. */
+  --scr2:    radial-gradient(rgba(234,236,244,.16) 1.1px, transparent 1.5px) 0 0 / 7px 7px;
+  --halftone:radial-gradient(rgba(234,236,244,.19) 1.5px, transparent 1.9px) 0 0 / 7px 7px;
+  --shatchR: repeating-linear-gradient(-45deg, rgba(234,236,244,.13) 0 1px, transparent 1px 5px);
+
+  /* Motion */
+  --e: cubic-bezier(0.16, 1, 0.30, 1);
+
+  /* Geometry primitives */
+  --hexF: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); /* flat-top hexagon */
+
+  /* Reusable bevel + hard shadow stacks */
+  --bevel:  inset 2px 2px 0 rgba(255,255,255,.07), inset -2px -3px 0 rgba(0,0,0,.34);
+  --drop:   3px 3px 0 rgba(0,0,0,.48);
+}
+
+/* -----------------------------------------------------------------------------
+   MOTION — keyframes referenced by flow strips, glows, and screentone drift.
+   -------------------------------------------------------------------------- */
+@keyframes ckflow    { to { background-position: 200% 0; } }
+@keyframes ckbreathe { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+@keyframes ckdrift   { to { background-position: 70px 52px; } }
+
+/* Shared flow gradient — emerald leads (design rule), amethyst-glow accents.
+   blue-lt appears only as a gradient stop (fill), never as text. */
+.chrysaki-flow-bg {
+  background: linear-gradient(90deg,
+    var(--ck-emerald-lt), var(--ck-blue-lt), var(--ck-amethyst-glow), var(--ck-emerald-lt));
+  background-size: 200% 100%;
+  animation: ckflow 4s linear infinite;
+}
+
+/* =============================================================================
+   GLOBAL RESETS
+   ========================================================================== */
+
+/* Zero border-radius everywhere — geometry comes from clip-path only. */
+* { border-radius: 0 !important; }
+
+/* Smooth, uniform interactive transitions on chrome. */
+.monaco-workbench .tab,
+.monaco-workbench .action-item,
+.monaco-workbench .statusbar-item,
+.monaco-workbench .monaco-button {
+  transition: background .18s var(--e), box-shadow .18s var(--e),
+              color .18s var(--e), border-color .18s var(--e), filter .18s var(--e) !important;
+}
+
+/* Establish stacking contexts so ::before/::after textures layer predictably. */
+.part.titlebar,
+.part.activitybar,
 .part.sidebar,
-.activitybar,
 .part.editor,
+.part.panel,
+.part.statusbar,
 .part.auxiliarybar {
   position: relative !important;
   isolation: isolate !important;
 }
-
-/* Minimap: isolation so ::before texture stays behind minimap content */
-.minimap {
-  position: relative !important;
-  isolation: isolate !important;
-}
-
-/* Panel: position only — no isolation so terminal internals aren't broken */
-.part.panel {
-  position: relative !important;
-}
-
-/* Sidebar file list: isolation so z-index:-1 on ::before stays inside the list */
+/* Sidebar list needs its own context for the selected-row triangle marker. */
 .part.sidebar .monaco-list {
   position: relative !important;
   isolation: isolate !important;
 }
 
-/* ==========================================================
-   HEX GRID — SIDEBAR background
-   Tile: 23.094 × 40 px | sp=20px | flat-top hexagons
-   All lines + markers in one SVG (no gradient drift)
-   ========================================================== */
+/* =============================================================================
+   TITLEBAR — abyss ground, 2px ink bottom seam, flow strip on the top edge,
+   notched command-center pill.
+   ========================================================================== */
+
+.part.titlebar {
+  border-bottom: 2px solid var(--ink) !important;
+}
+
+/* Flow strip: 2px animated jewel gradient along the very top of the window. */
+.part.titlebar::after {
+  content: '' !important;
+  position: absolute !important;
+  top: 0; left: 0; right: 0;
+  height: 2px !important;
+  background: linear-gradient(90deg,
+    var(--ck-emerald-lt), var(--ck-blue-lt), var(--ck-amethyst-glow), var(--ck-emerald-lt)) !important;
+  background-size: 200% 100% !important;
+  animation: ckflow 4s linear infinite !important;
+  z-index: 20 !important;
+  pointer-events: none !important;
+}
+
+/* Command center → notched pill. Two-layer construction:
+   the element itself carries the ink outline (via 12px-notch clip-path), the
+   ::before carries the base fill inset 2px with a slightly smaller notch, giving
+   a uniform 2px ink outline that follows the notch corners. */
+/* Scope to the center pill ONLY — .action-item would also catch the nav
+   arrows and layout controls, turning each into a broken mini-pill. */
+.part.titlebar .command-center-center {
+  position: relative !important;
+  background: var(--ink) !important;
+  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px),
+                     calc(100% - 9px) 100%, 0 100%, 0 9px) !important;
+  overflow: visible !important;
+}
+.part.titlebar .command-center-center::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 2px !important;
+  background: var(--ck-base) !important;
+  clip-path: polygon(7.8px 0, 100% 0, 100% calc(100% - 7.8px),
+                     calc(100% - 7.8px) 100%, 0 100%, 0 7.8px) !important;
+  box-shadow: var(--bevel) !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
+.part.titlebar .command-center-center * {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* =============================================================================
+   ACTIVITY BAR — base ground + drifting screentone; active item = hex chip with
+   a breathing emerald glow behind it; badge = blonde hex.
+   ========================================================================== */
+
+/* Drifting screentone dots across the icon strip. */
+.part.activitybar::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background: var(--scr2) !important;
+  opacity: .65 !important;
+  animation: ckdrift 26s linear infinite alternate !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
+.part.activitybar .actions-container { position: relative !important; z-index: 1 !important; }
+
+/* Ink seam on the activity-bar's editor-facing edge. */
+.part.activitybar { border-right: 2px solid var(--ink) !important; }
+
+/* Kill VS Code's default active pill/border — geometry is ours. */
+.part.activitybar .action-item.checked .active-item-indicator,
+.part.activitybar .action-item.active .active-item-indicator {
+  display: none !important;
+}
+.part.activitybar .action-item.checked,
+.part.activitybar .action-item.active {
+  background: transparent !important;
+}
+
+/* Active icon sits inside an emerald-gradient flat hexagon; ink outline via
+   stacked drop-shadows (which follow the clip-path, unlike border).
+   NOTE: the icon glyph IS .action-label::before (codicon font) — never set
+   content on that pseudo or the icon disappears. */
+.part.activitybar .action-item.checked .action-label,
+.part.activitybar .action-item.active .action-label {
+  position: relative !important;
+  /* Regular flat-top hexagon: W:H = 2:√3 ≈ 1.155, with margin so the chip
+     floats clear of the bar edges instead of filling the slot. */
+  width: 38px !important;
+  height: 33px !important;
+  margin: 4px auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  clip-path: var(--hexF) !important;
+  background: linear-gradient(135deg, var(--ck-emerald-glow), var(--ck-emerald)) !important;
+  color: var(--ck-fg1) !important;
+  filter: drop-shadow(1.5px 0 0 var(--ink)) drop-shadow(-1.5px 0 0 var(--ink))
+          drop-shadow(0 1.5px 0 var(--ink)) drop-shadow(0 -1.5px 0 var(--ink)) !important;
+}
+
+/* Breathing emerald glow radiating behind the active item. */
+.part.activitybar .action-item.checked::after,
+.part.activitybar .action-item.active::after {
+  content: '' !important;
+  position: absolute !important;
+  inset: -6px !important;
+  background: radial-gradient(circle at 50% 50%, rgba(43,180,136,.35), transparent 62%) !important;
+  animation: ckbreathe 3.2s var(--e) infinite !important;
+  z-index: -1 !important;
+  pointer-events: none !important;
+}
+
+/* Inactive icons — no clip, muted. */
+.part.activitybar .action-item:not(.checked):not(.active) .action-label {
+  clip-path: none !important;
+  background: transparent !important;
+}
+
+/* Badge → blonde flat hexagon with ink text. */
+.part.activitybar .monaco-count-badge,
+.part.activitybar .badge-content {
+  clip-path: var(--hexF) !important;
+  background: var(--ck-blonde) !important;
+  color: var(--ink) !important;
+  /* Regular flat-top proportions (≈1.155:1) + side padding so digits clear
+     the 25% corner cuts; margin keeps the badge off the icon edge. */
+  min-width: 20px !important;
+  height: 17px !important;
+  line-height: 17px !important;
+  padding: 0 5px !important;
+  margin: 2px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: var(--drop) !important;
+}
+
+/* =============================================================================
+   SIDEBAR — surface ground + screentone; pane headers get an ink layer with a
+   bottom-right diagonal notch + halftone fill; blonde hex chip + spaced title.
+   ========================================================================== */
+
+.part.sidebar { border-right: 2px solid var(--ink) !important; }
 
 .part.sidebar::before {
   content: '' !important;
   position: absolute !important;
   inset: 0 !important;
-  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMy4wOTQnIGhlaWdodD0nNDAnPjxsaW5lIHgxPScwJyB5MT0nMCcgeDI9JzIzLjA5NCcgeTI9JzAnIHN0cm9rZT0nIzFhOGE2YScgc3Ryb2tlLXdpZHRoPScxJy8+PGxpbmUgeDE9JzAnIHkxPScyMCcgeDI9JzIzLjA5NCcgeTI9JzIwJyBzdHJva2U9JyMxYThhNmEnIHN0cm9rZS13aWR0aD0nMScvPjxsaW5lIHgxPScwJyB5MT0nMCcgeDI9JzIzLjA5NCcgeTI9JzQwJyBzdHJva2U9JyMxYThhNmEnIHN0cm9rZS13aWR0aD0nMScvPjxsaW5lIHgxPScyMy4wOTQnIHkxPScwJyB4Mj0nMCcgeTI9JzQwJyBzdHJva2U9JyMxYThhNmEnIHN0cm9rZS13aWR0aD0nMScvPjxjaXJjbGUgY3g9JzAnIGN5PScwJyByPSczLjUnIGZpbGw9JyMxYTFkMmEnLz48Y2lyY2xlIGN4PScyMy4wOTQnIGN5PScwJyByPSczLjUnIGZpbGw9JyMxYTFkMmEnLz48Y2lyY2xlIGN4PScwJyBjeT0nNDAnIHI9JzMuNScgZmlsbD0nIzFhMWQyYScvPjxjaXJjbGUgY3g9JzIzLjA5NCcgY3k9JzQwJyByPSczLjUnIGZpbGw9JyMxYTFkMmEnLz48Y2lyY2xlIGN4PScxMS41NDcnIGN5PScyMCcgcj0nMy41JyBmaWxsPScjMWExZDJhJy8+PHBvbHlnb24gcG9pbnRzPScyLjUsMCAxLjI1LDIuMTY1IC0xLjI1LDIuMTY1IC0yLjUsMCAtMS4yNSwtMi4xNjUgMS4yNSwtMi4xNjUnIGZpbGw9JyMxYThhNmEnLz48cG9seWdvbiBwb2ludHM9JzI1LjU5NCwwIDI0LjM0NCwyLjE2NSAyMS44NDQsMi4xNjUgMjAuNTk0LDAgMjEuODQ0LC0yLjE2NSAyNC4zNDQsLTIuMTY1JyBmaWxsPScjMWE4YTZhJy8+PHBvbHlnb24gcG9pbnRzPScyLjUsNDAgMS4yNSw0Mi4xNjUgLTEuMjUsNDIuMTY1IC0yLjUsNDAgLTEuMjUsMzcuODM1IDEuMjUsMzcuODM1JyBmaWxsPScjMWE4YTZhJy8+PHBvbHlnb24gcG9pbnRzPScyNS41OTQsNDAgMjQuMzQ0LDQyLjE2NSAyMS44NDQsNDIuMTY1IDIwLjU5NCw0MCAyMS44NDQsMzcuODM1IDI0LjM0NCwzNy44MzUnIGZpbGw9JyMxYThhNmEnLz48cG9seWdvbiBwb2ludHM9JzE0LjA0NywyMCAxMi43OTcsMjIuMTY1IDEwLjI5NywyMi4xNjUgOS4wNDcsMjAgMTAuMjk3LDE3LjgzNSAxMi43OTcsMTcuODM1JyBmaWxsPScjMWE4YTZhJy8+PC9zdmc+") !important;
-  background-size: 23.094px 40px !important;
-  opacity: 0.035 !important;
-  pointer-events: none !important;
-  z-index: -1 !important;
-}
-
-/* ==========================================================
-   TECH GRID — SIDEBAR file list (.monaco-list)
-   Square dot-and-line grid | 20px cell | dots at intersections
-   background-position offset: dots shifted -10px so they land on line crossings
-   ========================================================== */
-
-.part.sidebar .monaco-list::before {
-  content: '' !important;
-  position: absolute !important;
-  inset: 0 !important;
-  background-image:
-    radial-gradient(circle at 50% 50%, #1a8a6a 0 1.5px, transparent 1.5px),
-    linear-gradient(0deg,  #1a8a6a 0 1px, transparent 1px),
-    linear-gradient(90deg, #1a8a6a 0 1px, transparent 1px) !important;
-  background-size: 20px 20px !important;
-  background-position: -10px -10px, 0 0, 0 0 !important;
-  opacity: 0.025 !important;
-  pointer-events: none !important;
-  z-index: 1 !important;
-}
-
-/* ==========================================================
-   HEX GRID — ACTIVITY BAR (knockout bg = #161922)
-   ========================================================== */
-
-.activitybar::before {
-  content: '' !important;
-  position: absolute !important;
-  inset: 0 !important;
-  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMy4wOTQnIGhlaWdodD0nNDAnPjxsaW5lIHgxPScwJyB5MT0nMCcgeDI9JzIzLjA5NCcgeTI9JzAnIHN0cm9rZT0nIzFhOGE2YScgc3Ryb2tlLXdpZHRoPScxJy8+PGxpbmUgeDE9JzAnIHkxPScyMCcgeDI9JzIzLjA5NCcgeTI9JzIwJyBzdHJva2U9JyMxYThhNmEnIHN0cm9rZS13aWR0aD0nMScvPjxsaW5lIHgxPScwJyB5MT0nMCcgeDI9JzIzLjA5NCcgeTI9JzQwJyBzdHJva2U9JyMxYThhNmEnIHN0cm9rZS13aWR0aD0nMScvPjxsaW5lIHgxPScyMy4wOTQnIHkxPScwJyB4Mj0nMCcgeTI9JzQwJyBzdHJva2U9JyMxYThhNmEnIHN0cm9rZS13aWR0aD0nMScvPjxjaXJjbGUgY3g9JzAnIGN5PScwJyByPSczLjUnIGZpbGw9JyMxNjE5MjInLz48Y2lyY2xlIGN4PScyMy4wOTQnIGN5PScwJyByPSczLjUnIGZpbGw9JyMxNjE5MjInLz48Y2lyY2xlIGN4PScwJyBjeT0nNDAnIHI9JzMuNScgZmlsbD0nIzE2MTkyMicvPjxjaXJjbGUgY3g9JzIzLjA5NCcgY3k9JzQwJyByPSczLjUnIGZpbGw9JyMxNjE5MjInLz48Y2lyY2xlIGN4PScxMS41NDcnIGN5PScyMCcgcj0nMy41JyBmaWxsPScjMTYxOTIyJy8+PHBvbHlnb24gcG9pbnRzPScyLjUsMCAxLjI1LDIuMTY1IC0xLjI1LDIuMTY1IC0yLjUsMCAtMS4yNSwtMi4xNjUgMS4yNSwtMi4xNjUnIGZpbGw9JyMxYThhNmEnLz48cG9seWdvbiBwb2ludHM9JzI1LjU5NCwwIDI0LjM0NCwyLjE2NSAyMS44NDQsMi4xNjUgMjAuNTk0LDAgMjEuODQ0LC0yLjE2NSAyNC4zNDQsLTIuMTY1JyBmaWxsPScjMWE4YTZhJy8+PHBvbHlnb24gcG9pbnRzPScyLjUsNDAgMS4yNSw0Mi4xNjUgLTEuMjUsNDIuMTY1IC0yLjUsNDAgLTEuMjUsMzcuODM1IDEuMjUsMzcuODM1JyBmaWxsPScjMWE4YTZhJy8+PHBvbHlnb24gcG9pbnRzPScyNS41OTQsNDAgMjQuMzQ0LDQyLjE2NSAyMS44NDQsNDIuMTY1IDIwLjU5NCw0MCAyMS44NDQsMzcuODM1IDI0LjM0NCwzNy44MzUnIGZpbGw9JyMxYThhNmEnLz48cG9seWdvbiBwb2ludHM9JzE0LjA0NywyMCAxMi43OTcsMjIuMTY1IDEwLjI5NywyMi4xNjUgOS4wNDcsMjAgMTAuMjk3LDE3LjgzNSAxMi43OTcsMTcuODM1JyBmaWxsPScjMWE4YTZhJy8+PC9zdmc+") !important;
-  background-size: 23.094px 40px !important;
-  opacity: 0.035 !important;
-  pointer-events: none !important;
-  z-index: 1 !important;
-}
-
-/* ==========================================================
-   ANGLED HATCHING — EDITOR (reduced, blue #4a82c4)
-   ========================================================== */
-
-.part.editor::before {
-  content: '' !important;
-  position: absolute !important;
-  inset: 0 !important;
-  background-image:
-    repeating-linear-gradient(-55deg, #4a82c4 0 1px, transparent 1px 25px),
-    repeating-linear-gradient( 35deg, #4a82c4 0 1px, transparent 1px 41px),
-    repeating-linear-gradient(-15deg, #4a82c4 0 1px, transparent 1px 61px) !important;
-  opacity: 0.015 !important;
-  pointer-events: none !important;
-  z-index: 1 !important;
-}
-
-/* ==========================================================
-   ANGLED HATCHING — MINIMAP
-   Same hatching as editor, slightly higher opacity for the narrow strip
-   ========================================================== */
-
-.minimap::before {
-  content: '' !important;
-  position: absolute !important;
-  inset: 0 !important;
-  background-image:
-    repeating-linear-gradient(-55deg, #4a82c4 0 1px, transparent 1px 25px),
-    repeating-linear-gradient( 35deg, #4a82c4 0 1px, transparent 1px 41px),
-    repeating-linear-gradient(-15deg, #4a82c4 0 1px, transparent 1px 61px),
-    linear-gradient(to bottom, transparent 0%, rgba(74, 130, 196, 0.06) 50%, transparent 100%) !important;
-  background-size: auto, auto, auto, 100% 30% !important;
-  opacity: 0.03 !important;
-  pointer-events: none !important;
-  z-index: 1 !important;
-}
-
-/* ==========================================================
-   ANIMATED TECH GRID — PANEL (integrated terminal + bottom bar)
-   Same dot-and-line grid as sidebar child, but animated.
-   Dots drift diagonally; horizontal lines scroll sideways;
-   vertical lines scroll downward — creates a living circuit feel.
-   ========================================================== */
-
-@keyframes panel-drift {
-  0%   { background-position: -10px -10px, 0 0,    0 0; }
-  100% { background-position:  10px  10px, 20px 0, 0 20px; }
-}
-
-.part.panel::before {
-  content: '' !important;
-  position: absolute !important;
-  inset: 0 !important;
-  background-image:
-    radial-gradient(circle at 50% 50%, #00c8d8 0 1.5px, transparent 1.5px),
-    linear-gradient(0deg,  #00c8d8 0 1px, transparent 1px),
-    linear-gradient(90deg, #00c8d8 0 1px, transparent 1px) !important;
-  background-size: 20px 20px !important;
-  background-position: -10px -10px, 0 0, 0 0 !important;
-  opacity: 0.018 !important;
-  pointer-events: none !important;
-  z-index: 1 !important;
-  animation: panel-drift 15s linear infinite !important;
-}
-
-/* ==========================================================
-   DEPTH FADES — ::after gradient overlays
-   Each panel gets a unique colour tint at the top that fades to
-   transparent mid-panel, then darkens at the bottom.
-   Together these break the monotone navy by giving each region
-   a distinct chromatic identity.
-   ========================================================== */
-
-/* Shared scaffold for all panel fades */
-.part.sidebar::after,
-.activitybar::after,
-.part.panel::after,
-.part.auxiliarybar::after {
-  content: '' !important;
-  position: absolute !important;
-  inset: 0 !important;
-  pointer-events: none !important;
-  z-index: 10 !important;
-}
-
-/* Sidebar: neutral — emerald textures already give it identity */
-.part.sidebar::after {
-  background-image: linear-gradient(to bottom,
-    transparent 65%,
-    rgba(0, 0, 0, 0.20) 100%) !important;
-}
-
-/* Activity bar: dark purple cast anchors the icon strip */
-.activitybar::after {
-  background-image: linear-gradient(to bottom,
-    rgba(70, 20, 110, 0.05) 0%,
-    transparent 45%,
-    rgba(0, 0, 0, 0.25) 100%) !important;
-}
-
-/* Panel / terminal: dark cyan tint matches the cyan grid */
-.part.panel::after {
-  background-image: linear-gradient(to bottom,
-    rgba(0, 160, 196, 0.035) 0%,
-    transparent 45%,
-    rgba(0, 0, 0, 0.20) 100%) !important;
-}
-
-/* Auxiliary bar: dark indigo — distinct from sidebar purple */
-.part.auxiliarybar::after {
-  background-image: linear-gradient(to bottom,
-    rgba(30, 20, 80, 0.05) 0%,
-    transparent 45%,
-    rgba(0, 0, 0, 0.22) 100%) !important;
-}
-
-/* Editor: blue → purple bottom fade */
-.part.editor::after {
-  content: '' !important;
-  position: absolute !important;
-  inset: 0 !important;
-  background-image: linear-gradient(to bottom,
-    transparent 65%,
-    rgba(74, 130, 196, 0.06) 82%,
-    rgba(112, 64, 176, 0.08) 100%) !important;
-  pointer-events: none !important;
-  z-index: 1 !important;
-}
-
-/* ==========================================================
-   TAB DISTINCTION
-   Inactive tabs: deeper background (#11141d) so they clearly recede.
-   Active tab: editor background (#1a1d2a) + emerald top accent border.
-   Creates a "lifted" feel — active tab reads as connected to editor below.
-   ========================================================== */
-
-/* Inactive tabs: darker than editor bg */
-.tabs-container .tab {
-  background-color: #11141d !important;
-  border-top: 2px solid transparent !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.04) !important;
-}
-
-/* Active/selected tab: rises to match editor + emerald accent */
-.tabs-container .tab.active,
-.tabs-container .tab.selected {
-  background-color: #1a1d2a !important;
-  border-top: 2px solid #1a8a6a !important;
-}
-
-/* Inactive tab hover: step between inactive and active */
-.tabs-container .tab:not(.active):not(.selected):hover {
-  background-color: #161922 !important;
-}
-
-/* ==========================================================
-   HEX GRID — AUXILIARY BAR (right chat / secondary sidebar)
-   Knockout bg matches sidebar (#1a1d2a) — same visual language
-   ========================================================== */
-
-.part.auxiliarybar::before {
-  content: '' !important;
-  position: absolute !important;
-  inset: 0 !important;
-  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyMy4wOTQnIGhlaWdodD0nNDAnPjxsaW5lIHgxPScwJyB5MT0nMCcgeDI9JzIzLjA5NCcgeTI9JzAnIHN0cm9rZT0nIzFhOGE2YScgc3Ryb2tlLXdpZHRoPScxJy8+PGxpbmUgeDE9JzAnIHkxPScyMCcgeDI9JzIzLjA5NCcgeTI9JzIwJyBzdHJva2U9JyMxYThhNmEnIHN0cm9rZS13aWR0aD0nMScvPjxsaW5lIHgxPScwJyB5MT0nMCcgeDI9JzIzLjA5NCcgeTI9JzQwJyBzdHJva2U9JyMxYThhNmEnIHN0cm9rZS13aWR0aD0nMScvPjxsaW5lIHgxPScyMy4wOTQnIHkxPScwJyB4Mj0nMCcgeTI9JzQwJyBzdHJva2U9JyMxYThhNmEnIHN0cm9rZS13aWR0aD0nMScvPjxjaXJjbGUgY3g9JzAnIGN5PScwJyByPSczLjUnIGZpbGw9JyMxYTFkMmEnLz48Y2lyY2xlIGN4PScyMy4wOTQnIGN5PScwJyByPSczLjUnIGZpbGw9JyMxYTFkMmEnLz48Y2lyY2xlIGN4PScwJyBjeT0nNDAnIHI9JzMuNScgZmlsbD0nIzFhMWQyYScvPjxjaXJjbGUgY3g9JzIzLjA5NCcgY3k9JzQwJyByPSczLjUnIGZpbGw9JyMxYTFkMmEnLz48Y2lyY2xlIGN4PScxMS41NDcnIGN5PScyMCcgcj0nMy41JyBmaWxsPScjMWExZDJhJy8+PHBvbHlnb24gcG9pbnRzPScyLjUsMCAxLjI1LDIuMTY1IC0xLjI1LDIuMTY1IC0yLjUsMCAtMS4yNSwtMi4xNjUgMS4yNSwtMi4xNjUnIGZpbGw9JyMxYThhNmEnLz48cG9seWdvbiBwb2ludHM9JzI1LjU5NCwwIDI0LjM0NCwyLjE2NSAyMS44NDQsMi4xNjUgMjAuNTk0LDAgMjEuODQ0LC0yLjE2NSAyNC4zNDQsLTIuMTY1JyBmaWxsPScjMWE4YTZhJy8+PHBvbHlnb24gcG9pbnRzPScyLjUsNDAgMS4yNSw0Mi4xNjUgLTEuMjUsNDIuMTY1IC0yLjUsNDAgLTEuMjUsMzcuODM1IDEuMjUsMzcuODM1JyBmaWxsPScjMWE4YTZhJy8+PHBvbHlnb24gcG9pbnRzPScyNS41OTQsNDAgMjQuMzQ0LDQyLjE2NSAyMS44NDQsNDIuMTY1IDIwLjU5NCw0MCAyMS44NDQsMzcuODM1IDI0LjM0NCwzNy44MzUnIGZpbGw9JyMxYThhNmEnLz48cG9seWdvbiBwb2ludHM9JzE0LjA0NywyMCAxMi43OTcsMjIuMTY1IDEwLjI5NywyMi4xNjUgOS4wNDcsMjAgMTAuMjk3LDE3LjgzNSAxMi43OTcsMTcuODM1JyBmaWxsPScjMWE4YTZhJy8+PC9zdmc+") !important;
-  background-size: 23.094px 40px !important;
-  opacity: 0.035 !important;
-  pointer-events: none !important;
-  z-index: 1 !important;
-}
-
-/* ==========================================================
-   SIDEBAR SECTION DIFFERENTIATION
-   Left-border accents on collapsible pane headers so each
-   sidebar section has a distinct chromatic identity.
-   Uses aria-label attribute selectors (English locale).
-   ========================================================== */
-
-/* Outline: purple accent */
-.part.sidebar .pane-header[aria-label*="Outline"] {
-  border-left: 3px solid #7040b0 !important;
-}
-
-/* Timeline: cyan accent */
-.part.sidebar .pane-header[aria-label*="Timeline"] {
-  border-left: 3px solid #00c8d8 !important;
-}
-
-/* File Explorer (Folders): emerald accent */
-.part.sidebar .pane-header[aria-label*="Folders"] {
-  border-left: 3px solid #1a8a6a !important;
-}
-
-/* Open Editors: blue accent */
-.part.sidebar .pane-header[aria-label*="Open Editors"] {
-  border-left: 3px solid #4a82c4 !important;
-}
-
-/* ==========================================================
-   GEOMETRY — hexagonal icons, trapezoid tabs, diamonds, folder clips
-   ========================================================== */
-
-
-/* ==========================================================
-   GLOBAL RESETS
-   ========================================================== */
-
-/* Kill all border-radius everywhere */
-* { border-radius: 0 !important; }
-
-/* ==========================================================
-   ACTIVITY BAR — hexagonal active indicator + chamfered items
-   ========================================================== */
-
-/* Strip default active background */
-.activitybar .action-item.checked,
-.activitybar .action-item.active {
-  background: transparent !important;
-}
-
-/* Active icon: clip the entire action-label to hexagon — icon renders inside the hex shape */
-.activitybar .action-item.checked .action-label,
-.activitybar .action-item.active .action-label {
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%) !important;
-  background: rgba(26, 138, 106, 0.22) !important;
-}
-
-/* Inactive icons — no clip, no background */
-.activitybar .action-item:not(.checked):not(.active) .action-label {
-  clip-path: none !important;
-  background: transparent !important;
-}
-
-/* Icon element itself */
-.activitybar .action-item .action-label {
-  position: relative !important;
-}
-
-/* Activity bar badge — hexagonal */
-.activitybar .monaco-count-badge,
-.activitybar .badge-content {
-  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%) !important;
-  border-radius: 0 !important;
-  min-width: 16px !important;
-  height: 16px !important;
-  line-height: 16px !important;
-  padding: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-/* Emerald active indicator — triangle pointing right, left edge */
-.activitybar .action-item.checked::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 5px;
-  height: 12px;
-  background: #1a8a6acc;
-  clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
-  z-index: 2;
-  pointer-events: none;
-}
-
-/* ==========================================================
-   TABS — trapezoid active tab + parallelogram hover
-   ========================================================== */
-
-/* Tab container */
-.tabs-container {
-  background: transparent !important;
-}
-
-/* All tabs base */
-.tab {
-  position: relative !important;
-  overflow: visible !important;
-}
-
-/* Active tab — trapezoid background using ::before */
-.tab.active::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  clip-path: polygon(6px 0%, calc(100% - 6px) 0%, 100% 100%, 0% 100%);
-  background: rgba(224, 226, 234, 0.06);
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* Active tab top indicator — trapezoid-matched gradient bar */
-.tab.active::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 6px;
-  right: 6px;
-  height: 2px;
-  background: linear-gradient(90deg, #1a8a6acc, #4a82c4cc, #7a52b3cc);
-  z-index: 1;
-  pointer-events: none;
-  clip-path: polygon(0% 0%, 100% 0%, calc(100% - 2px) 100%, 2px 100%);
-}
-
-/* Kill the default tab active border (handled by ::after) */
-.tab.active {
-  border-top: none !important;
-  outline: none !important;
-}
-
-/* Hover tab — parallelogram tint */
-.tab:not(.active):hover::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  clip-path: polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%);
-  background: rgba(26, 138, 106, 0.06);
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* Tab title above the pseudo-element layer */
-.tab .tab-label,
-.tab .tab-actions {
-  position: relative;
-  z-index: 1;
-}
-
-/* ==========================================================
-   SIDEBAR — geometric section headers + selected row accent
-   ========================================================== */
-
-/* Section pane header — parallelogram-skewed background strip */
-.pane-header {
-  position: relative !important;
-  overflow: visible !important;
-}
-
-/* Parallelogram tint behind the entire header */
-.pane-header::after {
-  content: '' !important;
-  position: absolute !important;
-  inset: 0 !important;
-  clip-path: polygon(0% 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%) !important;
-  background: linear-gradient(
-    90deg,
-    rgba(26, 138, 106, 0.12),
-    rgba(74, 130, 196, 0.06)
-  ) !important;
-  pointer-events: none !important;
+  background: var(--scr2) !important;
+  opacity: .55 !important;
+  animation: ckdrift 30s linear infinite alternate !important;
   z-index: 0 !important;
-}
-
-/* Emerald left edge bar — parallelogram shaped */
-.pane-header::before {
-  content: '' !important;
-  position: absolute !important;
-  left: 0 !important;
-  top: 0 !important;
-  bottom: 0 !important;
-  width: 3px !important;
-  background: linear-gradient(180deg, #1a8a6a, #4a82c4) !important;
-  clip-path: polygon(0% 0%, 100% 10%, 100% 90%, 0% 100%) !important;
-  z-index: 1 !important;
   pointer-events: none !important;
 }
+.part.sidebar .monaco-pane-view,
+.part.sidebar .composite { position: relative !important; z-index: 1 !important; }
 
-/* Section header text above the geometric layers */
-.pane-header .title {
+/* Pane header: ink outer layer with 14px bottom-right diagonal notch. */
+.part.sidebar .pane-header {
   position: relative !important;
-  z-index: 2 !important;
-  font-size: 10px !important;
-  letter-spacing: 0.10em !important;
-  text-transform: uppercase !important;
-  padding-left: 10px !important;
+  overflow: visible !important;
+  background: var(--ink) !important;
+  border-bottom: 2px solid var(--ink) !important;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%) !important;
 }
-
-/* Hexagonal dot before section title text */
-.pane-header .title::before {
+/* Base + halftone fill floating above the ink layer (inset 2px, smaller notch). */
+.part.sidebar .pane-header::after {
+  content: '' !important;
+  position: absolute !important;
+  inset: 2px 2px 0 2px !important;
+  background-color: var(--ck-base) !important;
+  background-image: var(--halftone) !important;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12.6px), calc(100% - 12.6px) 100%, 0 100%) !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.05) !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
+/* Blonde hex chip before the title text. */
+.part.sidebar .pane-header .title::before {
   content: '' !important;
   display: inline-block !important;
-  width: 7px !important;
-  height: 7px !important;
-  background: #1a8a6a !important;
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%) !important;
-  margin-right: 6px !important;
+  width: 8px; height: 8px !important;
+  margin-right: 8px !important;
   vertical-align: middle !important;
-  opacity: 0.85 !important;
+  background: var(--ck-blonde) !important;
+  clip-path: var(--hexF) !important;
 }
-
-/* Selected row — inset box-shadow left accent (guaranteed to render, no z-index issues) */
-.monaco-list .monaco-list-row[aria-selected='true'],
-.monaco-list .monaco-list-row.selected {
-  box-shadow: inset 3px 0 0 #1a8a6a !important;
-}
-
-/* Focused row (keyboard nav) — teal accent */
-.monaco-list .monaco-list-row.focused:not([aria-selected='true']):not(.selected) {
-  box-shadow: inset 3px 0 0 #20969c !important;
-}
-
-/* Compact explorer rows — default 22px, zoom-1 makes them 24px */
-.monaco-list-row {
-  height: 22px !important;
-  line-height: 22px !important;
-}
-
-.monaco-tl-row {
-  height: 22px !important;
-}
-
-/* ==========================================================
-   STATUS DOTS — circles → diamonds
-   ========================================================== */
-
-/* Status/indicator dots → diamond. Exclude notification subtrees (pointer events). */
-.codicon-circle-filled:not(.notification-list-item *),
-.codicon-circle-small-filled:not(.notification-list-item *),
-.codicon-primitive-dot:not(.notification-list-item *),
-.codicon-dot:not(.notification-list-item *) {
-  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%) !important;
-  border-radius: 0 !important;
-}
-
-/* Git modified/added/untracked inline dots in explorer (the small coloured circles
-   that appear after folder names — these are .badge or inline background spans) */
-.monaco-list-row .monaco-icon-label-container .decorations .codicon,
-.monaco-list-row .decorations-container .codicon-circle-filled,
-.scm-provider .codicon-circle-filled,
-.source-control .codicon-circle-filled {
-  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%) !important;
-  border-radius: 0 !important;
-}
-
-/* ==========================================================
-   FILE/FOLDER ICONS — trapezoid clip, folder icons only
-   ========================================================== */
-
-/* Target only elements that carry vscode-icons folder background-images.
-   These elements have inline width/height and a background-image set by the icon theme.
-   We clip them to a trapezoid (wider top, angled sides — classic folder-tab silhouette). */
-.monaco-list-row .file-icon.folder-icon,
-.monaco-list-row .file-icon[class*="folder"] {
-  clip-path: polygon(0% 0%, 100% 0%, 92% 100%, 8% 100%) !important;
-}
-
-/* Open folder variant */
-.monaco-list-row .file-icon.folder-open-icon,
-.monaco-list-row .file-icon[class*="folder-open"] {
-  clip-path: polygon(8% 0%, 92% 0%, 100% 100%, 0% 100%) !important;
-}
-
-/* ==========================================================
-   BREADCRUMBS — parallelogram segments
-   ========================================================== */
-
-.breadcrumbs-control .breadcrumb-item {
+.part.sidebar .pane-header .title {
   position: relative !important;
+  z-index: 2 !important;
+  color: var(--ck-fg1) !important;
+  font-size: 10px !important;
+  letter-spacing: .12em !important;
+  text-transform: uppercase !important;
+  padding-left: 8px !important;
+}
+.part.sidebar .pane-header .actions { position: relative !important; z-index: 2 !important; }
+
+/* -----------------------------------------------------------------------------
+   SELECTED / FOCUSED LIST ROW (explorer + trees)
+   emerald wash + 4px emerald rail + 1px ink top/bottom + emerald triangle marker.
+   -------------------------------------------------------------------------- */
+/* NOTE: never override position on .monaco-list-row — VS Code positions rows
+   absolutely with inline top offsets; forcing relative doubles the row spacing. */
+.part.sidebar .monaco-list .monaco-list-row[aria-selected='true'],
+.part.sidebar .monaco-list .monaco-list-row.selected {
+  background: linear-gradient(90deg, rgba(26,138,106,.24), transparent 78%) !important;
+  box-shadow:
+    inset 4px 0 0 var(--ck-emerald-lt),
+    inset 0 1px 0 var(--ink),
+    inset 0 -1px 0 var(--ink) !important;
+}
+/* Emerald triangle marker pointing into the row from the left rail. */
+.part.sidebar .monaco-list .monaco-list-row[aria-selected='true']::after,
+.part.sidebar .monaco-list .monaco-list-row.selected::after {
+  content: '' !important;
+  position: absolute !important;
+  left: 4px; top: 50% !important;
+  width: 5px; height: 9px !important;
+  transform: translateY(-50%) !important;
+  background: var(--ck-emerald-lt) !important;
+  clip-path: polygon(0 0, 100% 50%, 0 100%) !important;
+  z-index: 2 !important;
+  pointer-events: none !important;
+}
+/* Keyboard-focused (not selected) row — teal rail, no wash. */
+.part.sidebar .monaco-list .monaco-list-row.focused:not([aria-selected='true']):not(.selected) {
+  box-shadow: inset 4px 0 0 var(--ck-teal-lt) !important;
 }
 
+/* Dirty-file indicator → 8px blonde diamond (rotated square), not a circle. */
+.monaco-list-row .monaco-icon-label.dirty-modified::after,
+.tabs-container .tab.dirty > .tab-actions .codicon-close::before {
+  /* handled per-region below for tabs; explorer dirty dot: */
+}
+.monaco-list-row .dirty-indicator,
+.explorer-item .monaco-icon-label::after {
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%) !important;
+}
+
+/* =============================================================================
+   EDITOR TABS — abyss strip, 2px ink bottom seam; active = trapezoid flowing
+   into the editor; inactive = shatchR texture + ck-border.
+   ========================================================================== */
+
+.editor-group-container > .title,
+.tabs-and-actions-container {
+  border-bottom: 2px solid var(--ink) !important;
+  background: var(--ck-abyss) !important;
+}
+.tabs-container { background: transparent !important; }
+
+.tabs-container .tab {
+  position: relative !important;
+  overflow: visible !important;
+  margin-right: 0 !important;
+}
+
+/* Inactive tab — rectangular, base + shatchR hatching, subtle ck-border sides. */
+.tabs-container .tab:not(.active):not(.selected) {
+  background-color: var(--ck-base) !important;
+  background-image: var(--shatchR) !important;
+  border-right: 1px solid var(--ck-border) !important;
+  color: var(--ck-fg3) !important;
+}
+.tabs-container .tab:not(.active):not(.selected):hover {
+  background-color: var(--ck-surface) !important;
+  color: var(--ck-fg1) !important;
+}
+
+/* Active tab — trapezoid. Outer ink layer (::before) + inner base fill (::after).
+   margin-bottom:-2px merges the tab into the editor content past the ink seam. */
+.tabs-container .tab.active,
+.tabs-container .tab.selected {
+  background: transparent !important;
+  border: none !important;
+  margin-bottom: -2px !important;
+  color: var(--ck-fg1) !important;
+}
+.tabs-container .tab.active::before,
+.tabs-container .tab.selected::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background: var(--ink) !important;
+  clip-path: polygon(11px 0, calc(100% - 11px) 0, 100% 100%, 0 100%) !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
+.tabs-container .tab.active::after,
+.tabs-container .tab.selected::after {
+  content: '' !important;
+  position: absolute !important;
+  inset: 2px 0 0 0 !important;   /* inset from top only — bottom stays open to editor */
+  background: var(--ck-base) !important;
+  clip-path: polygon(12.5px 0, calc(100% - 12.5px) 0,
+                     calc(100% - 2.1px) 100%, 2.1px 100%) !important;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,.07) !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
+/* Tab contents ride above the shape layers. */
+.tabs-container .tab > * { position: relative !important; z-index: 1 !important; }
+
+/* Dirty tab dot → blonde diamond (VS Code shows it on the close action slot). */
+.tabs-container .tab.dirty:not(:hover) .tab-actions .action-label.codicon-close {
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%) !important;
+  background: var(--ck-blonde) !important;
+  color: transparent !important;
+}
+
+/* =============================================================================
+   EDITOR CANVAS — deliberately texture-free. Overlaying dots/washes on code
+   reads as noise during real work; the canvas stays a clean flat base and the
+   manga texturing lives on the chrome regions around it.
+   ========================================================================== */
+
+/* =============================================================================
+   BREADCRUMBS — chevron / parallelogram slivers as separators (emerald-lt).
+   ========================================================================== */
+.breadcrumbs-control { border-bottom: 1px solid var(--ck-border) !important; }
+.breadcrumbs-control .breadcrumb-item { position: relative !important; }
+.breadcrumbs-control .monaco-breadcrumb-item:not(:first-child)::before,
 .breadcrumbs-control .breadcrumb-item:not(:first-child)::before {
   content: '' !important;
   display: inline-block !important;
-  width: 6px !important;
-  height: 6px !important;
-  background: currentColor !important;
-  clip-path: polygon(0% 0%, 100% 50%, 0% 100%) !important;
-  opacity: 0.4 !important;
-  margin: 0 4px !important;
+  width: 6px; height: 11px !important;
+  margin: 0 6px !important;
   vertical-align: middle !important;
+  background: var(--ck-emerald-lt) !important;
+  clip-path: polygon(40% 0, 100% 0, 60% 100%, 0 100%) !important;
+  opacity: .85 !important;
 }
 
-/* ==========================================================
-   STATUS BAR — parallelogram item backgrounds
-   ========================================================== */
-
-.statusbar .statusbar-item {
-  position: relative !important;
-}
-
-/* Remote indicator — chamfered */
-.statusbar .statusbar-item.remote-kind .statusbar-item-label {
-  clip-path: polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%) !important;
-  padding: 0 8px !important;
-}
-
-/* ==========================================================
-   WIDGETS / QUICK INPUT / COMMAND PALETTE
-   ========================================================== */
-
-/* Command palette — chamfered */
-.quick-input-widget {
-  clip-path: polygon(
-    0% 8px, 8px 0%,
-    calc(100% - 8px) 0%, 100% 8px,
-    100% calc(100% - 8px), calc(100% - 8px) 100%,
-    8px 100%, 0% calc(100% - 8px)
-  ) !important;
-}
-
-/* Input fields — chamfered top corners */
-.quick-input-box .input,
-.monaco-inputbox .input {
-  clip-path: polygon(
-    0% 6px, 6px 0%, calc(100% - 6px) 0%, 100% 6px,
-    100% 100%, 0% 100%
-  ) !important;
-}
-
-/* Suggest / autocomplete widget — chamfered */
-.suggest-widget {
-  clip-path: polygon(
-    0% 8px, 8px 0%,
-    calc(100% - 8px) 0%, 100% 8px,
-    100% 100%, 0% 100%
-  ) !important;
-}
-
-/* Hover tooltip — chamfered */
-.monaco-hover {
-  clip-path: polygon(
-    0% 6px, 6px 0%,
-    calc(100% - 6px) 0%, 100% 6px,
-    100% calc(100% - 6px), calc(100% - 6px) 100%,
-    6px 100%, 0% calc(100% - 6px)
-  ) !important;
-}
-
-/* ==========================================================
-   PANEL (TERMINAL) — chamfered top corners + faded top edge
-   ========================================================== */
-
+/* =============================================================================
+   PANEL / INTEGRATED TERMINAL — abyss, 2px ink top seam + flow strip.
+   ========================================================================== */
 .part.panel {
-  position: relative !important;
+  border-top: 2px solid var(--ink) !important;
+  /* Diagonal hatching on the panel ground (background-image paints under all
+     children — no z-index games; opaque surfaces like the terminal canvas
+     simply cover it). */
+  background-image: var(--shatchR) !important;
 }
-
+/* Secondary sidebar gets the screentone ground, same as the primary. */
+.part.auxiliarybar {
+  border-left: 2px solid var(--ink) !important;
+  background-image: var(--scr2) !important;
+}
 .part.panel::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(26, 138, 106, 0.4) 20%,
-    rgba(74, 130, 196, 0.4) 50%,
-    rgba(122, 82, 179, 0.4) 80%,
-    transparent
-  );
-  z-index: 100;
-  pointer-events: none;
+  content: '' !important;
+  position: absolute !important;
+  top: 0; left: 0; right: 0;
+  height: 2px !important;
+  background: linear-gradient(90deg,
+    var(--ck-emerald-lt), var(--ck-blue-lt), var(--ck-amethyst-glow), var(--ck-emerald-lt)) !important;
+  background-size: 200% 100% !important;
+  animation: ckflow 4s linear infinite !important;
+  z-index: 20 !important;
+  pointer-events: none !important;
 }
 
-/* Panel tab indicator — diamond accent */
-.panel .panel-tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 6px;
-  height: 6px;
-  background: #1a8a6acc;
-  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+/* Terminal / panel tab: active = small notched chip (9px top-left cut). */
+.part.panel .panel-tabs-container .action-item.checked .action-label,
+.part.panel .panel-switcher-container .action-item.checked .action-label {
+  position: relative !important;
+  background: var(--ck-base) !important;
+  clip-path: polygon(9px 0, 100% 0, 100% 100%, 0 100%) !important;
+  box-shadow: inset 2px 2px 0 rgba(255,255,255,.06) !important;
+}
+.part.panel .panel-tab.active::after,
+.part.panel .panel-switcher-container .action-item.checked::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 0; left: 50% !important;
+  width: 7px; height: 7px !important;
+  transform: translateX(-50%) !important;
+  background: var(--ck-emerald-lt) !important;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%) !important;
+  pointer-events: none !important;
 }
 
-/* ==========================================================
-   EDITOR — faded indent guides + softer line highlight
-   ========================================================== */
+/* =============================================================================
+   STATUS BAR — zigzag parallelogram segments over an abyss ground, 2px ink top.
+   -----------------------------------------------------------------------------
+   ⚠ RISKY: status-bar items are flat DOM children with volatile ids. We shape a
+   defensive set (ink-outlined parallelograms + bevels + overlap) and color a few
+   *known* ids as jewel segments. Any id we miss just keeps the JSON flat color —
+   no layout break. Text stays hittable because the clip only cuts the corners.
+   ========================================================================== */
+.part.statusbar { border-top: 2px solid var(--ink) !important; }
 
-/* Edge fade on long lines — applies to the minimap side */
-.minimap {
-  mask-image: linear-gradient(
-    to left,
-    transparent,
-    rgba(0, 0, 0, 0.8) 15%,
-    black 30%
-  ) !important;
+/* Base parallelogram shaping for interactive (id-bearing) status items. */
+.part.statusbar .statusbar-item[id] {
+  position: relative !important;
+  clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%) !important;
+  margin-left: -10px !important;   /* zigzag overlap */
+  padding: 0 12px !important;
+  color: var(--ck-fg1) !important;
+  text-shadow: 1px 1px 0 var(--ink) !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.22), inset 0 -3px 0 rgba(0,0,0,.34) !important;
+}
+/* First item shouldn't pull off the left edge. */
+.part.statusbar .statusbar-item[id]:first-child { margin-left: 0 !important; }
+
+/* Hex-logo / remote segment leads with the animated flow gradient. */
+.part.statusbar .statusbar-item[id*="host"],
+.part.statusbar .statusbar-item[id*="remote"] {
+  background: linear-gradient(90deg,
+    var(--ck-emerald-lt), var(--ck-blue-lt), var(--ck-amethyst-glow), var(--ck-emerald-lt)) !important;
+  background-size: 200% 100% !important;
+  animation: ckflow 4s linear infinite !important;
+}
+/* Branch / SCM → emerald gradient segment. */
+.part.statusbar .statusbar-item[id*="scm"],
+.part.statusbar .statusbar-item[id*="git"] {
+  background: linear-gradient(135deg, var(--ck-emerald-lt), var(--ck-emerald)) !important;
+}
+/* Sync → teal segment. */
+.part.statusbar .statusbar-item[id*="sync"],
+.part.statusbar .statusbar-item[id*="status.editor.selection"] {
+  background: linear-gradient(135deg, var(--ck-teal-lt), var(--ck-teal)) !important;
+}
+/* Problems (warnings) → blonde gradient with ink text, no shadow. */
+.part.statusbar .statusbar-item[id*="problems"] {
+  background: linear-gradient(135deg, var(--ck-blonde-lt), var(--ck-blonde-dim)) !important;
+  color: var(--ink) !important;
+  text-shadow: none !important;
+}
+/* Notifications / bell (error count home) → amethyst gradient (fill only). */
+.part.statusbar .statusbar-item[id*="notification"] {
+  background: linear-gradient(135deg, var(--ck-amethyst-glow), var(--ck-amethyst)) !important;
 }
 
-/* ==========================================================
-   NOTIFICATIONS & DIALOGS — no clip-path anywhere in these subtrees
-   clip-path removes pointer events in clipped areas; action buttons must be fully hittable
-   ========================================================== */
+/* =============================================================================
+   BUTTONS — emerald fill, 2px ink border, chiseled bevel, hover glow.
+   ========================================================================== */
+.monaco-workbench .monaco-button,
+.monaco-workbench .monaco-text-button {
+  border: 2px solid var(--ink) !important;
+  box-shadow: var(--bevel) !important;
+  font-weight: 600 !important;
+}
+.monaco-workbench .monaco-button:hover,
+.monaco-workbench .monaco-text-button:hover {
+  filter: brightness(1.08) !important;
+  box-shadow: var(--bevel), 0 0 12px rgba(26,138,106,.4) !important;
+}
 
-.notifications-toasts,
+/* =============================================================================
+   WIDGETS — command palette, suggest, hover: notched shell + 2px ink border +
+   hard manga drop-shadow (offset, zero blur).
+   ========================================================================== */
+/* Unclipped widgets keep the plain border + hard shadow. */
+.monaco-hover,
+.notifications-toasts .notification-toast {
+  border: 2px solid var(--ink) !important;
+  box-shadow: var(--drop) !important;
+}
+/* Chamfered shells: border and box-shadow get clipped away by clip-path, so
+   the ink outline + manga offset shadow are drop-shadow filters instead
+   (filters render after clipping and follow the chamfered edge). */
+.quick-input-widget,
+.editor-widget.suggest-widget {
+  border: none !important;
+  box-shadow: none !important;
+  filter: drop-shadow(1.5px 0 0 var(--ink)) drop-shadow(-1.5px 0 0 var(--ink))
+          drop-shadow(0 1.5px 0 var(--ink)) drop-shadow(0 -1.5px 0 var(--ink))
+          drop-shadow(6px 6px 0 rgba(6,7,13,.55)) !important;
+}
+.quick-input-widget {
+  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px,
+                     100% calc(100% - 10px), calc(100% - 10px) 100%,
+                     10px 100%, 0 calc(100% - 10px), 0 10px) !important;
+}
+.editor-widget.suggest-widget {
+  clip-path: polygon(0 8px, 8px 0, calc(100% - 8px) 0, 100% 8px,
+                     100% 100%, 0 100%) !important;
+}
+/* Focus = emerald: focused input row in palette gains an emerald left rail. */
+.quick-input-list .monaco-list-row.focused {
+  box-shadow: inset 4px 0 0 var(--ck-emerald-lt) !important;
+}
+
+/* Input fields — chamfered top corners + emerald focus rail. */
+.monaco-inputbox {
+  clip-path: polygon(0 6px, 6px 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%) !important;
+}
+.monaco-inputbox.synthetic-focus,
+.monaco-inputbox:focus-within {
+  box-shadow: inset 0 0 0 1px var(--ck-emerald-lt) !important;
+}
+
+/* =============================================================================
+   STATUS / TREE DOTS — circles → diamonds (skip notification subtrees, which
+   need full pointer hit-areas).
+   ========================================================================== */
+.codicon-circle-filled:not(.notification-list-item *):not(.notifications-center *),
+.codicon-circle-small-filled:not(.notification-list-item *),
+.codicon-primitive-dot:not(.notification-list-item *),
+.codicon-dot:not(.notification-list-item *) {
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%) !important;
+}
+
+/* =============================================================================
+   SCROLLBAR — slim chamfered thumb.
+   ========================================================================== */
+.monaco-scrollable-element > .scrollbar > .slider {
+  clip-path: polygon(0 4px, 4px 0, calc(100% - 4px) 0, 100% 4px,
+                     100% calc(100% - 4px), calc(100% - 4px) 100%,
+                     4px 100%, 0 calc(100% - 4px)) !important;
+}
+
+/* =============================================================================
+   SAFETY — never clip-path inside notification/dialog/context subtrees; clipping
+   removes pointer events in the cut regions and buttons become un-clickable.
+   (Keep this block LAST so it wins over anything above.)
+   ========================================================================== */
 .notifications-toasts *,
-.notifications-center,
 .notifications-center *,
-.notification-toast,
 .notification-list-item,
-.notification-list-item-buttons-container,
-.notification-list-item-buttons-container *,
+.notification-list-item *,
 .monaco-dialog-box,
 .monaco-dialog-box *,
 .dialog-message-row,
 .dialog-buttons-row,
 .dialog-buttons-row *,
 .context-view,
-.context-view * {
+.context-view *,
+.monaco-menu,
+.monaco-menu * {
   clip-path: none !important;
-}
-
-/* ==========================================================
-   SCROLLBAR — thin diamond thumb
-   ========================================================== */
-
-.scrollbar .slider {
-  clip-path: polygon(
-    0% 4px, 4px 0%,
-    calc(100% - 4px) 0%, 100% 4px,
-    100% calc(100% - 4px), calc(100% - 4px) 100%,
-    4px 100%, 0% calc(100% - 4px)
-  ) !important;
 }
