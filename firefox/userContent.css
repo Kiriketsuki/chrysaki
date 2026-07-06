@@ -1,142 +1,276 @@
-/* Chrysaki Firefox Theme — userContent.css */
-/* Version: 1.0.0 */
-/* Overrides for about:newtab, about:home, about:blank */
-/* Place in: <profile>/chrome/userContent.css */
+/* ============================================================================
+   Chrysaki — Firefox userContent.css   ·   "Manga-Ink" v2
+   ----------------------------------------------------------------------------
+   In-content pages: about:newtab / about:home (search box, shortcut tiles,
+   background washes), plus about:blank and dark-scheme scrollbar/selection.
 
-/* ==========================================================
-   NEW TAB PAGE (about:newtab, about:home)
-   ========================================================== */
+   Manga-ink construction on content pages (real HTML DOM, so we have full
+   access to ::before/::after and multi-drop-shadow tricks):
+   - Notched shapes: clip-path notch on the element + a 2px INK OUTLINE synthesised
+     from four stacked `drop-shadow()` filters. `filter: drop-shadow()` follows the
+     clipped alpha shape (unlike `border`/`box-shadow`, which ignore clip-path),
+     so the outline hugs the notch. Hard offset drop-shadows (0 blur) add the
+     manga print shadow.
+   - Chiseled bevels via inset box-shadow (light TL / dark BR).
+   - Static screentone + jewel radial washes on the page ground. NO animation on
+     the large page background; only the blonde block caret blinks.
 
-@-moz-document url("about:newtab"), url("about:home") {
+   Place in: <profile>/chrome/userContent.css
+   Tested against: Firefox 139+ (stable)
+   ============================================================================ */
 
-    /* Page background — Base */
+/* ==========================================================================
+   NEW-TAB / HOME  (url-prefix catches about:newtab?... and about:home?...)
+   ========================================================================== */
+@-moz-document url-prefix("about:newtab"), url-prefix("about:home") {
+
+    /* --- Motion (only the tiny caret animates) ---------------------------- */
+    @keyframes ckblink { 50% { opacity: 0; } }
+
+    /* --- Page ground: base + static screentone + twin jewel washes -------- */
     body,
-    .outer-wrapper {
-        background-color: #161821 !important;                 /* Base */
-        color: #e0e2ea !important;                            /* Primary Text */
-    }
-
-    /* Activity Stream container */
+    .outer-wrapper,
     .activity-stream {
-        background-color: #161821 !important;                 /* Base */
+        background-color: #161821 !important;                 /* base */
+        color: #e0e2ea !important;                            /* fg1  */
+    }
+    .outer-wrapper {
+        background-image:
+            /* faint jewel washes — emerald top-left, amethyst bottom-right */
+            radial-gradient(ellipse at 22% 28%, rgba(20,102,78,.16), transparent 45%),
+            radial-gradient(ellipse at 80% 72%, rgba(58,32,104,.18), transparent 48%),
+            /* static screentone dot field */
+            radial-gradient(rgba(224,226,234,.13) 1.1px, transparent 1.5px) !important;
+        background-size: 100% 100%, 100% 100%, 7px 7px !important;
+        background-attachment: fixed, fixed, fixed !important;
     }
 
-    /* Search bar */
+    /* --- Wordmark / logo: hard manga drop shadow -------------------------- */
+    .logo-and-wordmark .logo,
+    .logo-and-wordmark .wordmark {
+        filter: drop-shadow(3px 3px 0 rgba(0,0,0,.5)) !important;
+    }
+
+    /* ---------------------------------------------------------------------- */
+    /*  SEARCH BOX — notched (14px), halftone surface fill, synthetic 2px ink */
+    /*  outline, chiseled bevel, blonde block caret, emerald focus glow.      */
+    /* ---------------------------------------------------------------------- */
     .search-wrapper input,
     .search-handoff-button,
     .fake-textbox {
-        background-color: #1c1f2b !important;                 /* Surface */
-        color: #e0e2ea !important;                            /* Primary Text */
-        border: 1px solid #363a4f !important;                 /* Border */
-        border-radius: 0 !important;
+        background-color: #1c1f2b !important;                 /* surface */
+        color: #e0e2ea !important;                            /* fg1     */
+        border: none !important;
+        /* Notch: top-left cut + bottom-right cut (14px). */
+        clip-path: polygon(
+            14px 0, 100% 0,
+            100% calc(100% - 14px), calc(100% - 14px) 100%,
+            0 100%, 0 14px) !important;
+        /* Halftone dots over the surface fill. */
+        background-image:
+            radial-gradient(rgba(224,226,234,.15) 1.5px, transparent 1.9px) !important;
+        background-size: 7px 7px !important;
+        /* Synthetic 2px ink outline (follows the clip) + chisel bevel. */
+        filter:
+            drop-shadow( 2px 0 0 #06070d) drop-shadow(-2px 0 0 #06070d)
+            drop-shadow(0  2px 0 #06070d) drop-shadow(0 -2px 0 #06070d) !important;
+        box-shadow:
+            inset 2px 2px 0 rgba(255,255,255,.06),
+            inset -2px -3px 0 rgba(0,0,0,.30) !important;
+        caret-color: #FBB13C !important;                      /* blonde caret */
+        transition: background-color .18s cubic-bezier(0.16,1,0.30,1) !important;
     }
 
+    /* Focus = emerald: breathing radial emerald glow washed into the fill. */
     .search-wrapper input:focus,
-    .search-handoff-button:focus {
-        border-color: #1a8a6a !important;                     /* Emerald Lt */
-        box-shadow: 0 0 0 2px rgba(26, 138, 106, 0.3) !important;
+    .search-handoff-button:focus,
+    .fake-textbox:focus-within {
+        background-image:
+            radial-gradient(ellipse at 6% 50%, rgba(26,138,106,.35), transparent 55%),
+            radial-gradient(rgba(224,226,234,.15) 1.5px, transparent 1.9px) !important;
+        background-size: 100% 100%, 7px 7px !important;
+        outline: none !important;
     }
 
-    /* Top sites tiles */
+    /* The magnifier icon inside the handoff button — emerald. */
+    .search-handoff-button .icon,
+    .search-wrapper .search-button {
+        fill: #1a8a6a !important;
+    }
+
+    /* ---------------------------------------------------------------------- */
+    /*  TOP-SITE TILES — notched, jewel-gradient fills, bevels, hard shadow.  */
+    /*  Notch orientation alternates per tile (nth-child) for manga rhythm.   */
+    /* ---------------------------------------------------------------------- */
     .top-site-outer .tile,
     .top-site-outer .top-site-inner {
-        background-color: #1c1f2b !important;                 /* Surface */
-        border: 1px solid #363a4f !important;                 /* Border */
-        border-radius: 0 !important;
+        background-color: #252836 !important;                 /* raised base */
+        border: none !important;
+        color: #e0e2ea !important;                            /* fg1 */
+        /* Default notch: TL + BR. */
+        clip-path: polygon(
+            14px 0, 100% 0,
+            100% calc(100% - 14px), calc(100% - 14px) 100%,
+            0 100%, 0 14px) !important;
+        /* 2px synthetic ink outline + hard manga drop shadow. */
+        filter:
+            drop-shadow( 2px 0 0 #06070d) drop-shadow(-2px 0 0 #06070d)
+            drop-shadow(0  2px 0 #06070d) drop-shadow(0 -2px 0 #06070d)
+            drop-shadow(3px 3px 0 rgba(0,0,0,.45)) !important;
+        /* Chiseled bevel. */
+        box-shadow:
+            inset 2px 2px 0 rgba(255,255,255,.08),
+            inset -2px -3px 0 rgba(0,0,0,.34) !important;
+        transition: filter .18s cubic-bezier(0.16,1,0.30,1),
+                    background-color .18s cubic-bezier(0.16,1,0.30,1) !important;
     }
 
+    /* Alternate notch orientation (TR + BL) on every 2nd tile. */
+    .top-site-outer:nth-child(even) .tile,
+    .top-site-outer:nth-child(even) .top-site-inner {
+        clip-path: polygon(
+            0 0, calc(100% - 14px) 0,
+            100% 14px, 100% 100%,
+            14px 100%, 0 calc(100% - 14px)) !important;
+    }
+
+    /* Jewel-gradient fills, cycled across tiles. Blue & Amethyst appear only
+       as FILLS here (never as text) — the tile letter/favicon rides on top. */
+    .top-site-outer:nth-child(5n+1) .tile,
+    .top-site-outer:nth-child(5n+1) .top-site-inner {
+        background-image: linear-gradient(135deg, #1a8a6a, #14664e) !important; }   /* emerald */
+    .top-site-outer:nth-child(5n+2) .tile,
+    .top-site-outer:nth-child(5n+2) .top-site-inner {
+        background-image: linear-gradient(135deg, #20969c, #197278) !important; }   /* teal */
+    .top-site-outer:nth-child(5n+3) .tile,
+    .top-site-outer:nth-child(5n+3) .top-site-inner {
+        background-image: linear-gradient(135deg, #7a52b3, #3a2068) !important; }   /* amethyst */
+    .top-site-outer:nth-child(5n+4) .tile,
+    .top-site-outer:nth-child(5n+4) .top-site-inner {
+        background-image: linear-gradient(135deg, #1c3d7a, #122858) !important; }   /* royal blue */
+    .top-site-outer:nth-child(5n+5) .tile,
+    .top-site-outer:nth-child(5n+5) .top-site-inner {
+        background-image: linear-gradient(135deg, #FBB13C, #C4861C) !important; }   /* blonde */
+
+    /* Tile hover — lift the manga shadow (deeper offset) + emerald edge glow. */
     .top-site-outer:hover .tile,
     .top-site-outer:hover .top-site-inner {
-        background-color: #252836 !important;                 /* Raised */
+        filter:
+            drop-shadow( 2px 0 0 #06070d) drop-shadow(-2px 0 0 #06070d)
+            drop-shadow(0  2px 0 #06070d) drop-shadow(0 -2px 0 #06070d)
+            drop-shadow(4px 4px 0 rgba(0,0,0,.5))
+            drop-shadow(0 0 12px rgba(26,138,106,.4)) !important;
     }
 
-    /* Top sites title text */
-    .top-site-outer .title span {
-        color: #a0a4b8 !important;                            /* Secondary Text */
+    /* Tile glyph/letter — fg1 with an ink text-shadow so it reads on any jewel. */
+    .top-site-outer .tile .icon-wrapper,
+    .top-site-outer .tile .default-icon,
+    .top-site-outer .tile .rich-icon,
+    .top-site-outer .tile .letter-fallback {
+        color: #e0e2ea !important;
+        text-shadow: 1px 1px 0 #06070d !important;
     }
 
-    /* Section titles (Top Sites, Highlights, etc.) */
+    /* Blonde-fill tiles (5n+5) — ink text per spec rule 9, no white-on-light-gold. */
+    .top-site-outer:nth-child(5n+5) .tile .icon-wrapper,
+    .top-site-outer:nth-child(5n+5) .tile .default-icon,
+    .top-site-outer:nth-child(5n+5) .tile .rich-icon,
+    .top-site-outer:nth-child(5n+5) .tile .letter-fallback {
+        color: #06070d !important;
+        text-shadow: none !important;
+    }
+
+    /* Tile title (below the tile) — secondary text. */
+    .top-site-outer .title span,
+    .top-site-outer .title {
+        color: #a0a4b8 !important;
+    }
+
+    /* ---------------------------------------------------------------------- */
+    /*  SECTION TITLES + CARDS (Highlights / Pocket) — surface + ink outline  */
+    /* ---------------------------------------------------------------------- */
     .section-title span,
     .section-title .section-title-text {
-        color: #a0a4b8 !important;                            /* Secondary Text */
+        color: #a0a4b8 !important;                            /* fg2 */
+        font-family: 'Inter', system-ui, sans-serif !important;
+        letter-spacing: .04em !important;
     }
 
-    /* Card components (Highlights, Pocket) */
     .card-outer {
-        background-color: #1c1f2b !important;                 /* Surface */
-        border: 1px solid #363a4f !important;                 /* Border */
-        border-radius: 0 !important;
+        background-color: #1c1f2b !important;                 /* surface */
+        border: none !important;
+        clip-path: polygon(
+            12px 0, 100% 0,
+            100% calc(100% - 12px), calc(100% - 12px) 100%,
+            0 100%, 0 12px) !important;
+        filter:
+            drop-shadow( 2px 0 0 #06070d) drop-shadow(-2px 0 0 #06070d)
+            drop-shadow(0  2px 0 #06070d) drop-shadow(0 -2px 0 #06070d)
+            drop-shadow(3px 3px 0 rgba(0,0,0,.4)) !important;
+        box-shadow:
+            inset 2px 2px 0 rgba(255,255,255,.05),
+            inset -2px -3px 0 rgba(0,0,0,.30) !important;
     }
-
     .card-outer:hover {
-        background-color: #252836 !important;                 /* Raised */
+        background-color: #252836 !important;                 /* raised */
     }
-
     .card-outer .card-title {
-        color: #e0e2ea !important;                            /* Primary Text */
+        color: #e0e2ea !important;                            /* fg1 */
     }
-
     .card-outer .card-host-name,
     .card-outer .card-context {
-        color: #6a6e82 !important;                            /* Muted Text */
+        color: #6a6e82 !important;                            /* fg3 */
     }
 
-    /* Context menu on new tab page */
-    .context-menu {
-        background-color: #252836 !important;                 /* Raised */
-        border: 1px solid #363a4f !important;                 /* Border */
-    }
-
-    .context-menu-item:hover {
-        background-color: #2e3142 !important;                 /* Elevated */
-    }
-
-    /* Customize button */
+    /* ---------------------------------------------------------------------- */
+    /*  CONTEXT / CUSTOMIZE MENUS — raised, 2px ink, hard manga shadow        */
+    /* ---------------------------------------------------------------------- */
+    .context-menu,
     .customize-menu {
-        background-color: #252836 !important;                 /* Raised */
-        border: 1px solid #363a4f !important;                 /* Border */
+        background-color: #252836 !important;                 /* raised */
+        border: 2px solid #06070d !important;                 /* ink */
+        box-shadow:
+            3px 3px 0 rgba(0,0,0,.5),
+            inset 2px 2px 0 rgba(255,255,255,.05),
+            inset -2px -3px 0 rgba(0,0,0,.34) !important;
+    }
+    .context-menu-item:hover {
+        background-color: #2e3142 !important;                 /* elevated */
+        box-shadow: inset 4px 0 0 #1a8a6a !important;         /* emerald rail */
     }
 
-    /* Links */
-    a {
-        color: #1a8a6a !important;                            /* Emerald Lt */
-    }
-
-    a:hover {
-        color: #20969c !important;                            /* Teal Lt */
-    }
+    /* Links — emerald-lt, teal-lt on hover (both safe accent-text colors). */
+    a        { color: #1a8a6a !important; }
+    a:hover  { color: #20969c !important; }
 }
 
-/* ==========================================================
-   BLANK PAGE (about:blank)
-   ========================================================== */
-
+/* ==========================================================================
+   BLANK PAGE
+   ========================================================================== */
 @-moz-document url("about:blank") {
     body {
-        background-color: #161821 !important;                 /* Base */
+        background-color: #161821 !important;                 /* base */
     }
 }
 
-/* ==========================================================
-   GLOBAL DARK PREFERENCE TWEAKS
-   ========================================================== */
-
+/* ==========================================================================
+   DARK-SCHEME SCROLLBARS + SELECTION for internal pages
+   ========================================================================== */
 @media (prefers-color-scheme: dark) {
-    @-moz-document url("about:newtab"),
-                    url("about:home"),
-                    url("about:blank"),
-                    url("about:privatebrowsing") {
+    @-moz-document url-prefix("about:newtab"),
+                   url-prefix("about:home"),
+                   url("about:blank"),
+                   url("about:privatebrowsing") {
 
-        /* Ensure scrollbar blends with dark background */
+        /* Flat scrollbars keyed to base/border. */
         * {
-            scrollbar-color: #363a4f #161821 !important;     /* Border / Base */
-            border-radius: 0 !important;
+            scrollbar-color: #363a4f #161821 !important;      /* border / base */
         }
 
-        /* Selection colors */
+        /* Selection: raised block, primary text (zero radius inherited). */
         ::selection {
-            background-color: #252836 !important;             /* Raised */
-            color: #e0e2ea !important;                        /* Primary Text */
+            background-color: #252836 !important;             /* raised */
+            color: #e0e2ea !important;                        /* fg1 */
         }
     }
 }

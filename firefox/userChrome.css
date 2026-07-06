@@ -1,368 +1,547 @@
-/* Chrysaki Firefox Theme -- userChrome.css */
-/* Version: 1.1.0 */
-/* Compatibility: Firefox 128+ / Nightly 130+ */
-/* Place in: <profile>/chrome/userChrome.css */
+/* ============================================================================
+   Chrysaki — Firefox userChrome.css   ·   "Manga-Ink" v2
+   ----------------------------------------------------------------------------
+   Browser chrome: tab strip, nav toolbar, URL bar, bookmark bar, menus/popups.
+   Design language: hard 2px ink outlines, notched (zero-radius) shapes built as
+   2-layer ink/fill stacks, chiseled hard-inset bevels (no glassmorphism blur),
+   trapezoid active tabs that flow into the toolbar, animated 2px flow strip, and
+   an emerald focus treatment on the URL bar.
 
-/* ==========================================================
-   ROOT VARIABLES
-   ========================================================== */
+   Construction notes
+   - Firefox Bug 1579957: backdrop-filter does NOT respect clip-path in
+     userChrome — so this port uses ONLY opaque fills + textures, never blur.
+   - Notched shapes use two stacked layers: an OUTER layer carrying the --ck-ink
+     fill + larger clip-path, and an INNER (inset 2px) layer carrying the surface
+     fill + slightly smaller clip-path. The 2px gap reads as a uniform ink outline
+     that follows the notch — CSS `border` gets clipped away, so we never use it
+     for the outline.
+   - Animation is deliberately cheap: only the 2px flow strip and the small
+     emerald focus glow animate. Large surfaces (tab strip, toolbars) carry a
+     STATIC screentone, never a moving one.
+   - Fonts are referenced by local family name only (no @import in userChrome).
+
+   Place in: <profile>/chrome/userChrome.css
+   Requires: toolkit.legacyUserProfileCustomizations.stylesheets = true
+   Tested against: Firefox 139+ (stable)
+   ============================================================================ */
+
+/* ==========================================================================
+   ROOT TOKENS
+   ========================================================================== */
 :root {
-    /* Surfaces */
-    --chrysaki-abyss: #0f1117;                                      /* hex fallback */
-    --chrysaki-abyss: oklch(0.10 0.01 270);                         /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-base: #161821;                                       /* hex fallback */
-    --chrysaki-base: oklch(0.14 0.01 270);                          /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-surface: #1c1f2b;                                    /* hex fallback */
-    --chrysaki-surface: oklch(0.17 0.02 270);                       /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-raised: #252836;                                     /* hex fallback */
-    --chrysaki-raised: oklch(0.21 0.02 270);                        /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-elevated: #2e3142;                                   /* hex fallback */
-    --chrysaki-elevated: oklch(0.25 0.02 270);                      /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-border: #363a4f;                                     /* hex fallback */
-    --chrysaki-border: oklch(0.29 0.03 270);                        /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-border-soft: rgba(54, 58, 79, 0.5);
+    /* Surfaces (dark → light) */
+    --ck-abyss:      #0f1117;   /* deepest ground: tab strip / titlebar */
+    --ck-base:       #161821;   /* inactive-tab fill, bookmark bar */
+    --ck-surface:    #1c1f2b;   /* nav toolbar, sidebar, active tab fill */
+    --ck-raised:     #252836;   /* URL bar fill, popups */
+    --ck-elevated:   #2e3142;   /* hover rows, tooltips */
+    --ck-border:     #363a4f;   /* subtle inner 1px dividers only */
 
-    /* Primary Accents */
-    --chrysaki-emerald: #14664e;                                    /* hex fallback */
-    --chrysaki-emerald: oklch(0.39 0.07 168);                       /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-emerald-lt: #1a8a6a;                                 /* hex fallback */
-    --chrysaki-emerald-lt: oklch(0.50 0.09 168);                    /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-emerald-dim: #0e4a38;                                /* hex fallback */
-    --chrysaki-emerald-dim: oklch(0.30 0.06 168);                   /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-blue: #122858;                                       /* hex fallback */
-    --chrysaki-blue: oklch(0.22 0.08 258);                          /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-blue-lt: #1c3d7a;                                    /* hex fallback */
-    --chrysaki-blue-lt: oklch(0.30 0.10 258);                       /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-blue-dim: #0c1a40;                                   /* hex fallback */
-    --chrysaki-blue-dim: oklch(0.14 0.07 258);                      /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-amethyst: #3a2068;                                   /* hex fallback */
-    --chrysaki-amethyst: oklch(0.28 0.12 305);                      /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-amethyst-lt: #583090;                                /* hex fallback */
-    --chrysaki-amethyst-lt: oklch(0.38 0.14 305);                   /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-amethyst-dim: #1e1040;                               /* hex fallback */
-    --chrysaki-amethyst-dim: oklch(0.14 0.08 305);                  /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    /* Ink — the hard manga outline color. Darker than abyss. Structural. */
+    --ck-ink:        #06070d;
 
-    /* Secondary Accents */
-    --chrysaki-teal: #197278;                                       /* hex fallback */
-    --chrysaki-teal: oklch(0.44 0.07 196);                          /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-teal-lt: #20969c;                                    /* hex fallback */
-    --chrysaki-teal-lt: oklch(0.54 0.07 196);                       /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-teal-dim: #0f4f54;                                   /* hex fallback */
-    --chrysaki-teal-dim: oklch(0.34 0.07 196);                      /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-blonde: #FBB13C;                                     /* hex fallback */
-    --chrysaki-blonde: oklch(0.80 0.17 68);                         /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-blonde-lt: #FCC96A;                                  /* hex fallback */
-    --chrysaki-blonde-lt: oklch(0.88 0.14 68);                      /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-blonde-dim: #C4861C;                                 /* hex fallback */
-    --chrysaki-blonde-dim: oklch(0.67 0.15 68);                     /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-error: #8C2F39;                                      /* hex fallback */
-    --chrysaki-error: oklch(0.32 0.12 15);                          /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    /* Tri-primary accents (fills; blue & amethyst are NEVER text) */
+    --ck-emerald:      #14664e;
+    --ck-emerald-lt:   #1a8a6a;   /* safe accent TEXT on dark */
+    --ck-emerald-glow: #2bb488;   /* bright emerald for glows/gradients */
+    --ck-blue:         #122858;   /* fill only */
+    --ck-blue-lt:      #1c3d7a;   /* fill only */
+    --ck-amethyst:     #3a2068;   /* fill only */
+    --ck-amethyst-lt:  #583090;   /* fill only */
+    --ck-amethyst-glow:#7a52b3;   /* bright amethyst — safe as accent fill */
+
+    /* Secondary accents */
+    --ck-teal:      #197278;
+    --ck-teal-lt:   #20969c;   /* safe accent TEXT on dark */
+    --ck-blonde:    #FBB13C;   /* safe accent TEXT on dark */
+    --ck-blonde-lt: #FCC96A;
+    --ck-error:     #8C2F39;
+    --ck-error-lt:  #b53f4a;   /* safe accent TEXT on dark */
 
     /* Text */
-    --chrysaki-text-primary: #e0e2ea;                               /* hex fallback */
-    --chrysaki-text-primary: oklch(0.90 0.01 270);                  /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-text-secondary: #a0a4b8;                             /* hex fallback */
-    --chrysaki-text-secondary: oklch(0.72 0.02 270);                /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-text-muted: #6a6e82;                                 /* hex fallback */
-    --chrysaki-text-muted: oklch(0.54 0.02 270);                    /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
-    --chrysaki-text-inverse: #0f1117;                               /* hex fallback */
-    --chrysaki-text-inverse: oklch(0.10 0.01 270);                  /* OKLCH -- Chrome 111+, Firefox 113+, Safari 15.4+ */
+    --ck-fg1: #e0e2ea;   /* primary   */
+    --ck-fg2: #a0a4b8;   /* secondary */
+    --ck-fg3: #6a6e82;   /* muted     */
+
+    /* Motion easing + the shared flow gradient (emerald leads) */
+    --ck-e: cubic-bezier(0.16, 1, 0.30, 1);
+    --ck-flow: linear-gradient(90deg,
+        var(--ck-emerald-lt), var(--ck-blue-lt),
+        var(--ck-amethyst-glow), var(--ck-emerald-lt));
+
+    /* --- Firefox internal variable overrides (belt-and-suspenders) --------- */
+    --toolbar-bgcolor: var(--ck-surface) !important;
+    --toolbar-color: var(--ck-fg2) !important;
+    --toolbarbutton-icon-fill: var(--ck-fg2) !important;
+    --toolbarbutton-hover-background: var(--ck-raised) !important;
+    --toolbarbutton-active-background: var(--ck-elevated) !important;
+    --toolbar-field-background-color: transparent !important;
+    --toolbar-field-focus-background-color: transparent !important;
+    --toolbar-field-color: var(--ck-fg1) !important;
+    --toolbar-field-focus-color: var(--ck-fg1) !important;
+    --toolbar-field-border-color: transparent !important;
+    --lwt-toolbar-field-background-color: transparent !important;
+    --tab-selected-textcolor: var(--ck-fg1) !important;
+    --tabs-border-color: var(--ck-ink) !important;
+    --arrowpanel-background: var(--ck-raised) !important;
+    --arrowpanel-color: var(--ck-fg2) !important;
+    --arrowpanel-border-color: var(--ck-ink) !important;
+    --panel-separator-color: var(--ck-border) !important;
 }
 
-/* ==========================================================
-   GLOBAL OVERRIDES -- sharp corners everywhere
-   ========================================================== */
+/* ==========================================================================
+   KEYFRAMES  (kept intentionally cheap — small animated surfaces only)
+   ========================================================================== */
+@keyframes ckflow    { to   { background-position: 200% 0; } }   /* 2px strip     */
+@keyframes ckbreathe { 0%,100% { opacity: .5; } 50% { opacity: 1; } } /* focus glow */
+/* Focus glow for the URL bar's synthesized (filter-based) outline — see
+   #urlbar-background above. Varies the blurred drop-shadow's spread/alpha
+   instead of opacity, since animating opacity on the element itself would
+   also fade the visible fill and the ink outline drop-shadows. */
+@keyframes ckbreathe-glow {
+    0%, 100% {
+        filter:
+            drop-shadow( 2px 0 0 var(--ck-emerald-lt)) drop-shadow(-2px 0 0 var(--ck-emerald-lt))
+            drop-shadow(0  2px 0 var(--ck-emerald-lt)) drop-shadow(0 -2px 0 var(--ck-emerald-lt))
+            drop-shadow(0 0 6px rgba(26,138,106,.35));
+    }
+    50% {
+        filter:
+            drop-shadow( 2px 0 0 var(--ck-emerald-lt)) drop-shadow(-2px 0 0 var(--ck-emerald-lt))
+            drop-shadow(0  2px 0 var(--ck-emerald-lt)) drop-shadow(0 -2px 0 var(--ck-emerald-lt))
+            drop-shadow(0 0 10px rgba(26,138,106,.65));
+    }
+}
+
+/* ==========================================================================
+   GLOBAL — zero border-radius is law
+   ========================================================================== */
 * {
     border-radius: 0 !important;
 }
 
-/* ==========================================================
-   TOOLBAR & NAVIGATION BAR
-   ========================================================== */
-
-/* Menu bar */
-#toolbar-menubar {
-    background-color: var(--chrysaki-surface) !important;
-    color: var(--chrysaki-text-secondary) !important;
-}
-
-/* Navigation bar (address bar row) -- Surface for softer contrast */
-#nav-bar {
-    background-color: var(--chrysaki-surface) !important;
-    border-bottom: 1px solid var(--chrysaki-border-soft) !important;
-    /* Jewel gradient accent strip along the top */
-    border-top: 1px solid transparent !important;
-    border-image: linear-gradient(90deg, #1a8a6a, #1c3d7a, #583090) 1 !important;
-    /* Subtle tri-primary colour wash texture */
-    background-image: linear-gradient(90deg,
-        rgba(14, 74, 56, 0.08) 0%,
-        rgba(12, 26, 64, 0.08) 50%,
-        rgba(30, 16, 64, 0.08) 100%) !important;
-}
-
-/* Tab strip background -- Abyss (one step darker than nav bar) */
-#TabsToolbar {
-    background-color: var(--chrysaki-abyss) !important;
-    /* Radial jewel pool texture */
-    background-image:
-        radial-gradient(ellipse at 20% 50%, rgba(20, 102, 78, 0.06), transparent 50%),
-        radial-gradient(ellipse at 80% 50%, rgba(58, 32, 104, 0.06), transparent 50%) !important;
-}
-
-/* Title bar */
+/* ==========================================================================
+   TITLEBAR + TAB STRIP  — abyss ground, 2px ink structural bottom border
+   ========================================================================== */
 #titlebar {
-    background-color: var(--chrysaki-abyss) !important;
+    background-color: var(--ck-abyss) !important;
 }
 
-/* ==========================================================
-   TAB STYLING
-   ========================================================== */
+#TabsToolbar,
+#TabsToolbar-customization-target {
+    background-color: var(--ck-abyss) !important;
+    color: var(--ck-fg2) !important;
+    /* 2px ink border separates the tab strip from the toolbar below. The
+       active trapezoid tab reaches DOWN across this line (margin-bottom:-2px). */
+    border-bottom: 2px solid var(--ck-ink) !important;
+    /* Static screentone dots — ambience only, never animated (large surface). */
+    background-image:
+        radial-gradient(rgba(224,226,234,.06) 1.1px, transparent 1.5px) !important;
+    background-size: 7px 7px !important;
+}
 
-/* All tabs base */
+/* ==========================================================================
+   TABS
+   Anatomy (Firefox 139): .tabbrowser-tab > .tab-stack > .tab-background
+                                                        + .tab-content
+   Active tab  = trapezoid, 2-layer ink/surface, flows into the toolbar.
+   Inactive    = rectangular, base + back-hatch texture, 1px ck-border sides.
+   ========================================================================== */
+
+/* Strip out Firefox's native tab chrome so our shapes read cleanly. */
 .tabbrowser-tab {
-    color: var(--chrysaki-text-muted) !important;
-    background-color: transparent !important;
+    color: var(--ck-fg3) !important;
+}
+.tab-background {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    position: relative !important;   /* containing block for the 2-layer stack */
 }
 
-/* Active/selected tab */
-.tabbrowser-tab[selected="true"] {
-    color: var(--chrysaki-text-primary) !important;
-    background-color: var(--chrysaki-surface) !important;
+/* ---- Inactive tabs -------------------------------------------------------- */
+/* Rectangular, muted text, base fill + back-slanted hatch (--shatchR). */
+.tabbrowser-tab:not([selected="true"]) .tab-background {
+    background-color: var(--ck-base) !important;
+    background-image:
+        repeating-linear-gradient(-45deg,
+            rgba(224,226,234,.10) 0 1px, transparent 1px 5px) !important;
+    /* 1px ck-border on the sides + top (no bottom — bottom is the ink strip). */
+    border-left: 1px solid var(--ck-border) !important;
+    border-right: 1px solid var(--ck-border) !important;
+    border-top: 1px solid var(--ck-border) !important;
 }
-
-/* Active tab -- gradient bottom indicator (Emerald -> Blue -> Amethyst) */
-.tabbrowser-tab[selected="true"] .tab-line {
-    background: linear-gradient(90deg, #1a8a6a, #1c3d7a, #583090) !important;
-    height: 2px !important;
-    display: block !important;
+.tabbrowser-tab:not([selected="true"]):hover .tab-background {
+    background-color: var(--ck-raised) !important;
 }
-
-/* Inactive tab -- no indicator */
-.tabbrowser-tab:not([selected="true"]) .tab-line {
-    display: none !important;
-}
-
-/* Tab hover state */
 .tabbrowser-tab:not([selected="true"]):hover {
-    background-color: var(--chrysaki-raised) !important;
-    color: var(--chrysaki-text-secondary) !important;
+    color: var(--ck-fg2) !important;
 }
 
-/* Tab close button */
-.tab-close-button:hover {
-    background-color: var(--chrysaki-error) !important;
-    color: var(--chrysaki-text-primary) !important;
+/* ---- Active tab — single-layer surface trapezoid with synthesized ink ---- */
+/* NOTE: .tab-background is a XUL <hbox> — Firefox does not generate
+   ::before/::after pseudo-elements on XUL boxes, so a real second layer is
+   not available here (unlike the HTML DOM used in userContent.css). The
+   2-layer ink/surface look is instead synthesized on this single element:
+   the surface color is the visible fill, the clip-path carries the
+   trapezoid, and four stacked drop-shadow() filters — which (unlike
+   border/box-shadow) follow the clipped alpha shape — paint a 2px ink
+   outline around it. The chisel bevel is a normal inset box-shadow, which
+   still renders correctly since it lives inside the clipped box. */
+.tabbrowser-tab[selected="true"] {
+    color: var(--ck-fg1) !important;
+}
+.tabbrowser-tab[selected="true"] .tab-background {
+    background-color: var(--ck-surface) !important;
+    /* Trapezoid: wider at the bottom, flowing into the content edge. */
+    clip-path: polygon(11px 0, calc(100% - 11px) 0, 100% 100%, 0 100%) !important;
+    /* Reach across the 2px ink strip so the tab merges with the toolbar. */
+    margin-bottom: -2px !important;
+    z-index: 3 !important;
+    /* Synthetic 2px ink outline, following the trapezoid clip-path. */
+    filter:
+        drop-shadow( 2px 0 0 var(--ck-ink)) drop-shadow(-2px 0 0 var(--ck-ink))
+        drop-shadow(0  2px 0 var(--ck-ink)) drop-shadow(0 -2px 0 var(--ck-ink)) !important;
+    /* Chiseled top-left highlight bevel. */
+    box-shadow: inset 2px 2px 0 rgba(255,255,255,.07) !important;
 }
 
-/* New tab button -- Teal accent */
+/* Tab close button — × turns error-lt on hover (manga red). */
+.tab-close-button:hover,
+.tab-close-button:hover:active {
+    background-color: transparent !important;
+    fill: var(--ck-error-lt) !important;
+    color: var(--ck-error-lt) !important;
+}
+
+/* New-tab (+) button — teal, brightening to teal-lt on hover. */
 #tabs-newtab-button,
 #new-tab-button {
-    color: var(--chrysaki-teal) !important;
-    fill: var(--chrysaki-teal) !important;
+    fill: var(--ck-teal) !important;
+    color: var(--ck-teal) !important;
 }
-
 #tabs-newtab-button:hover,
 #new-tab-button:hover {
-    background-color: var(--chrysaki-raised) !important;
-    color: var(--chrysaki-teal-lt) !important;
-    fill: var(--chrysaki-teal-lt) !important;
+    background-color: var(--ck-raised) !important;
+    fill: var(--ck-teal-lt) !important;
+    color: var(--ck-teal-lt) !important;
 }
 
-/* ==========================================================
-   URL BAR (URLBAR)
-   ========================================================== */
-
-#urlbar {
-    background-color: var(--chrysaki-raised) !important;
-    color: var(--chrysaki-text-secondary) !important;
-    border: 1px solid var(--chrysaki-border-soft) !important;
+/* ==========================================================================
+   MENU BAR (when shown)
+   ========================================================================== */
+#toolbar-menubar {
+    background-color: var(--ck-abyss) !important;
+    color: var(--ck-fg2) !important;
 }
 
-/* URL bar focused -- Emerald glow with spread */
-#urlbar[focused="true"],
-#urlbar:focus-within {
-    border-color: var(--chrysaki-emerald-lt) !important;
-    box-shadow: 0 0 0 1px #1a8a6a, 0 0 8px rgba(26, 138, 106, 0.2) !important;
-    color: var(--chrysaki-text-primary) !important;
+/* ==========================================================================
+   NAV TOOLBAR — surface ground, 2px ink bottom, animated flow strip on top
+   ========================================================================== */
+#nav-bar {
+    position: relative !important;    /* anchor for the ::after flow strip */
+    background-color: var(--ck-surface) !important;
+    color: var(--ck-fg2) !important;
+    border-bottom: 2px solid var(--ck-ink) !important;
+    border-top: none !important;
+    /* Faint tri-primary wash so the surface isn't dead flat. */
+    background-image:
+        radial-gradient(ellipse at 18% 50%, rgba(20,102,78,.07), transparent 55%),
+        radial-gradient(ellipse at 82% 50%, rgba(58,32,104,.07), transparent 55%) !important;
 }
 
-/* URL bar input text */
+/* 2px animated flow strip along the top edge of the toolbar. Small surface —
+   this is the ONLY continuously animated element in the chrome. */
+#nav-bar::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    z-index: 4;
+    pointer-events: none;
+    background: var(--ck-flow);
+    background-size: 200% 100%;
+    animation: ckflow 4s linear infinite;
+}
+
+/* ---- Toolbar buttons ----------------------------------------------------- */
+.toolbarbutton-1 > .toolbarbutton-icon,
+.toolbarbutton-1 > .toolbarbutton-badge-stack > .toolbarbutton-icon {
+    fill: var(--ck-fg2) !important;
+}
+#nav-bar .toolbarbutton-1:not([disabled]):hover > .toolbarbutton-icon,
+#nav-bar .toolbarbutton-1:not([disabled]):hover
+    > .toolbarbutton-badge-stack > .toolbarbutton-icon {
+    background-color: var(--ck-raised) !important;
+    fill: var(--ck-fg1) !important;
+}
+/* Disabled back/forward etc. — cross-hatch texture over muted icon. */
+#nav-bar .toolbarbutton-1[disabled] > .toolbarbutton-icon {
+    background-image:
+        repeating-linear-gradient(45deg,  rgba(224,226,234,.11) 0 1px, transparent 1px 5px),
+        repeating-linear-gradient(-45deg, rgba(224,226,234,.08) 0 1px, transparent 1px 5px) !important;
+    fill: var(--ck-fg3) !important;
+    opacity: 1 !important;
+}
+
+/* ==========================================================================
+   URL BAR  — notched single-layer pill with synthesized ink outline (rule 2)
+   NOTE: #urlbar-background is a XUL element — Firefox does not generate
+   ::before/::after pseudo-elements on XUL boxes (same limitation as the
+   active tab above), so the original 2-layer construction (outer ink fill +
+   ::before inner surface + ::after focus glow) never painted. It is rebuilt
+   here as a single visible fill (the former "inner surface" color) with a
+   synthetic 2px ink outline via stacked drop-shadow() filters — which
+   follow the clip-path notch, unlike border/box-shadow. The focus glow is
+   likewise synthesized as an unclipped blurred drop-shadow, since a
+   clip-path'd element clips away any outer (non-inset) box-shadow glow.
+   position: relative is kept for defensive correctness (containing block
+   for any future generated content), matching .tab-background above.
+   ========================================================================== */
+#urlbar,
+#urlbar[open] {
+    --toolbar-field-background-color: transparent !important;
+    --toolbar-field-focus-background-color: transparent !important;
+    background: transparent !important;
+    color: var(--ck-fg1) !important;
+}
+
+/* Single visible fill + notch, with synthetic 2px ink outline. */
+#urlbar-background {
+    position: relative !important;
+    background-color: var(--ck-raised) !important;
+    border: none !important;
+    clip-path: polygon(
+        12px 0, 100% 0,
+        100% calc(100% - 12px), calc(100% - 12px) 100%,
+        0 100%, 0 12px) !important;
+    /* Chiseled bevel: light top-left, dark bottom-right (manga chisel). */
+    box-shadow:
+        inset 2px 2px 0 rgba(255,255,255,.06),
+        inset -2px -3px 0 rgba(0,0,0,.30) !important;
+    /* Synthetic 2px ink outline, following the notched clip-path. */
+    filter:
+        drop-shadow( 2px 0 0 var(--ck-ink)) drop-shadow(-2px 0 0 var(--ck-ink))
+        drop-shadow(0  2px 0 var(--ck-ink)) drop-shadow(0 -2px 0 var(--ck-ink)) !important;
+    transition: background-color .18s var(--ck-e), filter .18s var(--ck-e) !important;
+}
+
+/* FOCUS = emerald (rule 7): outline turns emerald-lt, glow breathes. The
+   breathing glow is a 5th drop-shadow (blurred, unclipped) animated by
+   ckbreathe-glow — box-shadow glow would be clipped away by clip-path. */
+#urlbar[focused="true"] > #urlbar-background,
+#urlbar:focus-within > #urlbar-background {
+    filter:
+        drop-shadow( 2px 0 0 var(--ck-emerald-lt)) drop-shadow(-2px 0 0 var(--ck-emerald-lt))
+        drop-shadow(0  2px 0 var(--ck-emerald-lt)) drop-shadow(0 -2px 0 var(--ck-emerald-lt))
+        drop-shadow(0 0 8px rgba(26,138,106,.5)) !important;
+    animation: ckbreathe-glow 3.2s var(--ck-e) infinite;
+}
+
+/* Input text + blonde caret. */
 #urlbar-input {
-    color: var(--chrysaki-text-secondary) !important;
+    color: var(--ck-fg1) !important;
+    caret-color: var(--ck-blonde) !important;
+}
+#urlbar-input::placeholder {
+    color: var(--ck-fg3) !important;
 }
 
-/* URL bar input text -- focused */
-#urlbar[focused="true"] #urlbar-input,
-#urlbar:focus-within #urlbar-input {
-    color: var(--chrysaki-text-primary) !important;
+/* Site-identity accent — kept as an emerald wash rather than a hard hex clip,
+   so the security/lock glyph stays legible (see summary note). */
+#identity-icon,
+#tracking-protection-icon-container #tracking-protection-icon {
+    fill: var(--ck-emerald-lt) !important;
+}
+#identity-box:hover {
+    background-color: rgba(26,138,106,.14) !important;
 }
 
-/* URL bar results dropdown */
+/* Bookmark-this-page star — blonde. */
+#star-button,
+#star-button-box[starred="true"] #star-button {
+    fill: var(--ck-blonde) !important;
+    color: var(--ck-blonde) !important;
+}
+
+/* ==========================================================================
+   URL BAR DROPDOWN  — raised + screentone, 2px ink border, hard drop shadow
+   ========================================================================== */
 .urlbarView {
-    background-color: var(--chrysaki-raised) !important;
-    color: var(--chrysaki-text-secondary) !important;
-    border: 1px solid var(--chrysaki-border-soft) !important;
+    background-color: var(--ck-raised) !important;
+    color: var(--ck-fg2) !important;
+    border: 2px solid var(--ck-ink) !important;
+    background-image:
+        radial-gradient(rgba(224,226,234,.07) 1.1px, transparent 1.5px) !important;
+    background-size: 7px 7px !important;
+    box-shadow: 0 6px 30px rgba(0,0,0,.45) !important;
 }
-
 .urlbarView-row:hover,
 .urlbarView-row[selected] {
-    background-color: var(--chrysaki-elevated) !important;
-    color: var(--chrysaki-text-primary) !important;
+    background-color: var(--ck-elevated) !important;
+    color: var(--ck-fg1) !important;
+    /* Emerald selection rail on the left edge. */
+    box-shadow: inset 4px 0 0 var(--ck-emerald-lt) !important;
+}
+.urlbarView-title-separator,
+.urlbarView-url {
+    color: var(--ck-fg3) !important;
 }
 
-/* Search bar */
+/* Legacy search bar (if enabled) — match the URL bar family. */
 #searchbar {
-    background-color: var(--chrysaki-raised) !important;
-    border: 1px solid var(--chrysaki-border-soft) !important;
+    background-color: var(--ck-raised) !important;
+    color: var(--ck-fg1) !important;
+    border: 2px solid var(--ck-ink) !important;
 }
 
-/* ==========================================================
-   BOOKMARK TOOLBAR
-   ========================================================== */
-
+/* ==========================================================================
+   BOOKMARK TOOLBAR — base, 1px ck-border bottom (subtle inner divider)
+   ========================================================================== */
 #PersonalToolbar {
-    background-color: var(--chrysaki-surface) !important;
-    border-bottom: 1px solid var(--chrysaki-border-soft) !important;
+    background-color: var(--ck-base) !important;
+    border-bottom: 1px solid var(--ck-border) !important;
+    color: var(--ck-fg2) !important;
 }
-
 #PersonalToolbar .bookmark-item {
-    color: var(--chrysaki-text-secondary) !important;
+    color: var(--ck-fg2) !important;
 }
-
+#PersonalToolbar .bookmark-item > .toolbarbutton-icon {
+    /* Small emerald cast on folder/site icons — reads as a jewel chip cue. */
+    -moz-context-properties: fill;
+    fill: var(--ck-emerald-lt) !important;
+}
 #PersonalToolbar .bookmark-item:hover {
-    background-color: var(--chrysaki-raised) !important;
-    color: var(--chrysaki-text-primary) !important;
+    background-color: var(--ck-raised) !important;
+    color: var(--ck-fg1) !important;
 }
 
-/* ==========================================================
-   SIDEBAR
-   ========================================================== */
-
+/* ==========================================================================
+   SIDEBAR — surface + static screentone, ink header with teal chip rail
+   ========================================================================== */
 #sidebar-box {
-    background-color: var(--chrysaki-surface) !important;
-    color: var(--chrysaki-text-secondary) !important;
-    /* Subtle dot grid texture */
-    background-image: radial-gradient(rgba(54, 58, 79, 0.35) 1px, transparent 1px) !important;
-    background-size: 20px 20px !important;
+    background-color: var(--ck-surface) !important;
+    color: var(--ck-fg2) !important;
+    background-image:
+        radial-gradient(rgba(224,226,234,.06) 1.1px, transparent 1.5px) !important;
+    background-size: 7px 7px !important;
 }
-
 #sidebar-header {
-    background-color: var(--chrysaki-base) !important;
-    border-bottom: 1px solid var(--chrysaki-border-soft) !important;
-    color: var(--chrysaki-text-secondary) !important;
-    /* Teal left accent bar */
-    border-left: 3px solid #197278 !important;
-    padding-left: 10px !important;
+    background-color: var(--ck-abyss) !important;
+    color: var(--ck-fg2) !important;
+    border-bottom: 2px solid var(--ck-ink) !important;
+    border-left: 4px solid var(--ck-teal-lt) !important;   /* teal chip rail */
+    padding-left: 8px !important;
+    font-family: 'Inter', system-ui, sans-serif !important;
 }
-
 #sidebar {
-    background-color: var(--chrysaki-surface) !important;
-    color: var(--chrysaki-text-secondary) !important;
+    background-color: var(--ck-surface) !important;
+    color: var(--ck-fg2) !important;
 }
 
-/* ==========================================================
-   CONTEXT MENUS & DROPDOWN MENUS
-   ========================================================== */
-
+/* ==========================================================================
+   CONTEXT MENUS + PANELS — chiseled bevel, 2px ink border, hard drop shadow
+   ========================================================================== */
 menupopup,
-panel {
-    background-color: var(--chrysaki-raised) !important;
-    color: var(--chrysaki-text-secondary) !important;
-    border: 1px solid var(--chrysaki-border-soft) !important;
+panel,
+.panel-arrowcontent {
+    background-color: var(--ck-raised) !important;
+    color: var(--ck-fg2) !important;
+    border: 2px solid var(--ck-ink) !important;
+    /* Hard offset drop shadow (manga print) + chiseled inset bevels. */
+    box-shadow:
+        3px 3px 0 rgba(0,0,0,.50),
+        inset 2px 2px 0 rgba(255,255,255,.05),
+        inset -2px -3px 0 rgba(0,0,0,.34) !important;
 }
 
 menuitem,
-menu {
-    color: var(--chrysaki-text-secondary) !important;
+menu,
+.subviewbutton,
+.panel-banner-item {
+    color: var(--ck-fg2) !important;
 }
-
 menuitem:hover,
 menuitem[_moz-menuactive="true"],
 menu:hover,
-menu[_moz-menuactive="true"] {
-    background-color: var(--chrysaki-elevated) !important;
-    color: var(--chrysaki-text-primary) !important;
+menu[_moz-menuactive="true"],
+.subviewbutton:hover {
+    /* Emerald wash + left rail on active row (rule 11, chrome-scaled). */
+    background-color: var(--ck-elevated) !important;
+    color: var(--ck-fg1) !important;
+    box-shadow: inset 4px 0 0 var(--ck-emerald-lt) !important;
 }
-
 menuseparator {
-    border-color: var(--chrysaki-border-soft) !important;
+    border-color: var(--ck-border) !important;
+    margin-inline: 6px !important;
 }
-
-/* Disabled menu items */
 menuitem[disabled="true"],
 menu[disabled="true"] {
-    color: var(--chrysaki-text-muted) !important;
+    color: var(--ck-fg3) !important;
 }
 
-/* ==========================================================
-   FINDBAR
-   ========================================================== */
-
+/* ==========================================================================
+   FINDBAR — surface, 2px ink top, blonde chip rail (search = warning/blonde)
+   ========================================================================== */
 findbar {
-    background-color: var(--chrysaki-surface) !important;
-    color: var(--chrysaki-text-secondary) !important;
-    border-top: 1px solid var(--chrysaki-border-soft) !important;
-    /* Blonde left accent for search context */
-    border-left: 3px solid #FBB13C !important;
+    background-color: var(--ck-surface) !important;
+    color: var(--ck-fg2) !important;
+    border-top: 2px solid var(--ck-ink) !important;
+    border-left: 4px solid var(--ck-blonde) !important;   /* blonde chip rail */
 }
-
 findbar .findbar-textbox {
-    background-color: var(--chrysaki-raised) !important;
-    color: var(--chrysaki-text-primary) !important;
-    border: 1px solid var(--chrysaki-border-soft) !important;
+    background-color: var(--ck-raised) !important;
+    color: var(--ck-fg1) !important;
+    border: 2px solid var(--ck-ink) !important;
+    caret-color: var(--ck-blonde) !important;
 }
-
 findbar .findbar-textbox:focus {
-    border-color: var(--chrysaki-emerald-lt) !important;
+    border-color: var(--ck-emerald-lt) !important;
+}
+findbar .findbar-textbox[status="notfound"] {
+    border-color: var(--ck-error-lt) !important;
+    color: var(--ck-error-lt) !important;
+}
+findbar .found-matches,
+findbar .findbar-find-status {
+    color: var(--ck-teal-lt) !important;
 }
 
-/* Findbar highlight match count */
-findbar .found-matches {
-    color: var(--chrysaki-teal-lt) !important;
-}
-
-/* ==========================================================
-   DEVTOOLS PANEL TABS
-   ========================================================== */
-
-/* DevTools use a separate document, but overrides can be
-   attempted via userChrome. Results may vary by version. */
+/* ==========================================================================
+   DEVTOOLS TABS  (best-effort — DevTools live in a separate document)
+   ========================================================================== */
 .devtools-tab {
-    color: var(--chrysaki-text-secondary) !important;
-    background-color: var(--chrysaki-base) !important;
+    color: var(--ck-fg2) !important;
+    background-color: var(--ck-base) !important;
 }
-
 .devtools-tab[selected],
 .devtools-tab.selected {
-    color: var(--chrysaki-text-primary) !important;
-    border-bottom: 2px solid var(--chrysaki-emerald-lt) !important;
+    color: var(--ck-fg1) !important;
+    background-color: var(--ck-surface) !important;
+    border-bottom: 2px solid var(--ck-emerald-lt) !important;
 }
-
 .devtools-tab:hover:not([selected]) {
-    background-color: var(--chrysaki-raised) !important;
+    background-color: var(--ck-raised) !important;
 }
 
-/* ==========================================================
-   SCROLLBAR STYLING
-   ========================================================== */
-
+/* ==========================================================================
+   SCROLLBARS — flat, ink-adjacent, no radius
+   ========================================================================== */
 scrollbar {
     -moz-appearance: none !important;
-    background-color: var(--chrysaki-base) !important;
+    background-color: var(--ck-abyss) !important;
 }
-
 scrollbar thumb {
-    background-color: var(--chrysaki-border) !important;
+    background-color: var(--ck-border) !important;
 }
-
 scrollbar thumb:hover {
-    background-color: var(--chrysaki-elevated) !important;
+    background-color: var(--ck-elevated) !important;
 }
 
-/* ==========================================================
-   FOCUS RING GLOBAL OVERRIDE
-   ========================================================== */
-
+/* ==========================================================================
+   GLOBAL FOCUS RING — emerald everywhere
+   ========================================================================== */
 *:focus-visible {
-    outline-color: var(--chrysaki-emerald-lt) !important;
+    outline-color: var(--ck-emerald-lt) !important;
 }
