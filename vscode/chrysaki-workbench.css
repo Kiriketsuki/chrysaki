@@ -64,7 +64,8 @@
      editor canvas. */
   --scr2:    radial-gradient(rgba(234,236,244,.16) 1.1px, transparent 1.5px) 0 0 / 7px 7px;
   --halftone:radial-gradient(rgba(234,236,244,.19) 1.5px, transparent 1.9px) 0 0 / 7px 7px;
-  --shatchR: repeating-linear-gradient(-45deg, rgba(234,236,244,.13) 0 1px, transparent 1px 5px);
+  --shatchR: repeating-linear-gradient(-45deg, rgba(234,236,244,.06) 0 1px, transparent 1px 8px);
+  --shatchL: repeating-linear-gradient(45deg,  rgba(234,236,244,.05) 0 1px, transparent 1px 8px);
 
   /* Motion */
   --e: cubic-bezier(0.16, 1, 0.30, 1);
@@ -347,6 +348,11 @@
    -------------------------------------------------------------------------- */
 /* NOTE: never override position on .monaco-list-row — VS Code positions rows
    absolutely with inline top offsets; forcing relative doubles the row spacing. */
+/* Hairline separator under every row; selected/focused rules below win on
+   specificity and carry their own stacks. */
+.part.sidebar .monaco-list .monaco-list-row {
+  box-shadow: inset 0 -1px 0 rgba(15,17,23,.5) !important;
+}
 .part.sidebar .monaco-list .monaco-list-row[aria-selected='true'],
 .part.sidebar .monaco-list .monaco-list-row.selected {
   background: linear-gradient(90deg, rgba(26,138,106,.24), transparent 78%) !important;
@@ -370,7 +376,7 @@
 }
 /* Keyboard-focused (not selected) row — teal rail, no wash. */
 .part.sidebar .monaco-list .monaco-list-row.focused:not([aria-selected='true']):not(.selected) {
-  box-shadow: inset 4px 0 0 var(--ck-teal-lt) !important;
+  box-shadow: inset 4px 0 0 var(--ck-teal-lt), inset 0 -1px 0 rgba(15,17,23,.5) !important;
 }
 
 /* Dirty-file indicator → 8px blonde diamond (rotated square), not a circle. */
@@ -493,6 +499,11 @@
      children — no z-index games; opaque surfaces like the terminal canvas
      simply cover it). */
   background-image: var(--shatchR) !important;
+}
+/* Panel content hatches the opposite direction from the title strip. */
+.part.panel > .content {
+  background-color: #121420 !important; /* panel.background — covers the ground hatch */
+  background-image: var(--shatchL) !important;
 }
 /* Secondary sidebar gets the screentone ground, same as the primary. */
 .part.auxiliarybar {

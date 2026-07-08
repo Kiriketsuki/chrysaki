@@ -37,18 +37,17 @@
     .outer-wrapper {
         background-image:
             /* faint jewel washes — emerald top-left, amethyst bottom-right */
-            radial-gradient(ellipse at 22% 28%, rgba(20,102,78,.16), transparent 45%),
-            radial-gradient(ellipse at 80% 72%, rgba(58,32,104,.18), transparent 48%),
-            /* static screentone dot field */
-            radial-gradient(rgba(224,226,234,.13) 1.1px, transparent 1.5px) !important;
-        background-size: 100% 100%, 100% 100%, 7px 7px !important;
+            radial-gradient(ellipse at 22% 28%, rgba(20,102,78,.12), transparent 45%),
+            radial-gradient(ellipse at 80% 72%, rgba(58,32,104,.14), transparent 48%),
+            /* static screentone dot field — whisper-quiet ambience */
+            radial-gradient(rgba(224,226,234,.05) 1px, transparent 1.4px) !important;
+        background-size: 100% 100%, 100% 100%, 9px 9px !important;
         background-attachment: fixed, fixed, fixed !important;
     }
 
-    /* --- Wordmark / logo: hard manga drop shadow -------------------------- */
-    .logo-and-wordmark .logo,
-    .logo-and-wordmark .wordmark {
-        filter: drop-shadow(3px 3px 0 rgba(0,0,0,.5)) !important;
+    /* --- Wordmark / logo: hidden — stock branding clashes with the theme -- */
+    .logo-and-wordmark {
+        display: none !important;
     }
 
     /* ---------------------------------------------------------------------- */
@@ -66,29 +65,43 @@
             14px 0, 100% 0,
             100% calc(100% - 14px), calc(100% - 14px) 100%,
             0 100%, 0 14px) !important;
-        /* Halftone dots over the surface fill. */
-        background-image:
-            radial-gradient(rgba(224,226,234,.15) 1.5px, transparent 1.9px) !important;
-        background-size: 7px 7px !important;
+        /* Solid surface fill — no halftone; texture inside an input reads
+           as visual noise behind the placeholder text. */
+        background-image: none !important;
+        /* Clear the 14px notch cuts so icon/placeholder don't sit in them. */
+        padding-inline: 20px !important;
         /* Synthetic 2px ink outline (follows the clip) + chisel bevel. */
         filter:
             drop-shadow( 2px 0 0 #06070d) drop-shadow(-2px 0 0 #06070d)
             drop-shadow(0  2px 0 #06070d) drop-shadow(0 -2px 0 #06070d) !important;
         box-shadow:
+            inset 0 0 0 1px rgba(224,226,234,.05),
             inset 2px 2px 0 rgba(255,255,255,.06),
             inset -2px -3px 0 rgba(0,0,0,.30) !important;
         caret-color: #FBB13C !important;                      /* blonde caret */
         transition: background-color .18s cubic-bezier(0.16,1,0.30,1) !important;
     }
 
-    /* Focus = emerald: breathing radial emerald glow washed into the fill. */
+    /* Placeholder + fake placeholder text — muted, vertically centered. */
+    .search-wrapper input::placeholder,
+    .fake-textbox {
+        color: #6a6e82 !important;                            /* fg3 */
+    }
+
+    /* Handoff fake caret — 2px blonde block, blinking. */
+    .search-handoff-button .fake-caret {
+        background-color: #FBB13C !important;
+        width: 2px !important;
+        animation: ckblink 1.2s steps(1) infinite !important;
+    }
+
+    /* Focus = emerald: radial emerald glow washed into the left of the fill. */
     .search-wrapper input:focus,
     .search-handoff-button:focus,
     .fake-textbox:focus-within {
         background-image:
-            radial-gradient(ellipse at 6% 50%, rgba(26,138,106,.35), transparent 55%),
-            radial-gradient(rgba(224,226,234,.15) 1.5px, transparent 1.9px) !important;
-        background-size: 100% 100%, 7px 7px !important;
+            radial-gradient(ellipse at 6% 50%, rgba(26,138,106,.30), transparent 55%) !important;
+        background-size: 100% 100% !important;
         outline: none !important;
     }
 
@@ -180,10 +193,22 @@
         text-shadow: none !important;
     }
 
-    /* Tile title (below the tile) — secondary text. */
+    /* Tile title — rides on the jewel gradient (.top-site-inner wraps it),
+       so it gets primary text + ink shadow, same as the tile glyph. */
     .top-site-outer .title span,
     .top-site-outer .title {
-        color: #a0a4b8 !important;
+        color: #e0e2ea !important;
+        text-shadow: 1px 1px 0 #06070d !important;
+    }
+
+    /* Blonde-fill tiles (5n+5) — ink title; light text fails on light gold. */
+    .top-site-outer:nth-child(5n+5) .title span,
+    .top-site-outer:nth-child(5n+5) .title {
+        color: #06070d !important;
+        text-shadow: none !important;
+    }
+    .top-site-outer:nth-child(5n+5) .title .sponsored-label {
+        color: rgba(6,7,13,.7) !important;
     }
 
     /* ---------------------------------------------------------------------- */

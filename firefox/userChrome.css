@@ -136,8 +136,8 @@
     border-bottom: 2px solid var(--ck-ink) !important;
     /* Static screentone dots — ambience only, never animated (large surface). */
     background-image:
-        radial-gradient(rgba(224,226,234,.06) 1.1px, transparent 1.5px) !important;
-    background-size: 7px 7px !important;
+        radial-gradient(rgba(224,226,234,.03) 1px, transparent 1.4px) !important;
+    background-size: 8px 8px !important;
 }
 
 /* ==========================================================================
@@ -168,7 +168,7 @@
     background-color: var(--ck-base) !important;
     background-image:
         repeating-linear-gradient(-45deg,
-            rgba(224,226,234,.10) 0 1px, transparent 1px 5px) !important;
+            rgba(224,226,234,.04) 0 1px, transparent 1px 6px) !important;
     /* 1px ck-border on the sides + top (no bottom — bottom is the ink strip). */
     border-left: 1px solid var(--ck-border) !important;
     border-right: 1px solid var(--ck-border) !important;
@@ -208,6 +208,11 @@
     box-shadow: inset 2px 2px 0 rgba(255,255,255,.07) !important;
 }
 
+/* Clear the 11px trapezoid slants so favicon/close don't sit in the cut. */
+.tabbrowser-tab[selected="true"] .tab-content {
+    padding-inline: 16px !important;
+}
+
 /* Tab close button — × turns error-lt on hover (manga red). */
 .tab-close-button:hover,
 .tab-close-button:hover:active {
@@ -227,6 +232,32 @@
     background-color: var(--ck-raised) !important;
     fill: var(--ck-teal-lt) !important;
     color: var(--ck-teal-lt) !important;
+}
+
+/* List-all-tabs chevron — matches the new-tab button family. */
+#alltabs-button {
+    fill: var(--ck-teal) !important;
+    color: var(--ck-teal) !important;
+}
+#alltabs-button:hover {
+    background-color: var(--ck-raised) !important;
+    fill: var(--ck-teal-lt) !important;
+    color: var(--ck-teal-lt) !important;
+}
+
+/* Window controls — flat abyss ground, raised hover, error-red close. */
+.titlebar-buttonbox-container .titlebar-button {
+    background-color: transparent !important;
+    -moz-context-properties: stroke;
+    stroke: var(--ck-fg3) !important;
+}
+.titlebar-buttonbox-container .titlebar-button:hover {
+    background-color: var(--ck-raised) !important;
+    stroke: var(--ck-fg1) !important;
+}
+.titlebar-buttonbox-container .titlebar-close:hover {
+    background-color: var(--ck-error) !important;
+    stroke: var(--ck-fg1) !important;
 }
 
 /* ==========================================================================
@@ -250,6 +281,10 @@
     background-image:
         radial-gradient(ellipse at 18% 50%, rgba(20,102,78,.07), transparent 55%),
         radial-gradient(ellipse at 82% 50%, rgba(58,32,104,.07), transparent 55%) !important;
+    /* Chiseled top highlight + bottom shade — reads as a raised shelf. */
+    box-shadow:
+        inset 0  1px 0 rgba(255,255,255,.05),
+        inset 0 -2px 0 rgba(0,0,0,.28) !important;
 }
 
 /* 2px animated flow strip along the top edge of the toolbar. Small surface —
@@ -280,8 +315,8 @@
 /* Disabled back/forward etc. — cross-hatch texture over muted icon. */
 #nav-bar .toolbarbutton-1[disabled] > .toolbarbutton-icon {
     background-image:
-        repeating-linear-gradient(45deg,  rgba(224,226,234,.11) 0 1px, transparent 1px 5px),
-        repeating-linear-gradient(-45deg, rgba(224,226,234,.08) 0 1px, transparent 1px 5px) !important;
+        repeating-linear-gradient(45deg,  rgba(224,226,234,.06) 0 1px, transparent 1px 5px),
+        repeating-linear-gradient(-45deg, rgba(224,226,234,.04) 0 1px, transparent 1px 5px) !important;
     fill: var(--ck-fg3) !important;
     opacity: 1 !important;
 }
@@ -317,8 +352,10 @@
         12px 0, 100% 0,
         100% calc(100% - 12px), calc(100% - 12px) 100%,
         0 100%, 0 12px) !important;
-    /* Chiseled bevel: light top-left, dark bottom-right (manga chisel). */
+    /* Chiseled bevel: light top-left, dark bottom-right (manga chisel),
+       plus a faint 1px border-light so the field separates from the shelf. */
     box-shadow:
+        inset 0 0 0 1px rgba(224,226,234,.05),
         inset 2px 2px 0 rgba(255,255,255,.06),
         inset -2px -3px 0 rgba(0,0,0,.30) !important;
     /* Synthetic 2px ink outline, following the notched clip-path. */
@@ -326,6 +363,11 @@
         drop-shadow( 2px 0 0 var(--ck-ink)) drop-shadow(-2px 0 0 var(--ck-ink))
         drop-shadow(0  2px 0 var(--ck-ink)) drop-shadow(0 -2px 0 var(--ck-ink)) !important;
     transition: background-color .18s var(--ck-e), filter .18s var(--ck-e) !important;
+}
+
+/* Hover (unfocused) — lift the fill one surface step. */
+#urlbar:not([focused="true"]):hover > #urlbar-background {
+    background-color: var(--ck-elevated) !important;
 }
 
 /* FOCUS = emerald (rule 7): outline turns emerald-lt, glow breathes. The
@@ -374,8 +416,8 @@
     color: var(--ck-fg2) !important;
     border: 2px solid var(--ck-ink) !important;
     background-image:
-        radial-gradient(rgba(224,226,234,.07) 1.1px, transparent 1.5px) !important;
-    background-size: 7px 7px !important;
+        radial-gradient(rgba(224,226,234,.03) 1px, transparent 1.4px) !important;
+    background-size: 8px 8px !important;
     box-shadow: 0 6px 30px rgba(0,0,0,.45) !important;
 }
 .urlbarView-row:hover,
@@ -402,20 +444,35 @@
    ========================================================================== */
 #PersonalToolbar {
     background-color: var(--ck-base) !important;
-    border-bottom: 1px solid var(--ck-border) !important;
+    border-bottom: 2px solid var(--ck-ink) !important;
     color: var(--ck-fg2) !important;
+    padding-block: 3px !important;
+    padding-inline: 6px !important;
 }
 #PersonalToolbar .bookmark-item {
     color: var(--ck-fg2) !important;
+    padding-block: 2px !important;
+    padding-inline: 7px !important;
+    margin-inline: 1px !important;
 }
 #PersonalToolbar .bookmark-item > .toolbarbutton-icon {
     /* Small emerald cast on folder/site icons — reads as a jewel chip cue. */
     -moz-context-properties: fill;
     fill: var(--ck-emerald-lt) !important;
+    margin-inline-end: 4px !important;
+}
+/* Folders — teal icon so they read differently from leaf bookmarks. */
+#PersonalToolbar .bookmark-item[container="true"] > .toolbarbutton-icon {
+    fill: var(--ck-teal-lt) !important;
 }
 #PersonalToolbar .bookmark-item:hover {
     background-color: var(--ck-raised) !important;
     color: var(--ck-fg1) !important;
+    box-shadow: inset 0 -2px 0 var(--ck-emerald-lt) !important;
+}
+/* Overflow chevron (») — teal, matching folder cues. */
+#PlacesChevron {
+    fill: var(--ck-teal-lt) !important;
 }
 
 /* ==========================================================================
@@ -425,8 +482,8 @@
     background-color: var(--ck-surface) !important;
     color: var(--ck-fg2) !important;
     background-image:
-        radial-gradient(rgba(224,226,234,.06) 1.1px, transparent 1.5px) !important;
-    background-size: 7px 7px !important;
+        radial-gradient(rgba(224,226,234,.03) 1px, transparent 1.4px) !important;
+    background-size: 8px 8px !important;
 }
 #sidebar-header {
     background-color: var(--ck-abyss) !important;
