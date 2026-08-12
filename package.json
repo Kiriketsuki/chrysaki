@@ -1,0 +1,20 @@
+{
+  "name": "chrysaki-umbrella",
+  "version": "26.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Chrysaki brand, gallery, port registry, and migration umbrella",
+  "dependencies": {
+    "@kiriketsuki/chrysaki-core": "github:Kiriketsuki/chrysaki-core#v1.0.0"
+  },
+  "scripts": {
+    "sync:core": "node scripts/sync-core.mjs",
+    "generate:ports": "node scripts/generate-port-index.mjs",
+    "validate:registry": "node scripts/validate-registry.mjs",
+    "build": "npm run sync:core && npm run generate:ports",
+    "check": "npm run validate:registry && npm run build && git diff --exit-code -- core docs/PORTS.md"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

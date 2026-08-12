@@ -171,22 +171,22 @@ Feature: Chrysaki Ecosystem Split
 |:---|:-----|:---------|:-------------|:-------|
 | T1 | Inventory canonical, supplemental, generated, and application-local tokens | High | None | done |
 | T1.1 | Capture a golden resolved-token snapshot from current SCSS and downstream supplements | High | T1 | done |
-| T2 | Define `tokens/chrysaki.json` and `schemas/tokens.schema.json` | High | T1.1 | pending |
-| T2.1 | Define stable naming, aliases, semantic roles, and version metadata | High | T2 | pending |
-| T3 | Create `Kiriketsuki/chrysaki-core` repository and package metadata | High | T2 | pending |
-| T3.1 | Implement deterministic JSON, CSS, SCSS, TypeScript, ANSI, and shell generators | High | T3 | pending |
-| T3.2 | Add schema, alias, contrast, and stale-artifact CI checks | High | T3.1 | pending |
-| T4 | Publish and tag the first Git-based core release | High | T3.2 | pending |
-| T5 | Convert the umbrella repository to consume pinned core artifacts | High | T4 | pending |
-| T5.1 | Add machine-readable port registry, migration matrix, and compatibility policy | High | T5 | pending |
-| T5.2 | Preserve legacy paths for unextracted ports and document rollback | High | T5 | pending |
+| T2 | Define `tokens/chrysaki.json` and `schemas/tokens.schema.json` | High | T1.1 | done |
+| T2.1 | Define stable naming, aliases, semantic roles, and version metadata | High | T2 | done |
+| T3 | Create `Kiriketsuki/chrysaki-core` repository and package metadata | High | T2 | done |
+| T3.1 | Implement deterministic JSON, CSS, SCSS, TypeScript, ANSI, and shell generators | High | T3 | done |
+| T3.2 | Add schema, alias, contrast, and stale-artifact CI checks | High | T3.1 | done |
+| T4 | Publish and tag the first Git-based core release | High | T3.2 | done |
+| T5 | Convert the umbrella repository to consume pinned core artifacts | High | T4 | done |
+| T5.1 | Add machine-readable port registry, migration matrix, and compatibility policy | High | T5 | done |
+| T5.2 | Preserve legacy paths for unextracted ports and document rollback | High | T5 | done |
 | T6 | Update the dots generation pipeline to consume a pinned core artifact | High | T5.2 | pending |
 | T6.1 | Verify generated desktop/application outputs against golden snapshots | High | T6 | pending |
-| T7 | Create reusable integration repository template and extraction checklist | Medium | T4 | pending |
-| T8 | Validate the contract by extracting `chrysaki-pi` | High | T4, T7 | pending |
-| T9 | Define a repeatable process for selecting and executing later complex-port extraction waves | Medium | T8 | pending |
-| T10 | Plan staged movement from hybrid layout to one repository per application | Medium | T9 | pending |
-| T11 | Evaluate npm publication after the Git dependency contract stabilizes | Low | T8 | pending |
+| T7 | Create reusable integration repository template and extraction checklist | Medium | T4 | done |
+| T8 | Validate the contract by extracting `chrysaki-pi` | High | T4, T7 | done |
+| T9 | Define a repeatable process for selecting and executing later complex-port extraction waves | Medium | T8 | done |
+| T10 | Plan staged movement from hybrid layout to one repository per application | Medium | T9 | done |
+| T11 | Evaluate npm publication after the Git dependency contract stabilizes | Low | T8 | done |
 
 ---
 

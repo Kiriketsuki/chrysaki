@@ -1,0 +1,41 @@
+/* Generated from tokens/chrysaki.json. Do not edit. */
+:root {
+  --chrysaki-abyss: #0f1117;
+  --chrysaki-accent: #3a2068;
+  --chrysaki-amethyst: #3a2068;
+  --chrysaki-amethyst-dim: #1e1040;
+  --chrysaki-amethyst-light: #583090;
+  --chrysaki-base: #161821;
+  --chrysaki-blonde: #fbb13c;
+  --chrysaki-blonde-dim: #c4861c;
+  --chrysaki-blonde-light: #fcc96a;
+  --chrysaki-blue: #122858;
+  --chrysaki-blue-dim: #0c1a40;
+  --chrysaki-blue-light: #1c3d7a;
+  --chrysaki-border: #363a4f;
+  --chrysaki-bronze: #b38b62;
+  --chrysaki-cerulean: #3d95e0;
+  --chrysaki-elevated: #2e3142;
+  --chrysaki-emerald: #14664e;
+  --chrysaki-emerald-dim: #0e4a38;
+  --chrysaki-emerald-light: #1a8a6a;
+  --chrysaki-error: #8c2f39;
+  --chrysaki-error-dim: #5e1f25;
+  --chrysaki-error-light: #b53f4a;
+  --chrysaki-info: #122858;
+  --chrysaki-peridot: #9da82a;
+  --chrysaki-raised: #252836;
+  --chrysaki-rhodolite: #9e2d6e;
+  --chrysaki-slate: #62758a;
+  --chrysaki-success: #14664e;
+  --chrysaki-surface: #1c1f2b;
+  --chrysaki-teal: #197278;
+  --chrysaki-teal-dim: #0f4f54;
+  --chrysaki-teal-light: #20969c;
+  --chrysaki-text-inverse: #0f1117;
+  --chrysaki-text-muted: #6a6e82;
+  --chrysaki-text-primary: #e0e2ea;
+  --chrysaki-text-secondary: #a0a4b8;
+  --chrysaki-topaz: #d47622;
+  --chrysaki-warning: #fbb13c;
+}

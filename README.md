@@ -6,7 +6,15 @@
 
 A dark-first, jewel-toned design system and theme suite. Hard geometric corners, tri-primary accent palette, and perceptually-uniform OKLCH colour engineering.
 
-Ports for 16 applications across terminal, editor, desktop, and web categories — inspired by the porting methodology of Rosé Pine. A consistent palette-first approach where every application maps the same named colour tokens to its own theming API.
+Ports for applications across terminal, editor, desktop, and web categories — inspired by the porting methodology of Rosé Pine. A consistent palette-first approach maps the same named colour tokens to each application's theming API.
+
+## Ecosystem repositories
+
+- [`chrysaki-core`](https://github.com/Kiriketsuki/chrysaki-core) is the schema-first canonical token source. This repository pins `v1.0.0` and commits synchronized artifacts under [`core/`](core/).
+- [`chrysaki-pi`](https://github.com/Kiriketsuki/chrysaki-pi) is the first independently versioned integration.
+- This umbrella remains the brand, gallery, [port registry](docs/PORTS.md), and compatibility home for ports not yet extracted.
+
+Run `npm ci && npm run check` to validate the pinned core and generated registry. Existing port paths remain supported until every integration has migrated; see the [compatibility policy](docs/COMPATIBILITY.md) and [migration plan](docs/MIGRATION.md).
 
 ---
 
