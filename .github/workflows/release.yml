@@ -54,8 +54,8 @@ jobs:
                     echo "Syncing VERSION from main: $MAIN_VERSION"
                     echo "$MAIN_VERSION" > VERSION
 
-                    if [ -f package.json ]; then
-                      sed -i "s/\"version\": \".*\"/\"version\": \"$MAIN_VERSION\"/" package.json
+                    if [ -f package.json ] && [ "$(node -p "require('./package.json').private === true")" != "true" ]; then
+                      npm pkg set "version=$MAIN_VERSION"
                     fi
 
                     find . -maxdepth 4 -name "pyproject.toml" \
