@@ -1,0 +1,71 @@
+{
+  "$schema": "../schemas/tokens.schema.json",
+  "metadata": {
+    "name": "Chrysaki",
+    "version": "1.0.0",
+    "description": "Canonical Chrysaki colour tokens",
+    "colorSpace": "sRGB",
+    "contract": "Token removals, renames, or semantic changes require a major release."
+  },
+  "groups": {
+    "surfaces": {
+      "abyss": { "value": "#0f1117", "description": "Deepest background and modal backdrop" },
+      "base": { "value": "#161821", "description": "Primary canvas" },
+      "surface": { "value": "#1c1f2b", "description": "Cards, sidebars, and panels" },
+      "raised": { "value": "#252836", "description": "Hover, active, and popup surface" },
+      "elevated": { "value": "#2e3142", "description": "Tooltips and floating elements" },
+      "border": { "value": "#363a4f", "description": "Dividers and input borders" }
+    },
+    "primary": {
+      "emerald": { "value": "#14664e", "description": "Growth and creation accent" },
+      "emerald-light": { "value": "#1a8a6a", "description": "Bright emerald accent" },
+      "emerald-dim": { "value": "#0e4a38", "description": "Subdued emerald accent" },
+      "blue": { "value": "#122858", "description": "Structure and depth accent" },
+      "blue-light": { "value": "#1c3d7a", "description": "Bright royal blue accent" },
+      "blue-dim": { "value": "#0c1a40", "description": "Subdued royal blue accent" },
+      "amethyst": { "value": "#3a2068", "description": "Creativity and focus accent" },
+      "amethyst-light": { "value": "#583090", "description": "Bright amethyst accent" },
+      "amethyst-dim": { "value": "#1e1040", "description": "Subdued amethyst accent" }
+    },
+    "secondary": {
+      "teal": { "value": "#197278", "description": "Transition and metadata accent" },
+      "teal-light": { "value": "#20969c", "description": "Bright teal accent" },
+      "teal-dim": { "value": "#0f4f54", "description": "Subdued teal accent" },
+      "blonde": { "value": "#fbb13c", "description": "Emphasis and active-state accent" },
+      "blonde-light": { "value": "#fcc96a", "description": "Bright blonde accent" },
+      "blonde-dim": { "value": "#c4861c", "description": "Subdued blonde accent" }
+    },
+    "jewels": {
+      "topaz": { "value": "#d47622", "description": "Extended jewel accent" },
+      "rhodolite": { "value": "#9e2d6e", "description": "Extended jewel accent" },
+      "peridot": { "value": "#9da82a", "description": "Extended jewel accent" },
+      "cerulean": { "value": "#3d95e0", "description": "Extended jewel accent" },
+      "slate": { "value": "#62758a", "description": "Extended jewel accent" },
+      "bronze": { "value": "#b38b62", "description": "Extended jewel accent" }
+    },
+    "semantic": {
+      "error": { "value": "#8c2f39", "description": "Error state" },
+      "error-light": { "value": "#b53f4a", "description": "Bright error state" },
+      "error-dim": { "value": "#5e1f25", "description": "Subdued error state" },
+      "warning": { "alias": "{blonde}", "description": "Warning state" },
+      "success": { "alias": "{emerald}", "description": "Success state" },
+      "info": { "alias": "{blue}", "description": "Informational state" },
+      "accent": { "alias": "{amethyst}", "description": "General accent state" }
+    },
+    "text": {
+      "text-primary": { "value": "#e0e2ea", "description": "Primary body and heading text" },
+      "text-secondary": { "value": "#a0a4b8", "description": "Secondary metadata text" },
+      "text-muted": { "value": "#6a6e82", "description": "Placeholder and disabled text" },
+      "text-inverse": { "alias": "{abyss}", "description": "Text on bright accents" }
+    }
+  },
+  "contrastPairs": [
+    { "foreground": "text-primary", "background": "abyss", "minimum": 4.5 },
+    { "foreground": "text-primary", "background": "base", "minimum": 4.5 },
+    { "foreground": "text-primary", "background": "surface", "minimum": 4.5 },
+    { "foreground": "text-primary", "background": "raised", "minimum": 4.5 },
+    { "foreground": "text-secondary", "background": "base", "minimum": 4.5 },
+    { "foreground": "text-inverse", "background": "blonde", "minimum": 4.5 },
+    { "foreground": "text-inverse", "background": "blonde-light", "minimum": 4.5 }
+  ]
+}

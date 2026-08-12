@@ -1,0 +1,15 @@
+{
+  "name": "@kiriketsuki/chrysaki-APPLICATION",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "dependencies": {
+    "@kiriketsuki/chrysaki-core": "github:Kiriketsuki/chrysaki-core#v1.0.0"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test",
+    "check": "npm test && npm run build && git diff --exit-code -- dist"
+  }
+}

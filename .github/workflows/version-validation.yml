@@ -44,8 +44,13 @@ jobs:
                     exit 0
                   fi
 
+                  if [ "$(node -p "require('./package.json').private === true")" = "true" ]; then
+                    echo "Private tooling package uses independent SemVer; skipping."
+                    exit 0
+                  fi
+
                   VERSION_FILE=$(cat VERSION | tr -d '[:space:]')
-                  PACKAGE_VERSION=$(grep -oP '"version"\s*:\s*"\K[^"]+' package.json)
+                  PACKAGE_VERSION=$(node -p "require('./package.json').version")
 
                   if [ "$VERSION_FILE" != "$PACKAGE_VERSION" ]; then
                     echo "Error: VERSION ($VERSION_FILE) does not match package.json ($PACKAGE_VERSION)"

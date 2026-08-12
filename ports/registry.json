@@ -1,0 +1,26 @@
+{
+  "$schemaVersion": 1,
+  "coreRepository": "https://github.com/Kiriketsuki/chrysaki-core",
+  "policy": "Compatibility paths remain until every port is extracted.",
+  "ports": [
+    { "name": "AGS", "repository": "https://github.com/Kiriketsuki/chrysaki", "status": "umbrella", "coreVersion": "v1.0.0", "version": "26.0.1", "category": "desktop-shell", "install": "ags" },
+    { "name": "Alacritty", "repository": "https://github.com/Kiriketsuki/chrysaki", "status": "umbrella", "coreVersion": "v1.0.0", "version": "26.0.1", "category": "terminal", "install": "alacritty" },
+    { "name": "Discord", "repository": "https://github.com/Kiriketsuki/chrysaki", "status": "umbrella", "coreVersion": "v1.0.0", "version": "26.0.1", "category": "application", "install": "discord" },
+    { "name": "Firefox", "repository": "https://github.com/Kiriketsuki/chrysaki", "status": "umbrella", "coreVersion": "v1.0.0", "version": "26.0.1", "category": "browser", "install": "firefox" },
+    { "name": "Ghostty", "repository": "https://github.com/Kiriketsuki/chrysaki", "status": "umbrella", "coreVersion": "v1.0.0", "version": "26.0.1", "category": "terminal", "install": "ghostty" },
+    { "name": "GitUI", "repository": "https://github.com/Kiriketsuki/chrysaki", "status": "umbrella", "coreVersion": "v1.0.0", "version": "26.0.1", "category": "developer-tool", "install": "gitui" },
+    { "name": "GTK", "repository": "https://github.com/Kiriketsuki/chrysaki", "status": "umbrella", "coreVersion": "v1.0.0", "version": "26.0.1", "category": "desktop", "install": "gtk" },
+    { "name": "Kitty", "repository": "https://github.com/Kiriketsuki/chrysaki", "status": "umbrella", "coreVersion": "v1.0.0", "version": "26.0.1", "category": "terminal", "install": "kitty" },
+    { "name": "Lazygit", "repository": "https://github.com/Kiriketsuki/chrysaki", "status": "umbrella", "coreVersion": "v1.0.0", "version": "26.0.1", "category": "developer-tool", "install": "lazygit" },
+    { "name": "Marp", "repository": "https://github.com/Kiriketsuki/chrysaki", "status": "umbrella", "coreVersion": "v1.0.0", "version": "26.0.1", "category": "presentation", "install": "marp" },
+    { "name": "Neovim", "repository": "https://github.com/Kiriketsuki/chrysaki", "status": "umbrella", "coreVersion": "v1.0.0", "version": "26.0.1", "category": "editor", "install": "nvim" },
+    { "name": "Oh My Posh", "repository": "https://github.com/Kiriketsuki/chrysaki", "status": "umbrella", "coreVersion": "v1.0.0", "version": "26.0.1", "category": "shell", "install": "ohmyposh" },
+    { "name": "Pi", "repository": "https://github.com/Kiriketsuki/chrysaki-pi", "status": "extracted", "coreVersion": "v1.0.0", "version": "v1.0.0", "category": "developer-tool", "install": "git:github.com/Kiriketsuki/chrysaki-pi@v1.0.0" },
+    { "name": "PowerShell", "repository": "https://github.com/Kiriketsuki/chrysaki", "status": "umbrella", "coreVersion": "v1.0.0", "version": "26.0.1", "category": "shell", "install": "powershell" },
+    { "name": "Spicetify", "repository": "https://github.com/Kiriketsuki/chrysaki", "status": "umbrella", "coreVersion": "v1.0.0", "version": "26.0.1", "category": "application", "install": "spicetify" },
+    { "name": "Steam", "repository": "https://github.com/Kiriketsuki/chrysaki", "status": "umbrella", "coreVersion": "v1.0.0", "version": "26.0.1", "category": "application", "install": "steam" },
+    { "name": "tmux", "repository": "https://github.com/Kiriketsuki/chrysaki", "status": "umbrella", "coreVersion": "v1.0.0", "version": "26.0.1", "category": "terminal", "install": "tmux" },
+    { "name": "VS Code", "repository": "https://github.com/Kiriketsuki/chrysaki", "status": "umbrella", "coreVersion": "v1.0.0", "version": "26.0.1", "category": "editor", "install": "vscode" },
+    { "name": "Windows Terminal", "repository": "https://github.com/Kiriketsuki/chrysaki", "status": "umbrella", "coreVersion": "v1.0.0", "version": "26.0.1", "category": "terminal", "install": "windows-terminal" }
+  ]
+}

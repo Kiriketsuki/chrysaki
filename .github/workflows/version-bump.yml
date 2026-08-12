@@ -22,9 +22,12 @@ jobs:
 
             - name: Determine version bump type
               id: bump_type
+              env:
+                  BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
+                  BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
               run: |
-                  BRANCH_NAME="${{ github.head_ref }}"
-                  BASE_BRANCH="${{ github.base_ref }}"
+                  BRANCH_NAME="$BRANCH_NAME"
+                  BASE_BRANCH="$BASE_BRANCH"
                   echo "Source branch: $BRANCH_NAME"
                   echo "Base branch: $BASE_BRANCH"
 
@@ -33,7 +36,7 @@ jobs:
                   if [[ $BRANCH_NAME == epic/* ]]; then
                     BUMP_TYPE="major"
                     echo "Detected epic branch. Bump: Major."
-                  elif [[ $BRANCH_NAME == feature/* ]]; then
+                  elif [[ $BRANCH_NAME == feature/* || $BRANCH_NAME == feat/* ]]; then
                     BUMP_TYPE="minor"
                     echo "Detected feature branch. Bump: Minor."
                   elif [[ $BRANCH_NAME == task/* || $BRANCH_NAME == bug/* ]]; then
@@ -107,20 +110,7 @@ jobs:
                           SUFFIX="a"
                         else
                           # Increment suffix as base-26: a..z, aa..az, ba..zz, aaa...
-                          SUFFIX=$(python3 -c "
-def inc(s):
-    chars = list(s)
-    i = len(chars) - 1
-    while i >= 0:
-        if chars[i] == 'z':
-            chars[i] = 'a'
-            i -= 1
-        else:
-            chars[i] = chr(ord(chars[i]) + 1)
-            return ''.join(chars)
-    return 'a' + ''.join(chars)
-print(inc('$SUFFIX'))
-")
+                          SUFFIX=$(perl -E '$suffix = shift; $suffix++; say $suffix' "$SUFFIX")
                         fi
                         NEW_VERSION="$YY.$MAJOR.$MINOR.$PATCH$SUFFIX"
                         ;;
@@ -139,9 +129,10 @@ print(inc('$SUFFIX'))
                   echo "$NEW_VERSION" > VERSION
                   echo "Updated VERSION to $NEW_VERSION"
 
-                  # 2. Update package.json (if exists)
-                  if [ -f package.json ]; then
-                    sed -i "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/" package.json
+                  # 2. Update publishable package.json files only. Private tooling
+                  # packages use SemVer and are not tied to the four-part suite version.
+                  if [ -f package.json ] && [ "$(node -p "require('./package.json').private === true")" != "true" ]; then
+                    npm pkg set "version=$NEW_VERSION"
                     echo "Updated package.json to $NEW_VERSION"
                   fi
 
@@ -165,10 +156,12 @@ print(inc('$SUFFIX'))
 
             - name: Commit and push
               if: steps.bump_type.outputs.bump_type != 'none'
+              env:
+                  SOURCE_BRANCH: ${{ github.event.pull_request.head.ref }}
+                  TARGET_BRANCH: ${{ github.event.pull_request.base.ref }}
               run: |
                   NEW_VERSION="${{ steps.new_version.outputs.new }}"
                   BUMP_TYPE="${{ steps.bump_type.outputs.bump_type }}"
-                  TARGET_BRANCH="${{ github.event.pull_request.base.ref }}"
 
                   git config user.name "github-actions[bot]"
                   git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -177,15 +170,17 @@ print(inc('$SUFFIX'))
                   git diff --cached --quiet && { echo "No changes to commit"; exit 0; }
 
                   git commit -m "ci: bump version to $NEW_VERSION [skip ci]" \
-                    -m "Automatic $BUMP_TYPE bump after merging ${{ github.head_ref }}"
+                    -m "Automatic $BUMP_TYPE bump after merging $SOURCE_BRANCH"
                   git push origin "$TARGET_BRANCH"
 
             - name: Summary
               if: steps.bump_type.outputs.bump_type != 'none'
+              env:
+                  SOURCE_BRANCH: ${{ github.event.pull_request.head.ref }}
               run: |
                   echo "## Version Bump Summary" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "- **Branch**: ${{ github.head_ref }}" >> $GITHUB_STEP_SUMMARY
+                  echo "- **Branch**: $SOURCE_BRANCH" >> $GITHUB_STEP_SUMMARY
                   echo "- **Bump Type**: ${{ steps.bump_type.outputs.bump_type }}" >> $GITHUB_STEP_SUMMARY
                   echo "- **Previous Version**: ${{ steps.current_version.outputs.current }}" >> $GITHUB_STEP_SUMMARY
                   echo "- **New Version**: ${{ steps.new_version.outputs.new }}" >> $GITHUB_STEP_SUMMARY
