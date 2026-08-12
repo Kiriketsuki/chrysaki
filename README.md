@@ -12,6 +12,7 @@ Ports for applications across terminal, editor, desktop, and web categories — 
 
 - [`chrysaki-core`](https://github.com/Kiriketsuki/chrysaki-core) is the schema-first canonical token source. This repository pins `v1.0.0` and commits synchronized artifacts under [`core/`](core/).
 - [`chrysaki-pi`](https://github.com/Kiriketsuki/chrysaki-pi) is the first independently versioned integration.
+- [`chrysaki-claude`](https://github.com/Kiriketsuki/chrysaki-claude) is the Claude Code integration: a four-line status bar, stats fetcher, and cost exporter.
 - This umbrella remains the brand, gallery, [port registry](docs/PORTS.md), and compatibility home for ports not yet extracted.
 
 Run `npm ci && npm run check` to validate the pinned core and generated registry. Existing port paths remain supported until every integration has migrated; see the [compatibility policy](docs/COMPATIBILITY.md) and [migration plan](docs/MIGRATION.md).

@@ -6,6 +6,7 @@ Generated from `ports/registry.json`. Do not edit manually.
 |:-----|:---------|:------|:--------|:-----|:-----------|:--------|
 | AGS | desktop-shell | umbrella | 26.0.1 | v1.0.0 | [repository](https://github.com/Kiriketsuki/chrysaki) | `ags` |
 | Alacritty | terminal | umbrella | 26.0.1 | v1.0.0 | [repository](https://github.com/Kiriketsuki/chrysaki) | `alacritty` |
+| Claude Code | developer-tool | extracted | v2.1.0 | v1.0.0 | [repository](https://github.com/Kiriketsuki/chrysaki-claude) | `git:github.com/Kiriketsuki/chrysaki-claude@v2.1.0` |
 | Discord | application | umbrella | 26.0.1 | v1.0.0 | [repository](https://github.com/Kiriketsuki/chrysaki) | `discord` |
 | Firefox | browser | umbrella | 26.0.1 | v1.0.0 | [repository](https://github.com/Kiriketsuki/chrysaki) | `firefox` |
 | Ghostty | terminal | umbrella | 26.0.1 | v1.0.0 | [repository](https://github.com/Kiriketsuki/chrysaki) | `ghostty` |
