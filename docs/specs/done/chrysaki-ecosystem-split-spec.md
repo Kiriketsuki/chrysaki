@@ -180,8 +180,8 @@ Feature: Chrysaki Ecosystem Split
 | T5 | Convert the umbrella repository to consume pinned core artifacts | High | T4 | done |
 | T5.1 | Add machine-readable port registry, migration matrix, and compatibility policy | High | T5 | done |
 | T5.2 | Preserve legacy paths for unextracted ports and document rollback | High | T5 | done |
-| T6 | Update the dots generation pipeline to consume a pinned core artifact | High | T5.2 | pending |
-| T6.1 | Verify generated desktop/application outputs against golden snapshots | High | T6 | pending |
+| T6 | Update the dots generation pipeline to consume a pinned core artifact | High | T5.2 | done |
+| T6.1 | Verify generated desktop/application outputs against golden snapshots | High | T6 | done |
 | T7 | Create reusable integration repository template and extraction checklist | Medium | T4 | done |
 | T8 | Validate the contract by extracting `chrysaki-pi` | High | T4, T7 | done |
 | T9 | Define a repeatable process for selecting and executing later complex-port extraction waves | Medium | T8 | done |
@@ -192,14 +192,14 @@ Feature: Chrysaki Ecosystem Split
 
 ## Exit Criteria
 
-- [ ] All Must-Have scenarios pass in CI.
-- [ ] No regressions occur in existing Chrysaki ports or dots-generated themes.
-- [ ] Generated API contracts match their documented formats and token names.
-- [ ] Core builds are deterministic and leave no uncommitted generated changes.
-- [ ] Golden token and contrast checks prove the extraction did not alter the approved palette.
-- [ ] The umbrella migration matrix identifies every port, current location, target repository, and migration state.
-- [ ] Existing consumer rollback instructions have been exercised successfully.
-- [ ] `chrysaki-pi` can pin and consume the first core release without importing umbrella implementation files.
+- [x] All Must-Have scenarios pass in CI.
+- [x] No regressions occur in existing Chrysaki ports or dots-generated themes.
+- [x] Generated API contracts match their documented formats and token names.
+- [x] Core builds are deterministic and leave no uncommitted generated changes.
+- [x] Golden token and contrast checks prove the extraction did not alter the approved palette.
+- [x] The umbrella migration matrix identifies every port, current location, target repository, and migration state.
+- [x] Existing consumer rollback instructions have been exercised successfully.
+- [x] `chrysaki-pi` can pin and consume the first core release without importing umbrella implementation files.
 
 ---
 
