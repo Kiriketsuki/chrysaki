@@ -1,5 +1,17 @@
 @use "palette" as *;
 
+.pulseaudio-button {
+  background: transparent;
+  border: none;
+  padding: 0px 2px;
+  min-height: 0px;
+  min-width: 0px;
+
+  &:hover .pulseaudio-label {
+    color: $blonde-light;
+  }
+}
+
 .pulseaudio-label {
   color: $text-primary;
   font-size: 12px;
