@@ -20,15 +20,16 @@ const bluetooth = AstalBluetooth.get_default()!
 const BLUETOOTHCTL_COMMAND = ["ghostty", "-e", "bluetoothctl"]
 
 interface BtState {
+  readonly available: boolean
   readonly powered: boolean
   readonly connectedCount: number
 }
 
-const BT_OFF: BtState = { powered: false, connectedCount: 0 }
+const BT_OFF: BtState = { available: false, powered: false, connectedCount: 0 }
 
 /** nf-md bluetooth glyphs keyed on power/connection state */
 function btIcon(s: BtState): string {
-  if (!s.powered) return "\u{F00B2}" // 󰂲 nf-md-bluetooth_off
+  if (!s.available || !s.powered) return "\u{F00B2}" // 󰂲 nf-md-bluetooth_off
   if (s.connectedCount > 0) return "\u{F00B1}" // 󰂱 nf-md-bluetooth_connect
   return "\u{F00AF}" // 󰂯 nf-md-bluetooth
 }
@@ -39,12 +40,16 @@ export function Bluetooth() {
   const sync = (): void => {
     const devices = bluetooth.get_devices() ?? []
     setState({
+      // No adapter object means bluetoothd itself is not running (BlueZ
+      // never appeared on D-Bus), as opposed to the radio being soft-off.
+      available: bluetooth.adapter != null,
       powered: bluetooth.is_powered,
       connectedCount: devices.filter((d) => d.connected).length,
     })
   }
 
   const ids = [
+    bluetooth.connect("notify::adapter", sync),
     bluetooth.connect("notify::is-powered", sync),
     bluetooth.connect("notify::is-connected", sync),
     bluetooth.connect("notify::devices", sync),
@@ -64,6 +69,8 @@ export function Bluetooth() {
 
   const tooltip = createComputed(() => {
     const s = state()
+    if (!s.available)
+      return "bluetoothd not running — click to try starting it (needs polkit auth)"
     if (!s.powered) return "Bluetooth off — click to enable"
     const devices = s.connectedCount === 1 ? "device" : "devices"
     return s.connectedCount > 0
@@ -72,7 +79,20 @@ export function Bluetooth() {
   })
 
   function togglePower(): void {
-    bluetooth.toggle()
+    if (state.peek().available) {
+      bluetooth.toggle()
+      return
+    }
+    // bluetoothd is down: toggling the adapter has nothing to talk to.
+    // Try starting the service; without a polkit agent this fails and we
+    // surface it in the log rather than pretending the click worked.
+    execAsync(["systemctl", "start", "bluetooth.service"]).catch((error: unknown) => {
+      console.error(
+        "Bluetooth: bluetoothd is not running and starting it failed. " +
+          "Run: sudo systemctl unmask bluetooth && sudo systemctl enable --now bluetooth",
+        error,
+      )
+    })
   }
 
   function openBluetoothctl(): void {
@@ -84,7 +104,9 @@ export function Bluetooth() {
   return (
     <box class="bluetooth-box" valign={3}>
       <button
-        class={state.as((s) => (s.powered ? "bluetooth-button" : "bluetooth-button bluetooth-off"))}
+        class={state.as((s) =>
+          s.available && s.powered ? "bluetooth-button" : "bluetooth-button bluetooth-off",
+        )}
         onClicked={togglePower}
         tooltipText={tooltip}
         $={(self: Gtk.Widget) => {
