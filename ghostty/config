@@ -44,7 +44,9 @@ shell-integration = detect
 
 # --- Shader: film grain + vignette + scanlines ---
 custom-shader = ~/.config/ghostty/shaders/grain.glsl
-custom-shader-animation = always
+# true, not always: always keeps the GPU repainting the hex-wave every frame
+# even when the window is unfocused. true pauses it on focus loss.
+custom-shader-animation = true
 
 # --- Keybinds ---
 # Word navigation — send CSI sequences; zsh binds them to word widgets
