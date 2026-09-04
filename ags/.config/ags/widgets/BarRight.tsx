@@ -5,6 +5,7 @@ import { ChamferedBar, JEWEL_PALETTE } from "./ChamferedIsland"
 import { MediaPlayer } from "./MediaPlayer"
 import { PulseAudio } from "./PulseAudio"
 import { Network } from "./Network"
+import { Bluetooth } from "./Bluetooth"
 import { SystemTray } from "./SystemTray"
 import { ServiceStatus } from "./ServiceStatus"
 import { NotificationToggle } from "./NotificationToggle"
@@ -29,6 +30,10 @@ export function BarRight(gdkmonitor: Gdk.Monitor) {
     {
       widget: <Network />,
       cssClass: "segment-network",
+    },
+    {
+      widget: <Bluetooth />,
+      cssClass: "segment-bluetooth",
     },
     {
       widget: <ServiceStatus />,

@@ -1,0 +1,39 @@
+@use "palette" as *;
+
+.bluetooth-button {
+  background: transparent;
+  border: none;
+  padding: 0px 2px;
+  min-height: 0px;
+  min-width: 0px;
+
+  &:hover .bluetooth-icon {
+    color: $teal-light;
+  }
+}
+
+.bluetooth-icon {
+  color: $text-primary;
+  font-size: 16px;
+}
+
+.bluetooth-count {
+  color: $text-primary;
+  font-size: 12px;
+}
+
+.bluetooth-off .bluetooth-icon {
+  color: $text-muted;
+}
+
+.network-button {
+  background: transparent;
+  border: none;
+  padding: 0px 2px;
+  min-height: 0px;
+  min-width: 0px;
+
+  &:hover .network-icon {
+    color: $teal-light;
+  }
+}

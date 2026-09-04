@@ -8,11 +8,13 @@
  * label track live signal changes.
  */
 import { createBinding, createComputed, createEffect, createState, onCleanup } from "ags"
+import { execAsync } from "ags/process"
 import AstalNetwork from "gi://AstalNetwork"
 
 const network = AstalNetwork.get_default()!
 
 const SSID_MAX_LEN = 3
+const NMTUI_COMMAND = ["ghostty", "-e", "nmtui"]
 
 interface WifiState {
   readonly enabled: boolean
@@ -97,16 +99,24 @@ export function Network() {
 
   const tooltip = createComputed(() => {
     const w = wifiState()
-    if (w.enabled) return `${w.ssid ?? "Wifi"} — ${w.strength}%`
+    if (w.enabled) return `${w.ssid ?? "Wifi"} — ${w.strength}% (click: nmtui)`
     const speed = wiredState().speed
-    if (speed > 0) return `Ethernet — ${speed} Mb/s`
-    return "Offline"
+    if (speed > 0) return `Ethernet — ${speed} Mb/s (click: nmtui)`
+    return "Offline (click: nmtui)"
   })
 
+  function openNmtui(): void {
+    execAsync(NMTUI_COMMAND).catch((error: unknown) => {
+      console.error(`Network: failed to launch ${NMTUI_COMMAND.join(" ")}`, error)
+    })
+  }
+
   return (
-    <box spacing={14} valign={3} tooltipText={tooltip}>
-      <label class="network-icon" label={icon} />
-      <label class="network-ssid" label={ssid} />
-    </box>
+    <button class="network-button" onClicked={openNmtui} tooltipText={tooltip} valign={3}>
+      <box spacing={14} valign={3}>
+        <label class="network-icon" label={icon} />
+        <label class="network-ssid" label={ssid} />
+      </box>
+    </button>
   )
 }
