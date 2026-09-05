@@ -85,6 +85,10 @@ export const ChamferedPanel = GObject.registerClass(
       if (this._timerId !== 0) return
 
       this._timerId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, TICK_MS, () => {
+        // Popup windows remain constructed while hidden. Avoid advancing state
+        // and redrawing until the panel is actually mapped on screen.
+        if (!this.get_mapped()) return GLib.SOURCE_CONTINUE
+
         this._rippleState?.tick(this._lastW, this._lastH)
         this._borderWaveState?.tick()
         this.queue_draw()
@@ -104,17 +108,21 @@ export const ChamferedPanel = GObject.registerClass(
         bounds.init(-OVF, -OVF, w + 2 * OVF, h + 2 * OVF)
         const cr = snapshot.append_cairo(bounds)
 
-        drawIslandBackground(
-          cr,
-          w,
-          h,
-          this._chamfer,
-          this._gradientColors.length > 0 ? this._gradientColors : undefined,
-          this._rippleState?.currentFrame.gradient,
-          undefined, // no ripple draws
-          undefined, // no slash draws
-          this._borderWaveState ?? undefined,
-        )
+        try {
+          drawIslandBackground(
+            cr,
+            w,
+            h,
+            this._chamfer,
+            this._gradientColors.length > 0 ? this._gradientColors : undefined,
+            this._rippleState?.currentFrame.gradient,
+            undefined, // no ripple draws
+            undefined, // no slash draws
+            this._borderWaveState ?? undefined,
+          )
+        } finally {
+          ;(cr as any).$dispose?.()
+        }
       }
 
       super.vfunc_snapshot(snapshot)

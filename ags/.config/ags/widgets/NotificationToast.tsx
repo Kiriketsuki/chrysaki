@@ -7,6 +7,7 @@ import app from "ags/gtk4/app"
 import { Astal } from "ags/gtk4"
 import AstalNotifd from "gi://AstalNotifd"
 import GLib from "gi://GLib?version=2.0"
+import { createRoot } from "gnim"
 import { notifd } from "./NotificationCenter"
 import { ChamferedPanel } from "./ChamferedPanel"
 import { JEWEL_PALETTE } from "./ChamferedIsland"
@@ -84,7 +85,8 @@ function buildToastRow(n: AstalNotifd.Notification): any {
   const colorIdx = appColorIndex(n.appName || "App")
   const accentColor = JEWEL_ACCENT_CSS[colorIdx]
 
-  return (
+  return createRoot((dispose) => {
+    const row = (
     <box
       class={`notif-toast notif-toast-entering${isCritical ? " notif-toast-critical" : ""}`}
       orientation={1}
@@ -190,7 +192,10 @@ function buildToastRow(n: AstalNotifd.Notification): any {
         }}
       />
     </box>
-  ) as any
+    ) as any
+    row.connect("destroy", dispose)
+    return row
+  })
 }
 
 // ── Toast lifecycle ──────────────────────────────────────────────────────────

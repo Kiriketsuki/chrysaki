@@ -1,0 +1,94 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "anthropic/claude-sonnet-4-6",
+  "small_model": "anthropic/claude-haiku-4-5",
+  "shell": "zsh",
+  "snapshot": true,
+  "instructions": [],
+  "compaction": {
+    "auto": true,
+    "prune": true,
+    "reserved": 10000
+  },
+  "watcher": {
+    "ignore": [
+      "node_modules/**",
+      ".git/**",
+      ".gitnexus/**",
+      ".syncthing.*.tmp"
+    ]
+  },
+  "mcp": {
+    "gitnexus": {
+      "type": "local",
+      "command": [
+        "/home/kiriketsuki/.local/bin/gitnexus-safe",
+        "mcp"
+      ],
+      "environment": {}
+    },
+    "openviking": {
+      "type": "local",
+      "command": [
+        "/home/kiriketsuki/.local/bin/ov-mcp-server"
+      ],
+      "environment": {}
+    },
+    "skill-seekers": {
+      "type": "local",
+      "command": [
+        "/home/kiriketsuki/.local/share/uv/tools/skill-seekers/bin/python",
+        "-m",
+        "skill_seekers.mcp.server_fastmcp"
+      ],
+      "environment": {}
+    },
+    "mcp-atlassian": {
+      "type": "local",
+      "command": [
+        "/home/kiriketsuki/.local/share/uv/tools/mcp-atlassian/bin/mcp-atlassian"
+      ],
+      "environment": {
+        "JIRA_URL": "https://aurrigo.atlassian.net",
+        "JIRA_USERNAME": "jlim@aurrigo.com",
+        "JIRA_API_TOKEN": "{env:JIRA_API_TOKEN}"
+      }
+    },
+    "openpencil": {
+      "type": "local",
+      "command": [
+        "node",
+        "/home/kiriketsuki/dev/Personal/openpencil/dist/mcp-server.cjs"
+      ],
+      "environment": {}
+    }
+  },
+  "agent": {
+    "sisyphus": { "model": "opencode-go/glm-5.1" },
+    "prometheus": { "model": "opencode-go/glm-5.1" },
+    "hephaestus": { "model": "opencode-go/kimi-k2.6" },
+    "oracle": { "model": "opencode-go/deepseek-v4-pro" },
+    "ultrabrain": { "model": "opencode-go/qwen3.7-max" },
+    "coder": { "model": "opencode-go/kimi-k2.5" },
+    "researcher": { "model": "opencode-go/qwen3.7-plus" },
+    "scribe": { "model": "opencode-go/qwen3.6-plus" },
+    "explore": { "model": "opencode-go/deepseek-v4-flash" },
+    "quick": { "model": "opencode-go/mimo-v2.5" },
+    "librarian": { "model": "opencode-go/deepseek-v4-flash" },
+    "visual-engineering": { "model": "opencode-go/kimi-k2.6" },
+    "fallback": { "model": "opencode-go/kimi-k2.5" }
+  },
+  "command": {
+    "spec-loop": { "file": ".opencode/commands/spec-loop.md" },
+    "feature-loop": { "file": ".opencode/commands/feature-loop.md" },
+    "council": { "file": ".opencode/commands/council.md" },
+    "autofix": { "file": ".opencode/commands/autofix.md" },
+    "research": { "file": ".opencode/commands/research.md" }
+  },
+  "plugin": [
+    {
+      "path": ".opencode/plugin/obkidian-omo"
+    }
+  ],
+  "formatter": {}
+}

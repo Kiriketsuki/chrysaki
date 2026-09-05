@@ -17,11 +17,11 @@ import Gtk from "gi://Gtk?version=4.0"
 import GLib from "gi://GLib?version=2.0"
 import app from "ags/gtk4/app"
 import { createBinding } from "ags"
+import { createRoot } from "gnim"
 import { Astal } from "ags/gtk4"
 import AstalNotifd from "gi://AstalNotifd"
 import AstalHyprland from "gi://AstalHyprland"
 import { ChamferedPanel } from "./ChamferedPanel"
-import { JEWEL_PALETTE } from "./ChamferedIsland"
 import { appColorIndex, JEWEL_ACCENT_CSS, JEWEL_TEXT_CSS } from "../lib/notification-colors"
 
 const hyprland = AstalHyprland.get_default()!
@@ -126,7 +126,15 @@ function formatTimestamp(unixTime: number): string {
   if (diff < 60) return "just now"
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
-  return `${Math.floor(diff / 86400)}d ago`
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`
+
+  const date = new Date(unixTime * 1000)
+  const sameYear = date.getFullYear() === new Date().getFullYear()
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    ...(sameYear ? {} : { year: "numeric" }),
+  })
 }
 
 // ── Group state ──────────────────────────────────────────────────────────────
@@ -148,13 +156,21 @@ let _criticalBox: any = null
 
 // ── Notification row ─────────────────────────────────────────────────────────
 
+function createOwnedWidget<T extends Gtk.Widget>(factory: () => T): T {
+  return createRoot((dispose) => {
+    const widget = factory()
+    widget.connect("destroy", dispose)
+    return widget
+  })
+}
+
 function NotificationRow(n: AstalNotifd.Notification, isUnread: boolean): any {
   const isCritical = n.urgency === AstalNotifd.Urgency.CRITICAL
   const colorIdx = appColorIndex(n.appName || "App")
   const accentColor = JEWEL_ACCENT_CSS[colorIdx]
   const unreadClass = isUnread ? " notif-row-unread" : " notif-row-read"
 
-  return (
+  return createOwnedWidget(() => (
     <box
       class={`notif-row notif-row-entering${isCritical ? " notif-row-critical" : ""}${unreadClass}`}
       spacing={0}
@@ -192,12 +208,11 @@ function NotificationRow(n: AstalNotifd.Notification, isUnread: boolean): any {
         />
         {n.body && <BodyLabel body={n.body} />}
         {n.actions.length > 0 && (
-          <box class="notif-actions" spacing={4}>
+          <box class="notif-actions" spacing={4} halign={1}>
             {n.actions.map((action) => (
               <button
                 class="notif-action-btn"
                 label={action.label}
-                hexpand
                 onClicked={() => {
                   n.invoke(action.id)
                   const needle = (n.desktopEntry || n.appName || "").toLowerCase()
@@ -215,7 +230,7 @@ function NotificationRow(n: AstalNotifd.Notification, isUnread: boolean): any {
         )}
       </box>
     </box>
-  ) as any
+  ) as any)
 }
 
 // ── Dismiss animation ────────────────────────────────────────────────────────
@@ -243,11 +258,17 @@ function getOrCreateGroup(appName: string): GroupState {
   const accentColor = JEWEL_ACCENT_CSS[colorIdx]
   const textColor = JEWEL_TEXT_CSS[colorIdx]
 
-  const bodyWidget = (<box class="notif-group-body" orientation={1} spacing={0} />) as any
-  const countLabel = (<label class="notif-group-count" label="(0)" />) as any
-  const chevronLabel = (<label class="notif-group-chevron" label={"\u{f0142}"} />) as any
+  const bodyWidget = createOwnedWidget(
+    () => (<box class="notif-group-body" orientation={1} spacing={0} />) as any,
+  )
+  const countLabel = createOwnedWidget(
+    () => (<label class="notif-group-count" label="(0)" />) as any,
+  )
+  const chevronLabel = createOwnedWidget(
+    () => (<label class="notif-group-chevron" label={"\u{f0142}"} />) as any,
+  )
 
-  const headerWidget = (
+  const headerWidget = createOwnedWidget(() => (
     <button
       class="notif-group-header"
       onClicked={() => {
@@ -278,14 +299,14 @@ function getOrCreateGroup(appName: string): GroupState {
         {chevronLabel}
       </box>
     </button>
-  ) as any
+  ) as any)
 
-  const groupWidget = (
+  const groupWidget = createOwnedWidget(() => (
     <box class="notif-group" orientation={1}>
       {headerWidget}
       {bodyWidget}
     </box>
-  ) as any
+  ) as any)
 
   if (_groupList) _groupList.append(groupWidget)
 
@@ -520,7 +541,6 @@ export function NotificationCenter() {
         class="notif-panel"
         $={(panel: any) => {
           panel.setChamfer({ tl: true, tr: true, bl: true, br: true })
-          panel.setGradientColors(JEWEL_PALETTE)
         }}
       >
         <box class="notif-panel-inner" orientation={1} spacing={0}>

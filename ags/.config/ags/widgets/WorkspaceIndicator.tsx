@@ -8,6 +8,20 @@ import { drawTriangleSeparator } from "../lib/cairo-triangles"
 
 const hyprland = AstalHyprland.get_default()!
 
+// Fan out two desktop-global Hyprland signals in JavaScript instead of creating
+// two GObject signal connections for every pip and separator on every monitor.
+const workspaceListeners = new Set<() => void>()
+function emitWorkspaceChange(): void {
+  for (const listener of workspaceListeners) listener()
+}
+hyprland.connect("notify::focused-workspace", emitWorkspaceChange)
+hyprland.connect("notify::workspaces", emitWorkspaceChange)
+
+function onWorkspaceChange(listener: () => void): () => void {
+  workspaceListeners.add(listener)
+  return () => workspaceListeners.delete(listener)
+}
+
 /** Check if workspace `wsId` is the active workspace on any Hyprland monitor. */
 function isActiveOnMonitor(wsId: number): boolean {
   return (hyprland.monitors as AstalHyprland.Monitor[]).some(
@@ -117,12 +131,8 @@ function WorkspacePip({ id }: PipProps) {
           btn.visible = ws !== undefined && ws.clients.length > 0
         }
         updateVisibility()
-        const hFocus = hyprland.connect("notify::focused-workspace", updateVisibility)
-        const hWs = hyprland.connect("notify::workspaces", updateVisibility)
-        btn.connect("destroy", () => {
-          hyprland.disconnect(hFocus)
-          hyprland.disconnect(hWs)
-        })
+        const unsubscribe = onWorkspaceChange(updateVisibility)
+        btn.connect("destroy", unsubscribe)
       }}
     >
       <drawingarea
@@ -170,7 +180,7 @@ function WorkspacePip({ id }: PipProps) {
             return GLib.SOURCE_REMOVE
           })
 
-          const hFocus = hyprland.connect("notify::focused-workspace", () => {
+          const unsubscribe = onWorkspaceChange(() => {
             // Defer to next idle — monitor activeWorkspace may not be settled yet
             GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
               const nowActive = isActiveOnMonitor(id)
@@ -187,11 +197,8 @@ function WorkspacePip({ id }: PipProps) {
             })
           })
 
-          const hWs = hyprland.connect("notify::workspaces", () => da.queue_draw())
-
           da.connect("destroy", () => {
-            hyprland.disconnect(hFocus)
-            hyprland.disconnect(hWs)
+            unsubscribe()
             // Cancel any running animation timer
             const tid = pipTimers.get(id)
             if (tid) {
@@ -234,12 +241,8 @@ function PipSeparator({ afterId, rangeMax }: { afterId: number; rangeMax: number
           box.visible = false
         }
         updateVisibility()
-        const hFocus = hyprland.connect("notify::focused-workspace", updateVisibility)
-        const hWs = hyprland.connect("notify::workspaces", updateVisibility)
-        box.connect("destroy", () => {
-          hyprland.disconnect(hFocus)
-          hyprland.disconnect(hWs)
-        })
+        const unsubscribe = onWorkspaceChange(updateVisibility)
+        box.connect("destroy", unsubscribe)
       }}
     >
       <drawingarea

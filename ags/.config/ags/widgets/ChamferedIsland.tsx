@@ -69,8 +69,8 @@ const SLASH_COLORS: readonly GradientColor[] = Object.freeze([
 const LR_COLOR_INDEX = 10  // reservedRed
 const RL_COLOR_INDEX = 11  // reservedYellow
 
-/** Animation tick interval in ms (~30fps). */
-const TICK_MS = 33
+/** Balanced ambient cadence without constant high-frequency full-bar redraws. */
+const TICK_MS = 100
 
 /**
  * Ripple lifetime in ms. Alpha decays with sqrt falloff over this period
@@ -261,17 +261,23 @@ export const ChamferedBar = GObject.registerClass(
           .filter(s => !this._collidingIds.has(s.id))
           .map(s => ({ ...s, alpha: s.alpha * NORMAL_ALPHA_SCALE }))
 
-        drawIslandBackground(
-          cr,
-          w,
-          h,
-          this._chamfer,
-          this._gradientColors.length > 0 ? this._gradientColors : undefined,
-          this._rippleState?.currentFrame.gradient,
-          rippleDraws,
-          normalSlashes,
-          this._borderWaveState ?? undefined,
-        )
+        try {
+          drawIslandBackground(
+            cr,
+            w,
+            h,
+            this._chamfer,
+            this._gradientColors.length > 0 ? this._gradientColors : undefined,
+            this._rippleState?.currentFrame.gradient,
+            rippleDraws,
+            normalSlashes,
+            this._borderWaveState ?? undefined,
+          )
+        } finally {
+          // append_cairo() transfers a native Cairo context to GJS. Releasing it
+          // promptly prevents one native allocation from accumulating per frame.
+          ;(cr as any).$dispose?.()
+        }
 
         // Render children (text, icons) first.
         super.vfunc_snapshot(snapshot)
@@ -280,7 +286,11 @@ export const ChamferedBar = GObject.registerClass(
         const collidingSlashes = allSlashes.filter(s => this._collidingIds.has(s.id))
         if (collidingSlashes.length > 0 && this._gradientColors.length > 0) {
           const cr2 = snapshot.append_cairo(bounds)
-          drawElevatedSlashes(cr2, w, h, this._chamfer, collidingSlashes, this._gradientColors)
+          try {
+            drawElevatedSlashes(cr2, w, h, this._chamfer, collidingSlashes, this._gradientColors)
+          } finally {
+            ;(cr2 as any).$dispose?.()
+          }
         }
       } else {
         super.vfunc_snapshot(snapshot)

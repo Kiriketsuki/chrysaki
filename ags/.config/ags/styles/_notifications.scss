@@ -11,8 +11,8 @@
 
 // DrawingArea badge — hexagonal shape drawn via Cairo
 .notif-badge-da {
-  margin-left: -4px;
-  margin-top: -2px;
+  min-width: 22px;
+  min-height: 22px;
 }
 
 // ============================================================
@@ -20,22 +20,24 @@
 // ============================================================
 
 .notif-panel {
-  // No CSS background — ChamferedPanel draws the chamfered gradient via Cairo
-  min-width: 360px;
+  min-width: 420px;
   padding: 0px;
 }
 
 .notif-panel-inner {
-  @include glass;
-  padding: 10px;
+  background-color: rgba($abyss, 0.98);
+  background-image: none;
+  border: 1px solid rgba($border, 0.85);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  padding: 12px;
 }
 
 // --- Panel header ---
 
 .notif-panel-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
-  padding-bottom: 6px;
-  margin-bottom: 4px;
+  border-bottom: 1px solid rgba($border, 0.75);
+  padding: 2px 2px 9px 2px;
+  margin-bottom: 8px;
 }
 
 .notif-panel-title {
@@ -88,21 +90,22 @@
 // ============================================================
 
 .notif-group {
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .notif-group-header {
-  padding: 4px 6px;
-  margin-bottom: 2px;
+  background: rgba($surface, 0.55);
+  border-bottom: 1px solid rgba($border, 0.55);
+  padding: 6px 8px;
+  margin-bottom: 4px;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba($raised, 0.72);
   }
 }
 
-// 3px jewel-tone accent stripe on group header
 .notif-group-accent {
-  min-width: 3px;
+  min-width: 1px;
   min-height: 16px;
   // background set inline per app via JEWEL_ACCENT_CSS
 }
@@ -127,7 +130,7 @@
 }
 
 .notif-group-body {
-  padding-left: 4px;
+  padding-left: 0px;
 }
 
 // ============================================================
@@ -135,24 +138,22 @@
 // ============================================================
 
 .notif-row {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 8px 12px;
-  margin-bottom: 4px;
-  // Entry animation transitions
-  transition: opacity 150ms ease-out, margin-left 150ms ease-out;
+  background: rgba($surface, 0.92);
+  border: 1px solid rgba($border, 0.62);
+  padding: 9px 10px;
+  margin-bottom: 6px;
+  transition: opacity 150ms ease-out;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.09);
-    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba($raised, 0.96);
+    border-color: rgba($text-muted, 0.72);
   }
 }
 
-// 3px left accent stripe per row
 .notif-row-accent {
-  min-width: 3px;
+  min-width: 1px;
   min-height: 24px;
-  margin-right: 8px;
+  margin-right: 9px;
   // background set inline per app via JEWEL_ACCENT_CSS
   transition: box-shadow 500ms ease-out;
 }
@@ -165,14 +166,12 @@
 // Entry stagger animation
 .notif-row-entering {
   opacity: 0;
-  margin-left: 20px;
 }
 
 // Dismiss slide-out animation
 .notif-row-dismissing {
-  margin-left: 400px;
   opacity: 0;
-  transition: margin-left 200ms ease-in, opacity 200ms ease-in;
+  transition: opacity 160ms ease-in;
 }
 
 .notif-row-critical {
@@ -189,7 +188,7 @@
 }
 
 .notif-row-header {
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 
 .notif-row-app {
@@ -219,7 +218,7 @@
 .notif-row-summary {
   color: $text-primary;
   font-size: 13px;
-  font-weight: bold;
+  font-weight: 600;
 }
 
 // Read notifications have dimmer summary
@@ -230,7 +229,7 @@
 .notif-row-body {
   color: $text-secondary;
   font-size: 12px;
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
 // ============================================================
@@ -238,27 +237,25 @@
 // ============================================================
 
 .notif-actions {
-  margin-top: 6px;
-  padding-top: 4px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: 7px;
 }
 
 .notif-action-btn {
-  background: rgba(26, 138, 106, 0.15);
-  border: 1px solid rgba(26, 138, 106, 0.30);
-  color: $emerald-light;
+  background: $raised;
+  border: 1px solid $border;
+  color: $text-secondary;
   font-size: 11px;
-  padding: 3px 8px;
+  padding: 3px 9px;
   min-width: 0px;
 
   &:hover {
-    background: rgba(26, 138, 106, 0.30);
+    background: $elevated;
     border-color: $emerald-light;
     color: $text-primary;
   }
 
   &:active {
-    background: rgba(26, 138, 106, 0.45);
+    background: $emerald-dim;
   }
 }
 
@@ -295,8 +292,7 @@
   padding: 10px 14px;
   min-width: 300px;
   margin-bottom: 4px;
-  // Slide-in animation
-  transition: margin-right 300ms ease-out, opacity 300ms ease-out;
+  transition: opacity 220ms ease-out;
 
   &:hover {
     background: rgba(37, 40, 54, 0.98);
@@ -306,7 +302,6 @@
 
 // Toast slide-in initial state
 .notif-toast-entering {
-  margin-right: -380px;
   opacity: 0;
 }
 

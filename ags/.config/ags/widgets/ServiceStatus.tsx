@@ -82,6 +82,22 @@ function groupByCategory(services: readonly ServiceDef[]): [string, ServiceDef[]
 
 const SERVICES = loadServices()
 
+// One health command per service, shared by every monitor and the popup panel.
+// Previously each consumer created its own poll (four copies with three monitors).
+const SERVICE_STATUS = new Map(
+  SERVICES.map((svc) => [
+    svc.name,
+    createPoll("ok", svc.interval, ["bash", "-c", svc.healthCmd]),
+  ] as const),
+)
+
+// A single shared blink clock replaces one perpetual timeout per bar icon.
+const [blinkOn, setBlinkOn] = createState(true)
+GLib.timeout_add(GLib.PRIORITY_DEFAULT, 600, () => {
+  setBlinkOn((on) => !on)
+  return GLib.SOURCE_CONTINUE
+})
+
 const CATEGORY_ICONS: Record<string, string> = {
   "System": "\uf013",    // nf-fa-cog
   "MCP": "\uf1e6",       // nf-fa-plug
@@ -112,10 +128,11 @@ function togglePanel(): void {
   if (panel) panel.visible = !panel.visible
 }
 
-function ServiceIcon({ name, icon, interval, healthCmd }: ServiceDef) {
-  const status = createPoll("ok", interval, ["bash", "-c", healthCmd])
+function ServiceIcon({ name, icon }: ServiceDef) {
+  const status = SERVICE_STATUS.get(name)!
   const isOk = createComputed(() => status().trim() === "ok")
   const iconClass = createComputed(() => (isOk() ? "svc-icon" : "svc-icon svc-error"))
+  const opacity = createComputed(() => (isOk() ? 1.0 : blinkOn() ? 0.85 : 0.15))
   const gicon = getGicon(icon)
 
   return (
@@ -124,26 +141,15 @@ function ServiceIcon({ name, icon, interval, healthCmd }: ServiceDef) {
         gicon={gicon}
         pixelSize={16}
         class={iconClass}
+        opacity={opacity}
         valign={3}
-        $={(self: any) => {
-          let blinkOn = true
-          GLib.timeout_add(GLib.PRIORITY_DEFAULT, 600, () => {
-            if (!isOk()) {
-              blinkOn = !blinkOn
-              self.set_opacity(blinkOn ? 0.85 : 0.15)
-            } else {
-              self.set_opacity(1.0)
-            }
-            return GLib.SOURCE_CONTINUE
-          })
-        }}
       />
     </button>
   )
 }
 
-function ServiceRow({ name, icon, interval, healthCmd, cssAccent, startCmd, stopCmd, guiCmd }: ServiceDef) {
-  const status = createPoll("ok", interval, ["bash", "-c", healthCmd])
+function ServiceRow({ name, icon, cssAccent, startCmd, stopCmd, guiCmd }: ServiceDef) {
+  const status = SERVICE_STATUS.get(name)!
   const isHealthy = createComputed(() => status().trim() === "ok")
   const statusLabel = createComputed(() => (isHealthy() ? "Healthy" : "Unhealthy"))
   const statusClass = createComputed(() => (isHealthy() ? "svc-panel-healthy" : "svc-panel-unhealthy"))

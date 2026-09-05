@@ -72,95 +72,86 @@ tmux list-clients -F '#{client_activity} #{client_pid} #{session_name}' 2>/dev/n
 `
 }
 
-export function ActiveWindow() {
-  const client = createBinding(hyprland, "focusedClient")
-  const [tmuxSession, setTmuxSession] = createState("")
-  const [forceUpdate, setForceUpdate] = createState(0)
+// Active-window state is desktop-global, so all monitor labels share one
+// Hyprland subscription and one tmux poller.
+const focusedClient = createBinding(hyprland, "focusedClient")
+const [tmuxSession, setTmuxSession] = createState("")
+const [forceUpdate, setForceUpdate] = createState(0)
+let timerId: number | null = null
+let pollGeneration = 0
 
-  let timerId: number | null = null
-
-  function pollTmux(pid: number): void {
-    execAsync(["bash", "-c", tmuxScript(pid)])
-      .then((out) => setTmuxSession(out.trim()))
-      .catch(() => setTmuxSession(""))
-  }
-
-  function startTmuxPoll(pid: number): void {
-    // Immediate poll
-    pollTmux(pid)
-    // Rapid follow-up at 300ms for snappy workspace switch response
-    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => {
-      pollTmux(pid)
-      return GLib.SOURCE_REMOVE
+function pollTmux(pid: number, generation: number): void {
+  execAsync(["bash", "-c", tmuxScript(pid)])
+    .then((out) => {
+      if (generation === pollGeneration) setTmuxSession(out.trim())
     })
-    // Steady-state polling every 2s
-    timerId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 2000, () => {
-      pollTmux(pid)
-      return GLib.SOURCE_CONTINUE
+    .catch(() => {
+      if (generation === pollGeneration) setTmuxSession("")
     })
-  }
+}
 
-  function stopTmuxPoll(): void {
-    if (timerId !== null) {
-      GLib.source_remove(timerId)
-      timerId = null
-    }
-    setTmuxSession("")
-  }
-
-  function handleFocusChange(): void {
-    const c = hyprland.focusedClient
-    const windowClass = c?.class ?? ""
-    const pid = c?.pid ?? 0
-
-    if (isTerminal(windowClass)) {
-      // Always re-poll — Ghostty shares one PID across windows
-      stopTmuxPoll()
-      startTmuxPoll(pid)
-    } else {
-      stopTmuxPoll()
-    }
-    // Bump force-update counter to trigger createComputed re-eval
-    setForceUpdate((v) => v + 1)
-  }
-
-  // Listen for BOTH focused client AND focused workspace changes
-  hyprland.connect("notify::focused-client", handleFocusChange)
-  hyprland.connect("notify::focused-workspace", handleFocusChange)
-
-  const text = createComputed(() => {
-    // Touch forceUpdate to ensure re-eval on workspace switch
-    forceUpdate()
-    const c = client()
-    if (!c) return "\u{F0379}  Desktop" // nf-md-home
-
-    const windowClass = c.class ?? ""
-    const title = c.title ?? ""
-
-    if (isTerminal(windowClass)) {
-      const session = tmuxSession()
-      if (session) {
-        // Tmux session: terminal glyph + session name
-        return `\u{F120}  ${truncate(session, 26)}`  // nf-fa-terminal
-      }
-      // Terminal without tmux: show title with terminal glyph
-      return `\u{F120}  ${truncate(title, 26)}` // nf-fa-terminal
-    }
-
-    const icon = appIcon(windowClass)
-    const display = title || windowClass.split(".").pop() || windowClass
-    return `${icon}  ${truncate(display, 30)}`
+function startTmuxPoll(pid: number): void {
+  const generation = pollGeneration
+  pollTmux(pid, generation)
+  GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => {
+    pollTmux(pid, generation)
+    return GLib.SOURCE_REMOVE
   })
+  timerId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 5000, () => {
+    pollTmux(pid, generation)
+    return GLib.SOURCE_CONTINUE
+  })
+}
 
+function stopTmuxPoll(): void {
+  pollGeneration++
+  if (timerId !== null) {
+    GLib.source_remove(timerId)
+    timerId = null
+  }
+  setTmuxSession("")
+}
+
+function handleFocusChange(): void {
+  const c = hyprland.focusedClient
+  const windowClass = c?.class ?? ""
+  const pid = c?.pid ?? 0
+
+  stopTmuxPoll()
+  if (isTerminal(windowClass) && pid > 0) startTmuxPoll(pid)
+  setForceUpdate((v) => v + 1)
+}
+
+hyprland.connect("notify::focused-client", handleFocusChange)
+hyprland.connect("notify::focused-workspace", handleFocusChange)
+handleFocusChange()
+
+const activeWindowText = createComputed(() => {
+  forceUpdate()
+  const c = focusedClient()
+  if (!c) return "\u{F0379}  Desktop"
+
+  const windowClass = c.class ?? ""
+  const title = c.title ?? ""
+
+  if (isTerminal(windowClass)) {
+    const session = tmuxSession()
+    if (session) return `\u{F120}  ${truncate(session, 26)}`
+    return `\u{F120}  ${truncate(title, 26)}`
+  }
+
+  const icon = appIcon(windowClass)
+  const display = title || windowClass.split(".").pop() || windowClass
+  return `${icon}  ${truncate(display, 30)}`
+})
+
+export function ActiveWindow() {
   return (
     <label
       class="active-window-label"
-      label={text}
+      label={activeWindowText}
       halign={3}
       valign={3}
-      $={(self: any) => {
-        self.connect("destroy", () => stopTmuxPoll())
-      }}
     />
   )
 }

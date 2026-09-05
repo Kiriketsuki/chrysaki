@@ -357,12 +357,16 @@ function drawWaveGradientFill(
   const radius = w  // island width as radius
 
   const pat = new cairo.RadialGradient(cx, cy, 0, cx, cy, radius)
-  pat.addColorStopRGBA(0.0, main.r, main.g, main.b, main.a * 1.3)  // centre: punchy
-  pat.addColorStopRGBA(1.0, supp.r, supp.g, supp.b, supp.a * 0.6)  // edge: fades
+  try {
+    pat.addColorStopRGBA(0.0, main.r, main.g, main.b, main.a * 1.3)  // centre: punchy
+    pat.addColorStopRGBA(1.0, supp.r, supp.g, supp.b, supp.a * 0.6)  // edge: fades
 
-  cr.setSource(pat)
-  cr.rectangle(0, 0, w, h)
-  cr.fill()
+    cr.setSource(pat)
+    cr.rectangle(0, 0, w, h)
+    cr.fill()
+  } finally {
+    ;(pat as any).$dispose?.()
+  }
 }
 
 // ── Composite drawing functions ──────────────────────────────────────────────
@@ -470,13 +474,17 @@ function drawRadialRippleFill(
       const eT     = RING_EDGE / span  // fraction of span occupied by one soft edge
 
       const pat = new cairo.RadialGradient(ripple.cx, ripple.cy, innerR, ripple.cx, ripple.cy, outerR)
-      pat.addColorStopRGBA(0,       c.r, c.g, c.b, 0)      // soft inner fade in
-      pat.addColorStopRGBA(eT,      c.r, c.g, c.b, ringA)  // hard inner edge
-      pat.addColorStopRGBA(1 - eT,  c.r, c.g, c.b, ringA)  // hard outer edge
-      pat.addColorStopRGBA(1,       c.r, c.g, c.b, 0)      // soft outer fade out
-      cr.setSource(pat)
-      cr.arc(ripple.cx, ripple.cy, outerR, 0, 2 * Math.PI)
-      cr.fill()
+      try {
+        pat.addColorStopRGBA(0,       c.r, c.g, c.b, 0)      // soft inner fade in
+        pat.addColorStopRGBA(eT,      c.r, c.g, c.b, ringA)  // hard inner edge
+        pat.addColorStopRGBA(1 - eT,  c.r, c.g, c.b, ringA)  // hard outer edge
+        pat.addColorStopRGBA(1,       c.r, c.g, c.b, 0)      // soft outer fade out
+        cr.setSource(pat)
+        cr.arc(ripple.cx, ripple.cy, outerR, 0, 2 * Math.PI)
+        cr.fill()
+      } finally {
+        ;(pat as any).$dispose?.()
+      }
     }
 
     // Birth flash — jewel-toned radial glow at origin (r < 20px)
@@ -484,11 +492,15 @@ function drawRadialRippleFill(
       const birthT   = 1 - ripple.radiusPx / 20
       const flashRad = Math.max(1, ripple.radiusPx * 0.55)
       const flash    = new cairo.RadialGradient(ripple.cx, ripple.cy, 0, ripple.cx, ripple.cy, flashRad)
-      flash.addColorStopRGBA(0.0, c.r, c.g, c.b, birthT * 0.75 * life)
-      flash.addColorStopRGBA(1.0, c.r, c.g, c.b, 0)
-      cr.setSource(flash)
-      cr.arc(ripple.cx, ripple.cy, flashRad, 0, 2 * Math.PI)
-      cr.fill()
+      try {
+        flash.addColorStopRGBA(0.0, c.r, c.g, c.b, birthT * 0.75 * life)
+        flash.addColorStopRGBA(1.0, c.r, c.g, c.b, 0)
+        cr.setSource(flash)
+        cr.arc(ripple.cx, ripple.cy, flashRad, 0, 2 * Math.PI)
+        cr.fill()
+      } finally {
+        ;(flash as any).$dispose?.()
+      }
     }
   }
 
