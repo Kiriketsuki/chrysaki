@@ -4,6 +4,7 @@ import { BarLeft } from "./widgets/BarLeft"
 import { BarCenter } from "./widgets/BarCenter"
 import { BarRight } from "./widgets/BarRight"
 import { ServicePanel } from "./widgets/ServiceStatus"
+import { MousePanel } from "./widgets/MousePanel"
 import { NotificationCenter } from "./widgets/NotificationCenter"
 import { NotificationToast } from "./widgets/NotificationToast"
 
@@ -18,6 +19,7 @@ app.start({
     })
     // Single-instance panels (not per-monitor)
     ServicePanel()
+    MousePanel()
     NotificationCenter()
     NotificationToast()
   },

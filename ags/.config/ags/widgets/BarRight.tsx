@@ -6,6 +6,7 @@ import { MediaPlayer } from "./MediaPlayer"
 import { PulseAudio } from "./PulseAudio"
 import { Network } from "./Network"
 import { Bluetooth } from "./Bluetooth"
+import { Mouse } from "./Mouse"
 import { SystemTray } from "./SystemTray"
 import { ServiceStatus } from "./ServiceStatus"
 import { NotificationToggle } from "./NotificationToggle"
@@ -32,7 +33,14 @@ export function BarRight(gdkmonitor: Gdk.Monitor) {
       cssClass: "segment-network",
     },
     {
-      widget: <Bluetooth />,
+      // The mouse shares this segment. It hides itself when the device is absent,
+      // and a segment of its own would then leave an empty gap between separators.
+      widget: (
+        <box spacing={6} valign={3}>
+          <Bluetooth />
+          <Mouse />
+        </box>
+      ),
       cssClass: "segment-bluetooth",
     },
     {

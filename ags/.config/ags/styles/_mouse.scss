@@ -1,0 +1,112 @@
+@use "palette" as *;
+
+// Bar indicator
+.mouse-button {
+  background: transparent;
+  border: none;
+  padding: 0px 2px;
+  min-height: 0px;
+  min-width: 0px;
+
+  &:hover .mouse-icon {
+    color: $teal-light;
+  }
+}
+
+.mouse-icon {
+  color: $text-primary;
+  font-size: 16px;
+}
+
+.mouse-label {
+  color: $text-primary;
+  font-size: 12px;
+}
+
+.mouse-low .mouse-icon,
+.mouse-low .mouse-label {
+  color: $warning;
+}
+
+.mouse-charging .mouse-icon {
+  color: $emerald-light;
+}
+
+.mouse-offline .mouse-icon,
+.mouse-offline .mouse-label {
+  color: $text-muted;
+}
+
+.mouse-error .mouse-icon,
+.mouse-error .mouse-label {
+  color: $error;
+}
+
+// Quick-control panel. The shell and the buttons reuse the .svc-panel rules.
+.mouse-panel-control {
+  padding: 3px 6px;
+}
+
+.mouse-panel-name {
+  color: $text-primary;
+  font-size: 12px;
+}
+
+.mouse-panel-value {
+  color: $teal-light;
+  font-family: "IosevkaTermSlab Nerd Font";
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.svc-panel-toggle.mouse-panel-active {
+  background: rgba($teal, 0.45);
+  border-color: rgba($teal-light, 0.65);
+  color: $blonde-light;
+}
+
+.mouse-panel-slider {
+  min-height: 0;
+  padding: 0px 2px;
+
+  trough {
+    min-height: 4px;
+    background: rgba(255, 255, 255, 0.10);
+    border: none;
+  }
+
+  highlight {
+    min-height: 4px;
+    background: $teal-light;
+    border: none;
+  }
+
+  slider {
+    min-width: 10px;
+    min-height: 10px;
+    margin: -4px;
+    background: $text-primary;
+    border: none;
+    box-shadow: none;
+  }
+
+  &:disabled highlight {
+    background: $text-muted;
+  }
+}
+
+.mouse-panel-error {
+  color: $blonde-light;
+  background: rgba($error, 0.35);
+  font-size: 11px;
+  padding: 2px 6px;
+}
+
+.mouse-panel-footer {
+  margin-top: 6px;
+  padding: 3px 6px;
+}
+
+.mouse-panel-open {
+  padding: 3px 6px;
+}
