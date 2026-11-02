@@ -3,7 +3,7 @@
  *
  * Calm animation profile: wave gradient + border sine wave only.
  * No slash events, no ripple collisions, no elevated slash pass.
- * Tick rate: 66ms (15fps) vs ChamferedBar's 33ms (30fps).
+ * Tick rate: 66 ms (15 fps). ChamferedBar runs at 100 ms (10 fps).
  *
  * Usage in JSX:
  *   <ChamferedPanel
@@ -38,6 +38,9 @@ const DEFAULT_CHAMFER: ChamferConfig = Object.freeze({
 /** Animation tick interval in ms (~15fps). */
 const TICK_MS = 66
 
+/** Cairo clip overflow in px. Wave peaks reach about 10 px past the allocation. */
+const OVERFLOW_PX = 12
+
 export const ChamferedPanel = GObject.registerClass(
   { GTypeName: "ChrysaChamferedPanel" },
   class ChamferedPanel extends Gtk.Overlay {
@@ -46,6 +49,9 @@ export const ChamferedPanel = GObject.registerClass(
     private _rippleState: RippleState | null = null
     private _borderWaveState: BorderWaveState | null = null
     private _timerId = 0
+    private _bounds: Graphene.Rect | null = null
+    private _boundsW = 0
+    private _boundsH = 0
     private _lastW = 0
     private _lastH = 0
     private _innerBox!: Gtk.Box
@@ -77,8 +83,37 @@ export const ChamferedPanel = GObject.registerClass(
       if (!this._borderWaveState) {
         this._borderWaveState = new BorderWaveState()
       }
-      this._startAnimation()
+      if (this.get_mapped()) this._startAnimation()
       this.queue_draw()
+    }
+
+    /** Returns a cached overflow rect. It rebuilds only when the size changes. */
+    private _overflowBounds(w: number, h: number): Graphene.Rect {
+      if (this._bounds === null || w !== this._boundsW || h !== this._boundsH) {
+        this._bounds = new Graphene.Rect().init(
+          -OVERFLOW_PX, -OVERFLOW_PX, w + 2 * OVERFLOW_PX, h + 2 * OVERFLOW_PX,
+        )
+        this._boundsW = w
+        this._boundsH = h
+      }
+      return this._bounds
+    }
+
+    private _stopAnimation(): void {
+      if (this._timerId !== 0) {
+        GLib.source_remove(this._timerId)
+      }
+      this._timerId = 0
+    }
+
+    vfunc_map(): void {
+      super.vfunc_map()
+      if (this._gradientColors.length > 0) this._startAnimation()
+    }
+
+    vfunc_unmap(): void {
+      this._stopAnimation()
+      super.vfunc_unmap()
     }
 
     private _startAnimation(): void {
@@ -103,9 +138,7 @@ export const ChamferedPanel = GObject.registerClass(
       this._lastH = h
 
       if (w > 0 && h > 0) {
-        const OVF = 12
-        const bounds = new Graphene.Rect()
-        bounds.init(-OVF, -OVF, w + 2 * OVF, h + 2 * OVF)
+        const bounds = this._overflowBounds(w, h)
         const cr = snapshot.append_cairo(bounds)
 
         try {
@@ -129,10 +162,7 @@ export const ChamferedPanel = GObject.registerClass(
     }
 
     vfunc_unroot(): void {
-      if (this._timerId !== 0) {
-        GLib.source_remove(this._timerId)
-        this._timerId = 0
-      }
+      this._stopAnimation()
       super.vfunc_unroot()
     }
   },

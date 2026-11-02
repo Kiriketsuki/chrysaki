@@ -49,36 +49,41 @@ export function NotificationToggle() {
           let pulseTimerId = 0
 
           da.set_draw_func((_area: any, cr: any, w: number, h: number) => {
-            const count = getUnreadCount()
-            if (count <= 0) return
+            // gjs holds a reference on this context until GC. Dispose it now so the recorded drawing does not wait for a collection.
+            try {
+              const count = getUnreadCount()
+              if (count <= 0) return
 
-            const cx = w / 2
-            const cy = h / 2
+              const cx = w / 2
+              const cy = h / 2
 
-            // Radius: interpolate during pulse
-            let radius = BASE_RADIUS
-            let fillHex = ERROR_HEX
-            if (pulseT >= 0 && pulseT <= 1) {
-              // Triangle wave: 0->1->0
-              const wave = pulseT < 0.5 ? pulseT * 2 : (1 - pulseT) * 2
-              radius = BASE_RADIUS + (PULSE_RADIUS - BASE_RADIUS) * easeOutCubic(wave)
-              // Color flash: error -> blonde -> error
-              fillHex = wave > 0.5 ? BLONDE_HEX : ERROR_HEX
+              // Radius: interpolate during pulse
+              let radius = BASE_RADIUS
+              let fillHex = ERROR_HEX
+              if (pulseT >= 0 && pulseT <= 1) {
+                // Triangle wave: 0->1->0
+                const wave = pulseT < 0.5 ? pulseT * 2 : (1 - pulseT) * 2
+                radius = BASE_RADIUS + (PULSE_RADIUS - BASE_RADIUS) * easeOutCubic(wave)
+                // Color flash: error -> blonde -> error
+                fillHex = wave > 0.5 ? BLONDE_HEX : ERROR_HEX
+              }
+
+              drawHexFlat(cr, cx, cy, radius, hexToRgba(fillHex, 1.0))
+
+              // Draw count text — always upright
+              const [tr, tg, tb, ta] = hexToRgba(TEXT_HEX, 1.0)
+              cr.selectFontFace("IosevkaTermSlab Nerd Font", 0, 1)
+              cr.setFontSize(9)
+              const numStr = count > 9 ? "9+" : String(count)
+              const extents = cr.textExtents(numStr)
+              const tx = cx - extents.width / 2 - extents.xBearing
+              const ty = cy - extents.height / 2 - extents.yBearing
+              cr.moveTo(tx, ty)
+              cr.setSourceRGBA(tr, tg, tb, ta)
+              cr.showText(numStr)
+            } finally {
+              cr.$dispose()
             }
-
-            drawHexFlat(cr, cx, cy, radius, hexToRgba(fillHex, 1.0))
-
-            // Draw count text — always upright
-            const [tr, tg, tb, ta] = hexToRgba(TEXT_HEX, 1.0)
-            cr.selectFontFace("IosevkaTermSlab Nerd Font", 0, 1)
-            cr.setFontSize(9)
-            const numStr = count > 9 ? "9+" : String(count)
-            const extents = cr.textExtents(numStr)
-            const tx = cx - extents.width / 2 - extents.xBearing
-            const ty = cy - extents.height / 2 - extents.yBearing
-            cr.moveTo(tx, ty)
-            cr.setSourceRGBA(tr, tg, tb, ta)
-            cr.showText(numStr)
           })
 
           function startPulse(): void {

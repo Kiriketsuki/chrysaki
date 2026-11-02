@@ -90,7 +90,12 @@ function makeSeparator(edge: Edge, barHeight: number): JSX.Element {
       heightRequest={barHeight}
       $={(self: any) =>
         self.set_draw_func((_area: any, cr: any, w: number, h: number) => {
-          drawDiagonalLine(cr, w, h, edge)
+          // gjs holds a reference on this context until GC. Dispose it now so the recorded drawing does not wait for a collection.
+          try {
+            drawDiagonalLine(cr, w, h, edge)
+          } finally {
+            cr.$dispose()
+          }
         })
       }
     />

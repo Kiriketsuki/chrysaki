@@ -8,7 +8,7 @@
  */
 import cairo from 'cairo'
 import type { GradientFrame, GradientStop } from './wave-state'
-import { BorderWaveState } from './border-wave-state'
+import { BorderWaveState, standingEnvelope } from './border-wave-state'
 export type { GradientFrame, GradientStop }
 
 export interface ChamferConfig {
@@ -323,6 +323,9 @@ const SLASH_RENDERERS: Record<string, SlashRenderer> = {
  * Radius equals the island width — main color blooms from the center, supplementary
  * color sits at the edges. Cross-fades between color pairs over 800ms on collision.
  */
+const GRADIENT_CACHE_CAP = 16
+const gradientCache = new Map<string, any>()
+
 function drawWaveGradientFill(
   cr: any,
   w: number,
@@ -338,7 +341,6 @@ function drawWaveGradientFill(
   const getC = (list: readonly GradientStop[], i: number): GradientColor =>
     colors[list[Math.min(i, list.length - 1)].colorIndex % colors.length]
 
-  // Lerp between fromStops and stops by transitionT
   function lerpColor(from: GradientColor, to: GradientColor, t: number): GradientColor {
     return {
       r: from.r + (to.r - from.r) * t,
@@ -348,25 +350,45 @@ function drawWaveGradientFill(
     }
   }
 
-  const t = transitionT
-  const main = lerpColor(getC(fromStops, 0), getC(stops, 0), t)
-  const supp = lerpColor(getC(fromStops, 1), getC(stops, 1), t)
-
   const cx = w / 2
   const cy = h / 2
   const radius = w  // island width as radius
 
-  const pat = new cairo.RadialGradient(cx, cy, 0, cx, cy, radius)
-  try {
+  const buildPattern = (main: GradientColor, supp: GradientColor): any => {
+    const pat = new cairo.RadialGradient(cx, cy, 0, cx, cy, radius)
     pat.addColorStopRGBA(0.0, main.r, main.g, main.b, main.a * 1.3)  // centre: punchy
     pat.addColorStopRGBA(1.0, supp.r, supp.g, supp.b, supp.a * 0.6)  // edge: fades
-
-    cr.setSource(pat)
-    cr.rectangle(0, 0, w, h)
-    cr.fill()
-  } finally {
-    ;(pat as any).$dispose?.()
+    return pat
   }
+
+  // gjs 1.90 gives cairo.Pattern no $dispose method, so the call did nothing.
+  // The garbage collector frees each pattern. The cache keeps one base pattern
+  // per island and colour pair instead of one per frame.
+  let pat: any
+  if (transitionT >= 1) {
+    const main = getC(stops, 0)
+    const supp = getC(stops, 1)
+    const key = `${w}|${h}|${main.r},${main.g},${main.b},${main.a}|${supp.r},${supp.g},${supp.b},${supp.a}`
+    pat = gradientCache.get(key)
+    if (!pat) {
+      pat = buildPattern(main, supp)
+      if (gradientCache.size >= GRADIENT_CACHE_CAP) {
+        gradientCache.delete(gradientCache.keys().next().value as string)
+      }
+      gradientCache.set(key, pat)
+    }
+  } else {
+    // 800 ms cross-fade: the lerped colours change every frame, so build fresh.
+    const t = transitionT
+    pat = buildPattern(
+      lerpColor(getC(fromStops, 0), getC(stops, 0), t),
+      lerpColor(getC(fromStops, 1), getC(stops, 1), t),
+    )
+  }
+
+  cr.setSource(pat)
+  cr.rectangle(0, 0, w, h)
+  cr.fill()
 }
 
 // ── Composite drawing functions ──────────────────────────────────────────────
@@ -474,17 +496,13 @@ function drawRadialRippleFill(
       const eT     = RING_EDGE / span  // fraction of span occupied by one soft edge
 
       const pat = new cairo.RadialGradient(ripple.cx, ripple.cy, innerR, ripple.cx, ripple.cy, outerR)
-      try {
-        pat.addColorStopRGBA(0,       c.r, c.g, c.b, 0)      // soft inner fade in
-        pat.addColorStopRGBA(eT,      c.r, c.g, c.b, ringA)  // hard inner edge
-        pat.addColorStopRGBA(1 - eT,  c.r, c.g, c.b, ringA)  // hard outer edge
-        pat.addColorStopRGBA(1,       c.r, c.g, c.b, 0)      // soft outer fade out
-        cr.setSource(pat)
-        cr.arc(ripple.cx, ripple.cy, outerR, 0, 2 * Math.PI)
-        cr.fill()
-      } finally {
-        ;(pat as any).$dispose?.()
-      }
+      pat.addColorStopRGBA(0,       c.r, c.g, c.b, 0)      // soft inner fade in
+      pat.addColorStopRGBA(eT,      c.r, c.g, c.b, ringA)  // hard inner edge
+      pat.addColorStopRGBA(1 - eT,  c.r, c.g, c.b, ringA)  // hard outer edge
+      pat.addColorStopRGBA(1,       c.r, c.g, c.b, 0)      // soft outer fade out
+      cr.setSource(pat)
+      cr.arc(ripple.cx, ripple.cy, outerR, 0, 2 * Math.PI)
+      cr.fill()
     }
 
     // Birth flash — jewel-toned radial glow at origin (r < 20px)
@@ -492,15 +510,11 @@ function drawRadialRippleFill(
       const birthT   = 1 - ripple.radiusPx / 20
       const flashRad = Math.max(1, ripple.radiusPx * 0.55)
       const flash    = new cairo.RadialGradient(ripple.cx, ripple.cy, 0, ripple.cx, ripple.cy, flashRad)
-      try {
-        flash.addColorStopRGBA(0.0, c.r, c.g, c.b, birthT * 0.75 * life)
-        flash.addColorStopRGBA(1.0, c.r, c.g, c.b, 0)
-        cr.setSource(flash)
-        cr.arc(ripple.cx, ripple.cy, flashRad, 0, 2 * Math.PI)
-        cr.fill()
-      } finally {
-        ;(flash as any).$dispose?.()
-      }
+      flash.addColorStopRGBA(0.0, c.r, c.g, c.b, birthT * 0.75 * life)
+      flash.addColorStopRGBA(1.0, c.r, c.g, c.b, 0)
+      cr.setSource(flash)
+      cr.arc(ripple.cx, ripple.cy, flashRad, 0, 2 * Math.PI)
+      cr.fill()
     }
   }
 
@@ -568,6 +582,75 @@ function buildChamferedVertices(
   return verts
 }
 
+interface BorderSamples {
+  readonly px: Float64Array
+  readonly py: Float64Array
+  readonly nx: Float64Array
+  readonly ny: Float64Array
+  readonly xNorm: Float64Array
+  readonly envelope: Float64Array
+  readonly count: number
+}
+
+const BORDER_CACHE_CAP = 32
+const borderSampleCache = new Map<string, BorderSamples>()
+
+/**
+ * Build the static border sample geometry for one island size and chamfer.
+ * The walk matches the old per-frame loop: sample every STEP px along each
+ * segment, then add the segment endpoint. Callers must not mutate the result.
+ */
+function getBorderSamples(w: number, h: number, c: ChamferConfig): BorderSamples {
+  const key = `${w}|${h}|${c.tl}|${c.tr}|${c.bl}|${c.br}|${c.pointLeft}|${c.pointRight}`
+  const hit = borderSampleCache.get(key)
+  if (hit) return hit
+
+  const STEP = 2
+  const pxA: number[] = [], pyA: number[] = [], nxA: number[] = [], nyA: number[] = []
+  const verts = buildChamferedVertices(w, h, c)
+  for (let i = 0; verts.length >= 2 && i < verts.length; i++) {
+    const [x1, y1] = verts[i]
+    const [x2, y2] = verts[(i + 1) % verts.length]
+    const dx = x2 - x1
+    const dy = y2 - y1
+    const segLen = Math.hypot(dx, dy)
+    if (segLen <= 0) continue
+
+    // Outward normal for clockwise path in screen coords: N = (dy/len, -dx/len)
+    const nx = dy / segLen
+    const ny = -dx / segLen
+
+    for (let segDist = 0; segDist < segLen; segDist += STEP) {
+      pxA.push(x1 + (dx / segLen) * segDist)
+      pyA.push(y1 + (dy / segLen) * segDist)
+      nxA.push(nx)
+      nyA.push(ny)
+    }
+    // Segment endpoint avoids gaps at corners
+    pxA.push(x2); pyA.push(y2); nxA.push(nx); nyA.push(ny)
+  }
+
+  const count = pxA.length
+  const xNorm = new Float64Array(count)
+  const envelope = new Float64Array(count)
+  for (let i = 0; i < count; i++) {
+    // xNorm uses pixel x, so top and bottom edges at the same x share one phase
+    xNorm[i] = Math.max(0, Math.min(1, pxA[i] / w))
+    envelope[i] = standingEnvelope(xNorm[i], w)
+  }
+  const samples: BorderSamples = {
+    px: Float64Array.from(pxA), py: Float64Array.from(pyA),
+    nx: Float64Array.from(nxA), ny: Float64Array.from(nyA),
+    xNorm, envelope, count,
+  }
+
+  if (borderSampleCache.size >= BORDER_CACHE_CAP) {
+    borderSampleCache.delete(borderSampleCache.keys().next().value as string)
+  }
+  borderSampleCache.set(key, samples)
+  return samples
+}
+
 /**
  * Trace the wavy island perimeter onto the Cairo context (path only, no stroke/fill).
  *
@@ -586,65 +669,21 @@ function traceSineWavePath(
   chamfer: ChamferConfig,
   borderWave: BorderWaveState,
 ): void {
-  const verts = buildChamferedVertices(w, h, chamfer)
-  if (verts.length < 2) return
-
-  const STEP = 2
+  const samples = getBorderSamples(w, h, chamfer)
   cr.newPath()
-  let started = false
+  if (samples.count < 2) return
 
-  for (let i = 0; i < verts.length; i++) {
-    const [x1, y1] = verts[i]
-    const [x2, y2] = verts[(i + 1) % verts.length]
-    const dx = x2 - x1
-    const dy = y2 - y1
-    const segLen = Math.hypot(dx, dy)
-    if (segLen <= 0) continue
-
-    // Outward normal for clockwise path in screen coords: N = (dy/len, -dx/len)
-    const nx = dy / segLen
-    const ny = -dx / segLen
-
-    let segDist = 0
-    while (segDist < segLen) {
-      const px = x1 + (dx / segLen) * segDist
-      const py = y1 + (dy / segLen) * segDist
-      // x-position normalized to island width — same value for top and bottom at
-      // the same horizontal position, so peaks align vertically into oval loops
-      const xNorm = Math.max(0, Math.min(1, px / w))
-      const disp  = borderWave.displacementAt(xNorm, w)
-
-      if (!started) { cr.moveTo(px + nx * disp, py + ny * disp); started = true }
-      else           { cr.lineTo(px + nx * disp, py + ny * disp) }
-
-      segDist += STEP
-    }
-
-    // Segment endpoint — avoids gaps at corners
-    const xNormEnd = Math.max(0, Math.min(1, x2 / w))
-    const dispEnd  = borderWave.displacementAt(xNormEnd, w)
-    cr.lineTo(x2 + nx * dispEnd, y2 + ny * dispEnd)
+  const now = Date.now()
+  const { px, py, nx, ny, xNorm, envelope, count } = samples
+  for (let i = 0; i < count; i++) {
+    const d = borderWave.displacementWithEnvelope(xNorm[i], envelope[i], now)
+    const x = px[i] + nx[i] * d
+    const y = py[i] + ny[i] * d
+    if (i === 0) cr.moveTo(x, y)
+    else         cr.lineTo(x, y)
   }
 
   cr.closePath()
-}
-
-/**
- * Trace the island outline — wavy when borderWave is present, chamfered rect otherwise.
- * Used as the fill/clip path for all island drawing operations.
- */
-function traceIslandPath(
-  cr: any,
-  w: number,
-  h: number,
-  chamfer: ChamferConfig,
-  borderWave?: BorderWaveState,
-): void {
-  if (borderWave) {
-    traceSineWavePath(cr, w, h, chamfer, borderWave)
-  } else {
-    traceChamferedRect(cr, 0, 0, w, h, chamfer)
-  }
 }
 
 /**

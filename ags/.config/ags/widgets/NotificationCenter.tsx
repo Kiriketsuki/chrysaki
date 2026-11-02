@@ -56,7 +56,9 @@ export function onUnreadChange(cb: () => void): void {
   _unreadListeners.push(cb)
 }
 
-notifd.connect("notified", () => {
+// A replacement updates an existing notification, so it does not add to the unread count.
+notifd.connect("notified", (_self: unknown, _id: number, replaced: boolean) => {
+  if (replaced) return
   _setUnreadCount(_unreadCount + 1)
 })
 
@@ -454,9 +456,16 @@ function enforceNotificationCap(): void {
 
 // ── notifd event handlers ────────────────────────────────────────────────────
 
-notifd.connect("notified", (_self: unknown, id: number) => {
+notifd.connect("notified", (_self: unknown, id: number, _replaced: boolean) => {
   const n = notifd.get_notification(id)
   if (n) {
+    // A replaced id already has a panel row. Remove it first so no row is orphaned.
+    // The replacement keeps the seen state of the old row.
+    if (_panelRows.has(id)) {
+      const wasSeen = _seenIds.has(id)
+      removeNotificationFromPanel(id)
+      if (wasSeen) _seenIds.add(id)
+    }
     const row = addNotificationToPanel(n)
     // Single entry animation for incremental additions
     if (row) {

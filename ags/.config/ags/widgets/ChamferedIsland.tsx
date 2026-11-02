@@ -88,6 +88,9 @@ const INTERSECT_CY_THRESHOLD = 0.35  // ~14px on 40px bar
 const INTERSECT_X_MIN = 0.125
 const INTERSECT_X_MAX = 0.875
 
+/** Cairo clip overflow in px. Wave peaks reach about 10 px past the allocation. */
+const OVERFLOW_PX = 12
+
 export const ChamferedBar = GObject.registerClass(
   { GTypeName: "ChrysaChamferedBar" },
   class ChamferedBar extends Gtk.Overlay {
@@ -99,6 +102,9 @@ export const ChamferedBar = GObject.registerClass(
     private _triggeredPairs: Set<string> = new Set()
     private _collidingIds: Set<number> = new Set()
     private _timerId = 0
+    private _bounds: Graphene.Rect | null = null
+    private _boundsW = 0
+    private _boundsH = 0
     private _lastW = 0
     private _lastH = 0
     private _innerBox!: Gtk.Box
@@ -137,8 +143,37 @@ export const ChamferedBar = GObject.registerClass(
       if (!this._borderWaveState) {
         this._borderWaveState = new BorderWaveState()
       }
-      this._startAnimation()
+      if (this.get_mapped()) this._startAnimation()
       this.queue_draw()
+    }
+
+    /** Returns a cached overflow rect. It rebuilds only when the size changes. */
+    private _overflowBounds(w: number, h: number): Graphene.Rect {
+      if (this._bounds === null || w !== this._boundsW || h !== this._boundsH) {
+        this._bounds = new Graphene.Rect().init(
+          -OVERFLOW_PX, -OVERFLOW_PX, w + 2 * OVERFLOW_PX, h + 2 * OVERFLOW_PX,
+        )
+        this._boundsW = w
+        this._boundsH = h
+      }
+      return this._bounds
+    }
+
+    private _stopAnimation(): void {
+      if (this._timerId !== 0) {
+        GLib.source_remove(this._timerId)
+      }
+      this._timerId = 0
+    }
+
+    vfunc_map(): void {
+      super.vfunc_map()
+      if (this._gradientColors.length > 0) this._startAnimation()
+    }
+
+    vfunc_unmap(): void {
+      this._stopAnimation()
+      super.vfunc_unmap()
     }
 
     private _startAnimation(): void {
@@ -228,15 +263,14 @@ export const ChamferedBar = GObject.registerClass(
       if (w > 0 && h > 0) {
         // Expand Cairo clip rect so wave peaks/troughs can draw past widget allocation.
         // Max wave displacement: ~4.5px standing + ~6px pulse = ~10px; use 12 for margin.
-        const OVF = 12
-        const bounds = new Graphene.Rect()
-        bounds.init(-OVF, -OVF, w + 2 * OVF, h + 2 * OVF)
+        const bounds = this._overflowBounds(w, h)
         const cr = snapshot.append_cairo(bounds)
 
+        // Read the frame once. The getter builds the frame on each call.
+        const frame = this._rippleState?.currentFrame
         let rippleDraws: RippleDraw[] | undefined
-        if (this._rippleState && this._gradientColors.length > 0) {
+        if (frame && this._gradientColors.length > 0) {
           const now   = Date.now()
-          const frame = this._rippleState.currentFrame
           rippleDraws = frame.ripples
             .map(r => {
               const age   = now - r.startMs
@@ -268,7 +302,7 @@ export const ChamferedBar = GObject.registerClass(
             h,
             this._chamfer,
             this._gradientColors.length > 0 ? this._gradientColors : undefined,
-            this._rippleState?.currentFrame.gradient,
+            frame?.gradient,
             rippleDraws,
             normalSlashes,
             this._borderWaveState ?? undefined,
@@ -298,10 +332,7 @@ export const ChamferedBar = GObject.registerClass(
     }
 
     vfunc_unroot(): void {
-      if (this._timerId !== 0) {
-        GLib.source_remove(this._timerId)
-        this._timerId = 0
-      }
+      this._stopAnimation()
       this._triggeredPairs.clear()
       this._collidingIds.clear()
       super.vfunc_unroot()
