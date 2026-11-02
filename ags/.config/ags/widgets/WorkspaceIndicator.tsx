@@ -140,29 +140,34 @@ function WorkspacePip({ id }: PipProps) {
         heightRequest={PIP_HEIGHT}
         $={(da: any) => {
           da.set_draw_func((_area: any, cr: any, w: number, h: number) => {
-            const isActive  = isActiveOnMonitor(id)
-            const rot       = pipCurrentRot.get(id) ?? 0
+            // gjs holds a reference on this context until GC. Dispose it now so the recorded drawing does not wait for a collection.
+            try {
+              const isActive  = isActiveOnMonitor(id)
+              const rot       = pipCurrentRot.get(id) ?? 0
 
-            const cx = w / 2
-            const cy = h / 2
+              const cx = w / 2
+              const cy = h / 2
 
-            // Draw hex fill (rotated)
-            const fillHex  = isActive ? ACTIVE_FILL  : OCCUPIED_FILL
-            const fillAlpha = 1.0
-            drawHexFlat(cr, cx, cy, HEX_RADIUS, hexToRgba(fillHex, fillAlpha), rot)
+              // Draw hex fill (rotated)
+              const fillHex  = isActive ? ACTIVE_FILL  : OCCUPIED_FILL
+              const fillAlpha = 1.0
+              drawHexFlat(cr, cx, cy, HEX_RADIUS, hexToRgba(fillHex, fillAlpha), rot)
 
-            // Draw workspace number — always upright, no rotation
-            const textHex = isActive ? ACTIVE_TEXT : OCCUPIED_TEXT
-            const [tr, tg, tb, ta] = hexToRgba(textHex, 1.0)
-            cr.selectFontFace("IosevkaTermSlab Nerd Font", 0, 1) // NORMAL, BOLD
-            cr.setFontSize(10)
-            const numStr   = id % 10 === 0 ? String(id - 10) : String(id)
-            const extents  = cr.textExtents(numStr)
-            const tx = cx - extents.width / 2 - extents.xBearing
-            const ty = cy - extents.height / 2 - extents.yBearing
-            cr.moveTo(tx, ty)
-            cr.setSourceRGBA(tr, tg, tb, ta)
-            cr.showText(numStr)
+              // Draw workspace number — always upright, no rotation
+              const textHex = isActive ? ACTIVE_TEXT : OCCUPIED_TEXT
+              const [tr, tg, tb, ta] = hexToRgba(textHex, 1.0)
+              cr.selectFontFace("IosevkaTermSlab Nerd Font", 0, 1) // NORMAL, BOLD
+              cr.setFontSize(10)
+              const numStr   = id % 10 === 0 ? String(id - 10) : String(id)
+              const extents  = cr.textExtents(numStr)
+              const tx = cx - extents.width / 2 - extents.xBearing
+              const ty = cy - extents.height / 2 - extents.yBearing
+              cr.moveTo(tx, ty)
+              cr.setSourceRGBA(tr, tg, tb, ta)
+              cr.showText(numStr)
+            } finally {
+              cr.$dispose()
+            }
           })
 
           // Initialize rotation flat — active pips animate in after realization
@@ -250,7 +255,11 @@ function PipSeparator({ afterId, rangeMax }: { afterId: number; rangeMax: number
         heightRequest={SEP_HEIGHT}
         $={(da: any) => {
           da.set_draw_func((_area: any, cr: any, w: number, h: number) => {
-            drawTriangleSeparator(cr, w, h, 0x6a / 255, 0x6e / 255, 0x82 / 255, 0.5)
+            try {
+              drawTriangleSeparator(cr, w, h, 0x6a / 255, 0x6e / 255, 0x82 / 255, 0.5)
+            } finally {
+              cr.$dispose()
+            }
           })
         }}
       />

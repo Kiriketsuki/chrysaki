@@ -33,6 +33,17 @@ const GAUSSIAN_SIGMA = 0.45
 const WAVELENGTH_PX  = 6
 const FREQ_MOD_DEPTH = 0.3
 
+/**
+ * Time-independent part of the standing wave: gaussian * spatial sine.
+ * Callers can cache it per island width and x position.
+ */
+export function standingEnvelope(xNorm: number, islandWidthPx: number): number {
+  const N        = Math.max(1, Math.round(islandWidthPx / WAVELENGTH_PX))
+  const gaussian = Math.exp(-Math.pow((xNorm - 0.5) / GAUSSIAN_SIGMA, 2) / 2)
+  const spatial  = Math.sin(xNorm * 2 * Math.PI * N)
+  return gaussian * spatial
+}
+
 export class BorderWaveState {
   private _phase: number = Math.random() * Math.PI * 2
   private readonly _periodBase: number = 1500 + Math.random() * 800
@@ -45,14 +56,20 @@ export class BorderWaveState {
 
   private _pulses: BorderPulse[] = []
   private _lastTickMs: number = Date.now()
+  private readonly _t0: number = Date.now()
 
   tick(): void {
     const now = Date.now()
     const dt  = now - this._lastTickMs
     this._lastTickMs = now
 
-    const freqMod   = 1 + FREQ_MOD_DEPTH * Math.sin(now * 2 * Math.PI / this._modPeriod + this._modOffset)
+    const modT      = ((now - this._t0) % this._modPeriod) / this._modPeriod
+    const freqMod   = 1 + FREQ_MOD_DEPTH * Math.sin(modT * 2 * Math.PI + this._modOffset)
     this._phase    += dt * 2 * Math.PI * freqMod / this._periodBase
+    // The phase grows without a wrap, and Math.cos becomes about 9x slower once
+    // the argument passes about 1.6e6 rad, which takes 4.5 to 7 days of uptime.
+    // Cos has period 2pi, so the wrap leaves the visual result unchanged.
+    this._phase    %= 2 * Math.PI
 
     this._spatialGrad += this._gradRate * dt
     if (Math.abs(this._spatialGrad) > this._gradMax) {
@@ -74,16 +91,12 @@ export class BorderWaveState {
     ]
   }
 
-  displacementAt(xNorm: number, islandWidthPx = 300): number {
-    const N        = Math.max(1, Math.round(islandWidthPx / WAVELENGTH_PX))
-    const temporal = Math.cos(this._phase + xNorm * this._spatialGrad)
-    const gaussian = Math.exp(-Math.pow((xNorm - 0.5) / GAUSSIAN_SIGMA, 2) / 2)
-    const spatial  = Math.sin(xNorm * 2 * Math.PI * N)
-    const standing = 1.0 * gaussian * spatial * temporal
+  /** Displacement from a precomputed envelope and a caller-supplied clock. */
+  displacementWithEnvelope(xNorm: number, envelope: number, now: number): number {
+    const standing = envelope * Math.cos(this._phase + xNorm * this._spatialGrad)
 
     if (this._pulses.length === 0) return standing
 
-    const now = Date.now()
     let pulseDelta = 0
     for (const p of this._pulses) {
       const age         = (now - p.startMs) / PULSE_DURATION_MS
@@ -99,5 +112,9 @@ export class BorderWaveState {
     }
 
     return standing + pulseDelta
+  }
+
+  displacementAt(xNorm: number, islandWidthPx = 300): number {
+    return this.displacementWithEnvelope(xNorm, standingEnvelope(xNorm, islandWidthPx), Date.now())
   }
 }

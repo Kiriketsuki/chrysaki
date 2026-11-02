@@ -133,6 +133,7 @@ export class RippleState {
 
     // Wave drift ~1 rad/s
     this._wavePhaseOffset += dt * 0.001
+    this._wavePhaseOffset %= 2 * Math.PI
 
     // Gradient transition over 800ms
     if (this._transitionT < 1) {

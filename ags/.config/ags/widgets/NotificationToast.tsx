@@ -46,9 +46,14 @@ function ensureProgressTimer(): void {
       return GLib.SOURCE_REMOVE
     }
     const now = Date.now()
+    const staleIds = new Set<number>()
     for (const n of [..._visible]) {
       const timing = _timings.get(n.id)
-      if (!timing) continue
+      if (!timing) {
+        // A toast without timing never expires. Drop it after the loop.
+        staleIds.add(n.id)
+        continue
+      }
       const da = _progressDAs.get(n.id)
       if (da) da.queue_draw()
 
@@ -59,6 +64,10 @@ function ensureProgressTimer(): void {
           removeToast(n)
         }
       }
+    }
+    if (staleIds.size > 0) {
+      _visible = _visible.filter((v) => !staleIds.has(v.id))
+      pump()
     }
     return GLib.SOURCE_CONTINUE
   })
@@ -163,31 +172,37 @@ function buildToastRow(n: AstalNotifd.Notification): any {
         $={(da: any) => {
           _progressDAs.set(n.id, da)
           da.set_draw_func((_area: any, cr: any, w: number, h: number) => {
-            const timing = _timings.get(n.id)
-            if (!timing) return
+            // GTK owns cr and keeps its own reference. This drops the gjs reference early.
+            try {
+              const timing = _timings.get(n.id)
+              if (!timing) return
 
-            const now = Date.now()
-            const elapsed = timing.pausedAt !== null
-              ? timing.pausedAt
-              : now - timing.startMs
-            const progress = Math.max(0, 1 - elapsed / timing.totalMs)
+              const now = Date.now()
+              const elapsed = timing.pausedAt !== null
+                ? timing.pausedAt
+                : now - timing.startMs
+              const progress = Math.max(0, 1 - elapsed / timing.totalMs)
 
-            // Background track
-            cr.setSourceRGBA(1, 1, 1, 0.1)
-            cr.rectangle(0, 0, w, h)
-            cr.fill()
+              // Background track
+              cr.setSourceRGBA(1, 1, 1, 0.1)
+              cr.rectangle(0, 0, w, h)
+              cr.fill()
 
-            // Progress fill in accent color
-            const hex = accentColor
-            const r = parseInt(hex.slice(1, 3), 16) / 255
-            const g = parseInt(hex.slice(3, 5), 16) / 255
-            const b = parseInt(hex.slice(5, 7), 16) / 255
-            cr.setSourceRGBA(r, g, b, 0.9)
-            cr.rectangle(0, 0, w * progress, h)
-            cr.fill()
+              // Progress fill in accent color
+              const hex = accentColor
+              const r = parseInt(hex.slice(1, 3), 16) / 255
+              const g = parseInt(hex.slice(3, 5), 16) / 255
+              const b = parseInt(hex.slice(5, 7), 16) / 255
+              cr.setSourceRGBA(r, g, b, 0.9)
+              cr.rectangle(0, 0, w * progress, h)
+              cr.fill()
+            } finally {
+              cr.$dispose()
+            }
           })
           da.connect("destroy", () => {
-            _progressDAs.delete(n.id)
+            // The destroy can fire late, after a replacement registered a new area under this id.
+            if (_progressDAs.get(n.id) === da) _progressDAs.delete(n.id)
           })
         }}
       />
@@ -200,11 +215,12 @@ function buildToastRow(n: AstalNotifd.Notification): any {
 
 // ── Toast lifecycle ──────────────────────────────────────────────────────────
 
-function addToastToContainer(n: AstalNotifd.Notification): void {
+function addToastToContainer(n: AstalNotifd.Notification, after?: any): void {
   if (!_container) return
   const row = buildToastRow(n)
   _rowWidgets.set(n.id, row)
-  _container.append(row)
+  if (after !== undefined) _container.insert_child_after(row, after)
+  else _container.append(row)
 
   const isCritical = n.urgency === AstalNotifd.Urgency.CRITICAL
   _timings.set(n.id, {
@@ -239,9 +255,27 @@ function pump(): void {
 }
 
 function removeToast(n: AstalNotifd.Notification): void {
-  _visible = _visible.filter((v) => v !== n)
+  // Filter by id: a replacement is a new object with the same id.
+  _visible = _visible.filter((v) => v.id !== n.id)
+  _queue = _queue.filter((v) => v.id !== n.id)
   removeToastFromContainer(n)
   pump()
+}
+
+// A replaced notification keeps its slot and gets a fresh timer. Without this,
+// the old row stays orphaned and its timing entry never expires.
+function replaceToast(n: AstalNotifd.Notification): void {
+  if (_visible.some((v) => v.id === n.id)) {
+    const oldRow = _rowWidgets.get(n.id)
+    const prev = oldRow ? oldRow.get_prev_sibling() : null
+    removeToastFromContainer(n)
+    _visible = _visible.map((v) => (v.id === n.id ? n : v))
+    addToastToContainer(n, prev)
+    updateWindowVisibility()
+    updateDepthOpacity()
+  } else if (_queue.some((v) => v.id === n.id)) {
+    _queue = _queue.map((v) => (v.id === n.id ? n : v))
+  }
 }
 
 function enqueue(n: AstalNotifd.Notification): void {
@@ -257,9 +291,15 @@ function enqueue(n: AstalNotifd.Notification): void {
 
 // ── notifd event handlers ────────────────────────────────────────────────────
 
-notifd.connect("notified", (_self: unknown, id: number) => {
+notifd.connect("notified", (_self: unknown, id: number, _replaced: boolean) => {
   const n = notifd.get_notification(id)
-  if (n) enqueue(n)
+  if (!n) return
+  // Check the id, not the flag alone, so a replacement never creates a second toast.
+  if (_visible.some((v) => v.id === id) || _queue.some((v) => v.id === id)) {
+    replaceToast(n)
+    return
+  }
+  enqueue(n)
 })
 
 notifd.connect("resolved", (_self: unknown, id: number) => {
