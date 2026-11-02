@@ -1,6 +1,61 @@
-// Chrysaki — Ghostty terminal shader
-// Hex wave: Chrysaki color cycling — each wave cycle transitions to a new accent color
+// Chrysaki hex-wave shader for Ghostty.
+// A faint hex grid with tactical triangles at the corners. A wave band crosses
+// the grid, spins each hex 60 degrees, and blends the grid from one Chrysaki
+// accent to the next. A soft vignette darkens the edges.
 
+// ── Mode ──────────────────────────────────────────────────────────────────────
+// 1 animates the wave. Pair it with custom-shader-animation = true.
+// 0 draws one fixed frame of the wave. Pair it with custom-shader-animation = false.
+// With animation off, Ghostty redraws only when the terminal changes. A moving
+// wave then jumps to a new place on every keystroke, so mode 0 removes time.
+#define ANIMATE 0
+
+// ── Tunables ──────────────────────────────────────────────────────────────────
+const float CELL   = 120.0;       // Hex cell size in px.
+const float PX     = 1.0 / CELL;  // One pixel in cell units.
+const float SPEED  = 2.5;         // Wave speed in cells per second.
+const float PERIOD = 50.0;        // Cells per cycle. 20 s per cycle at SPEED 2.5.
+const float RING_R = 0.43;        // Ring radius in hexDist units.
+const float TRI_R  = 0.018;       // Corner triangle size.
+
+// Frozen frame for mode 0: Emerald leads into Amethyst on a 45 degree diagonal,
+// and the band crosses the middle of the window.
+const int   STILL_OLD   = 0;      // Emerald.
+const int   STILL_NEW   = 2;      // Amethyst.
+const float STILL_ANGLE = 0.7853982;
+const float STILL_LAG   = 1.5;    // Cells the band sits behind the window centre.
+
+// ── Palette ───────────────────────────────────────────────────────────────────
+const vec3 ACCENTS[4] = vec3[4](
+    vec3(0.102, 0.541, 0.416),    // Emerald Lt    #1a8a6a
+    vec3(0.110, 0.239, 0.478),    // Royal Blue Lt #1c3d7a
+    vec3(0.345, 0.188, 0.565),    // Amethyst Lt   #583090
+    vec3(0.125, 0.588, 0.612)     // Teal Lt       #20969c
+);
+// One complementary triangle colour per ACCENTS entry.
+const vec3 TRI_COLORS[4] = vec3[4](
+    vec3(0.839, 0.122, 0.565),    // Magenta    #D61F90, against Emerald
+    vec3(0.984, 0.694, 0.235),    // Blonde     #FBB13C, against Royal Blue
+    vec3(0.506, 0.773, 0.125),    // Chartreuse #81C520, against Amethyst
+    vec3(0.714, 0.247, 0.290)     // Error Lt   #b53f4a, against Teal
+);
+
+// Hex corners in cell units, with the direction each triangle points.
+const vec2 TRI_POS[6] = vec2[6](
+    vec2( 0.0,  0.57735), vec2( 0.5,  0.28868), vec2( 0.5, -0.28868),
+    vec2( 0.0, -0.57735), vec2(-0.5, -0.28868), vec2(-0.5,  0.28868)
+);
+const float TRI_DIR[6] = float[6](-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
+
+// The cell and its six neighbours. A spun ring can spill into a neighbour.
+const vec2 OFF[7] = vec2[7](
+    vec2( 0.0,  0.0),       vec2( 1.0,  0.0),       vec2(-1.0,  0.0),
+    vec2( 0.5,  0.8660254), vec2(-0.5,  0.8660254),
+    vec2( 0.5, -0.8660254), vec2(-0.5, -0.8660254)
+);
+
+// ── Geometry ──────────────────────────────────────────────────────────────────
+// Returns the offset inside the nearest hex (xy) and that hex's centre (zw).
 vec4 hexCoords(vec2 uv) {
     const vec2 r = vec2(1.0, 1.7320508);
     vec2 h = r * 0.5;
@@ -10,15 +65,16 @@ vec4 hexCoords(vec2 uv) {
     return vec4(gv, uv - gv);
 }
 
-// Flat-top hex SDF: 0 = centre, 0.5 = edge
+// Hex distance: 0 at the centre, 0.5 at a corner. It is 1-Lipschitz, so one
+// pixel of screen distance changes it by at most PX.
 float hexDist(vec2 p) {
     p = abs(p);
-    return max(dot(p, normalize(vec2(1.0, 1.7320508))), p.x);
+    return max(dot(p, vec2(0.5, 0.8660254)), p.x);
 }
 
-// Equilateral triangle SDF (IQ formulation), pointing up, size controlled by r
+// Equilateral triangle SDF (IQ formulation), pointing up, half side r.
 float triSDF(vec2 p, float r) {
-    const float k = 1.73205;
+    const float k = 1.7320508;
     p.x = abs(p.x) - r;
     p.y = p.y + r / k;
     if (p.x + k * p.y > 0.0) p = vec2(p.x - k * p.y, -k * p.x - p.y) * 0.5;
@@ -26,165 +82,115 @@ float triSDF(vec2 p, float r) {
     return -length(p) * sign(p.y);
 }
 
-// ~2px hex ring at radius r
+// Anti-aliased ring about 2 px wide at radius r. The old step() ring aliased.
 float hexRing(float d, float r) {
-    float k = r * 2.0;
-    return step(0.490 * k, d) * (1.0 - step(0.510 * k, d));
+    float halfWidth = 0.02 * r;
+    return 1.0 - smoothstep(halfWidth - 0.5 * PX, halfWidth + 0.5 * PX, abs(d - r));
 }
 
-// Perceived luminance (Rec. 709)
-float percLum(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
+vec2 rotate(vec2 p, float a) {
+    float c = cos(a), s = sin(a);
+    return vec2(c * p.x - s * p.y, s * p.x + c * p.y);
+}
 
-// Scale c so its perceived luminance matches Amethyst's (#583090 = 0.345,0.188,0.565)
+// Scales c so that its Rec. 709 luminance matches Amethyst Lt. All four
+// accents then read at the same brightness.
+const vec3  LUM        = vec3(0.2126, 0.7152, 0.0722);
 const float TARGET_LUM = 0.2126 * 0.345 + 0.7152 * 0.188 + 0.0722 * 0.565;
-vec3 normLum(vec3 c) { return c * (TARGET_LUM / max(percLum(c), 0.001)); }
+vec3 normLum(vec3 c) { return c * (TARGET_LUM / max(dot(c, LUM), 0.001)); }
 
+float hash(float n) { return fract(sin(n * 127.1 + 43.5) * 43758.5); }
+
+// ── Main ──────────────────────────────────────────────────────────────────────
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
-    vec2 uv  = fragCoord / iResolution.xy;
-    float ar = iResolution.x / iResolution.y;
+    vec2 uv    = fragCoord / iResolution.xy;
     vec4 color = texture(iChannel0, uv);
 
-    // ── Hex grid ─────────────────────────────────────────────────────────────
-    float cellSize   = 120.0;
-    vec4  hc         = hexCoords(fragCoord / cellSize);
+    vec4  hc         = hexCoords(fragCoord / CELL);
     vec2  cellCenter = hc.zw;
+    vec2  extent     = iResolution.xy / CELL;
 
-    // ── Wave: new random direction each cycle ────────────────────────────────
-    float speed  = 2.5;
-    float period = 50.0;  // 25% slower than 40 (10 s per cycle)
-    float cycleT = mod(iTime * speed, period);
-    float cycleN = floor(iTime * speed / period);
-    float slot     = floor(fract(sin(cycleN * 127.1 + 43.5) * 43758.5) * 8.0);
-    float dirAngle = slot * 0.7853982;
-    vec2  waveDir  = vec2(cos(dirAngle), sin(dirAngle));
-
-    // ── Chrysaki accent palette (light variants) ──────────────────────────────
-    const vec3 ACCENTS[4] = vec3[4](
-        vec3(0.102, 0.541, 0.416),   // Emerald   #1a8a6a
-        vec3(0.110, 0.239, 0.478),   // Royal Blue #1c3d7a
-        vec3(0.345, 0.188, 0.565),   // Amethyst  #583090
-        vec3(0.125, 0.588, 0.612)    // Teal      #20969c
-    );
-    // Complementary triangle colors — one per ACCENTS index
-    const vec3 TRI_COLORS[4] = vec3[4](
-        vec3(0.839, 0.122, 0.565),   // Magenta    #D61F90 — complement of Emerald
-        vec3(0.984, 0.694, 0.235),   // Blonde     #FBB13C — complement of Royal Blue
-        vec3(0.506, 0.773, 0.125),   // Chartreuse #81C520 — complement of Amethyst
-        vec3(0.714, 0.247, 0.290)    // Error Lt   #b53f4a — complement of Teal
-    );
-
-    // Pick new color from cycleN, old color from cycleN-1 (offset by 1 so they differ)
-    int newIdx = int(mod(fract(sin(cycleN        * 127.1 + 43.5) * 43758.5) * 4.0, 4.0));
-    int oldIdx = int(mod(fract(sin((cycleN - 1.0) * 127.1 + 43.5) * 43758.5) * 4.0, 4.0));
-    // Ensure they differ by shifting if equal
-    if (oldIdx == newIdx) oldIdx = int(mod(float(oldIdx + 1), 4.0));
-    vec3 newColor = ACCENTS[newIdx];
-    vec3 oldColor = ACCENTS[oldIdx];
-
-    float extX    = iResolution.x / cellSize;
-    float extY    = iResolution.y / cellSize;
-    float minProj = min(0.0, waveDir.x * extX) + min(0.0, waveDir.y * extY);
+    // ── Wave state: direction, colour pair and band position ─────────────────
+#if ANIMATE
+    float cycleN = floor(iTime * SPEED / PERIOD);
+    float cycleT = mod(iTime * SPEED, PERIOD);
+    float seed   = hash(cycleN);
+    float angle  = floor(seed * 8.0) * 0.7853982;
+    int   newIdx = int(seed * 4.0);
+    int   oldIdx = int(hash(cycleN - 1.0) * 4.0);
+    // Each cycle must change colour.
+    if (oldIdx == newIdx) oldIdx = (oldIdx + 1) % 4;
+    vec2  waveDir = vec2(cos(angle), sin(angle));
+    // Start the band just outside the first corner it reaches.
+    float minProj = min(0.0, waveDir.x * extent.x) + min(0.0, waveDir.y * extent.y);
     float wavePos = cycleT + minProj - 4.0;
+#else
+    int   oldIdx  = STILL_OLD;
+    int   newIdx  = STILL_NEW;
+    vec2  waveDir = vec2(cos(STILL_ANGLE), sin(STILL_ANGLE));
+    float wavePos = dot(0.5 * extent, waveDir) - STILL_LAG;
+#endif
 
-    float cellProj = dot(cellCenter, waveDir);
-    float dx       = cellProj - wavePos;
+    vec3 oldCol = normLum(ACCENTS[oldIdx]);
+    vec3 newCol = normLum(ACCENTS[newIdx]);
 
-    // ── Wave envelope: 7 hexes wide ──────────────────────────────────────────
-    float lead  = exp(-max(dx,  0.0) * max(dx,  0.0) * 0.35);
-    float trail = exp(-max(-dx, 0.0) * max(-dx, 0.0) * 0.10);
-    float pop   = lead * trail;
+    // ── This cell's place in the band ────────────────────────────────────────
+    float dx       = dot(cellCenter, waveDir) - wavePos;
+    float lead     = exp(-max(dx, 0.0) * max(dx, 0.0) * 0.35);
+    float trail    = exp(-max(-dx, 0.0) * max(-dx, 0.0) * 0.10);
+    float pop      = lead * trail;
+    float progress = smoothstep(-2.5, 2.5, -dx);   // 0 to 1 as the band passes.
+    float growPop  = exp(-dx * dx * 0.8);          // 1 at the band centre.
 
-    // ── Continuous spin: sigmoid progress + bell-curve growth ────────────────
-    float progress  = smoothstep(-2.5, 2.5, -dx);     // 0→1 as wave passes
-
-    // ── Color: blend old → new as wave passes (progress 0→1) ────────────────
-    vec3 hexColor = normLum(mix(oldColor, newColor, progress));
+    vec3 hexColor = mix(oldCol, newCol, progress);
     vec3 triColor = mix(TRI_COLORS[oldIdx], TRI_COLORS[newIdx], progress);
-    vec3 waveCol  = hexColor;
-    float spinAngle = progress * 1.04720;              // 60° total rotation
-    float growPop   = exp(-dx * dx * 0.8);             // bell: 1.0 at dx=0, ~0.45 at ±1
-    float ringScale = 1.0 + 0.038 * growPop;          // fills gap: 1.042x at centre, ~1.02x at ±1
 
-    float ca = cos(spinAngle), sa = sin(spinAngle);
-    vec2 rotP = vec2(ca * hc.x - sa * hc.y, sa * hc.x + ca * hc.y);
-    float d     = hexDist(rotP);
-    float dBase = hexDist(hc.xy);  // unrotated, for the permanent base grid
-
-    // ── Base hex grid: hidden while hex is spinning ───────────────────────────
+    // ── Base grid and resting ring, hidden while the hex spins ───────────────
     float normalMask = 1.0 - smoothstep(0.2, 0.7, growPop);
-    float baseEdge = hexRing(dBase, 0.43);
-    color.rgb += hexColor * baseEdge * 0.012 * normalMask;
+    float dBase      = hexDist(hc.xy);
+    float dSpun      = hexDist(rotate(hc.xy, progress * 1.0471976));
+    color.rgb += hexColor * hexRing(dBase, RING_R) * 0.012 * normalMask;
+    color.rgb += hexColor * hexRing(dSpun, RING_R) * mix(0.00165, 0.0077, pop) * normalMask;
 
-    // ── Tactical triangles at hex corners ─────────────────────────────────────
-    // Each corner is shared by 3 hexes; triangles alternate up/down
-    const vec2 TRI_POS[6] = vec2[6](
-        vec2( 0.0,    0.57735),   // down
-        vec2( 0.5,    0.28868),   // up
-        vec2( 0.5,   -0.28868),   // down
-        vec2( 0.0,   -0.57735),   // up
-        vec2(-0.5,   -0.28868),   // down
-        vec2(-0.5,    0.28868)    // up
-    );
-    const float TRI_DIR[6] = float[6](-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
-    float triMask = 0.0;
-    for (int j = 0; j < 6; j++) {
-        vec2 lp = hc.xy - TRI_POS[j];
-        lp.y *= TRI_DIR[j];
-        triMask = max(triMask, smoothstep(0.003, -0.003, triSDF(lp, 0.018)));
-    }
-    color.rgb += triColor * triMask * 0.020;
-    color.rgb += triColor * triMask * growPop * 0.040;
-
-    // ── Wave ring: groove-style, wave-coloured ────────────────────────────────
-    float edge   = hexRing(d, 0.43);
-    float bright = mix(0.00165, 0.0077, pop);
-    color.rgb   += waveCol * edge * bright * normalMask;
-
-    // ── Expanded rings: all hex candidates in wave ────────────────────────────
-    const vec2 OFF[7] = vec2[7](
-        vec2( 0.0,  0.0      ),
-        vec2( 1.0,  0.0      ),
-        vec2(-1.0,  0.0      ),
-        vec2( 0.5,  0.8660254),
-        vec2(-0.5,  0.8660254),
-        vec2( 0.5, -0.8660254),
-        vec2(-0.5, -0.8660254)
-    );
-
-    float bestEdge = 0.0;
-    vec3  bestCol  = vec3(0.0);
-
-    for (int i = 0; i < 7; i++) {
-        vec2 cand = cellCenter + OFF[i];
-
-        float cProj     = dot(cand, waveDir);
-        float cDx       = cProj - wavePos;
-        float cProgress = smoothstep(-2.5, 2.5, -cDx);
-        float cGrowPop  = exp(-cDx * cDx * 0.8);
-        float cRingScale = 1.0 + 0.038 * cGrowPop;
-        if (cGrowPop < 0.02) continue;
-
-        vec2  lp  = hc.xy - OFF[i];
-        float ang = cProgress * 1.04720;
-        float c   = cos(ang), s = sin(ang);
-        vec2  rlp = vec2(c * lp.x - s * lp.y, s * lp.x + c * lp.y);
-
-        float bigD    = hexDist(rlp);
-        float ringR   = 0.43 * cRingScale;
-        float bigEdge = hexRing(bigD, ringR);
-        float val     = bigEdge * cGrowPop;
-
-        if (val > bestEdge) {
-            bestEdge = val;
-            bestCol = normLum(mix(oldColor, newColor, cProgress));
+    // ── Corner triangles ─────────────────────────────────────────────────────
+    // A triangle lies within its circumradius (about 0.021) of a corner, where
+    // hexDist is 0.5. Pixels below 0.47 cannot touch one, which skips the loop
+    // for about 88% of each cell.
+    if (dBase > 0.47) {
+        float triMask = 0.0;
+        for (int j = 0; j < 6; j++) {
+            vec2 lp = hc.xy - TRI_POS[j];
+            lp.y *= TRI_DIR[j];
+            triMask = max(triMask, smoothstep(0.003, -0.003, triSDF(lp, TRI_R)));
         }
+        color.rgb += triColor * triMask * (0.020 + 0.040 * growPop);
     }
 
-    color.rgb += bestCol * bestEdge * 0.0545;
+    // ── Spun and grown rings of this cell and its neighbours ─────────────────
+    // A neighbour's projection differs from this cell's by at most 1, and a
+    // ring with growPop below 0.02 is skipped (|dx| above 2.21). So a cell
+    // further than 3.3 from the band has nothing to draw here.
+    if (abs(dx) < 3.3) {
+        float bestEdge = 0.0;
+        float bestProg = 0.0;
+        for (int i = 0; i < 7; i++) {
+            float cDx      = dot(cellCenter + OFF[i], waveDir) - wavePos;
+            float cGrowPop = exp(-cDx * cDx * 0.8);
+            if (cGrowPop < 0.02) continue;
+            float cProg = smoothstep(-2.5, 2.5, -cDx);
+            float d     = hexDist(rotate(hc.xy - OFF[i], cProg * 1.0471976));
+            float val   = hexRing(d, RING_R * (1.0 + 0.038 * cGrowPop)) * cGrowPop;
+            if (val > bestEdge) {
+                bestEdge = val;
+                bestProg = cProg;
+            }
+        }
+        color.rgb += mix(oldCol, newCol, bestProg) * bestEdge * 0.0545;
+    }
 
     // ── Vignette ─────────────────────────────────────────────────────────────
     vec2 q = uv - 0.5;
-    q.x *= ar;
+    q.x *= iResolution.x / iResolution.y;
     float vig = clamp(smoothstep(0.0, 1.0, 1.0 - dot(q, q) * 1.8), 0.0, 1.0);
     color.rgb *= mix(0.85, 1.0, vig);
 

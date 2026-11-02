@@ -42,11 +42,13 @@ resize-overlay = never
 unfocused-split-opacity = 0.75
 shell-integration = detect
 
-# --- Shader: film grain + vignette + scanlines ---
+# --- Shader: hex grid + wave band + vignette ---
+# Keep ANIMATE in grain.glsl in step with custom-shader-animation below.
 custom-shader = ~/.config/ghostty/shaders/grain.glsl
-# true, not always: always keeps the GPU repainting the hex-wave every frame
-# even when the window is unfocused. true pauses it on focus loss.
-custom-shader-animation = true
+# false: the shader redraws only when the terminal redraws. With true, the
+# focused window repainted the iTime hex-wave every vsync (144 Hz on DP-2).
+# The renderer thread then used about 48% CPU and made typing lag.
+custom-shader-animation = false
 
 # --- Keybinds ---
 # Word navigation — send CSI sequences; zsh binds them to word widgets
