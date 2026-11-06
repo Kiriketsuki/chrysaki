@@ -5,9 +5,10 @@
 
 // ── Mode ──────────────────────────────────────────────────────────────────────
 // 1 animates the wave. Pair it with custom-shader-animation = true.
-// 0 draws one fixed frame of the wave. Pair it with custom-shader-animation = false.
+// 0 draws the grid at rest. Pair it with custom-shader-animation = false.
 // With animation off, Ghostty redraws only when the terminal changes. A moving
 // wave then jumps to a new place on every keystroke, so mode 0 removes time.
+// The ghostty-shader script switches modes without an edit to this file.
 #define ANIMATE 0
 
 // ── Tunables ──────────────────────────────────────────────────────────────────
@@ -18,12 +19,10 @@ const float PERIOD = 50.0;        // Cells per cycle. 20 s per cycle at SPEED 2.
 const float RING_R = 0.43;        // Ring radius in hexDist units.
 const float TRI_R  = 0.018;       // Corner triangle size.
 
-// Frozen frame for mode 0: Emerald leads into Amethyst on a 45 degree diagonal,
-// and the band crosses the middle of the window.
-const int   STILL_OLD   = 0;      // Emerald.
-const int   STILL_NEW   = 2;      // Amethyst.
-const float STILL_ANGLE = 0.7853982;
-const float STILL_LAG   = 1.5;    // Cells the band sits behind the window centre.
+// Rest state for mode 0. The band sits past the right edge, so every hex has
+// finished its 60 degree turn and reads as upright in one colour.
+const int   STILL_IDX    = 2;     // Amethyst.
+const float STILL_MARGIN = 8.0;   // Cells past the edge. The trail is below 0.2% here.
 
 // ── Palette ───────────────────────────────────────────────────────────────────
 const vec3 ACCENTS[4] = vec3[4](
@@ -125,10 +124,10 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     float minProj = min(0.0, waveDir.x * extent.x) + min(0.0, waveDir.y * extent.y);
     float wavePos = cycleT + minProj - 4.0;
 #else
-    int   oldIdx  = STILL_OLD;
-    int   newIdx  = STILL_NEW;
-    vec2  waveDir = vec2(cos(STILL_ANGLE), sin(STILL_ANGLE));
-    float wavePos = dot(0.5 * extent, waveDir) - STILL_LAG;
+    int   oldIdx  = STILL_IDX;
+    int   newIdx  = STILL_IDX;
+    vec2  waveDir = vec2(1.0, 0.0);
+    float wavePos = extent.x + STILL_MARGIN;
 #endif
 
     vec3 oldCol = normLum(ACCENTS[oldIdx]);

@@ -49,6 +49,9 @@ custom-shader = ~/.config/ghostty/shaders/grain.glsl
 # focused window repainted the iTime hex-wave every vsync (144 Hz on DP-2).
 # The renderer thread then used about 48% CPU and made typing lag.
 custom-shader-animation = false
+# ghostty-shader writes this optional file to turn the animated wave on. Ghostty
+# loads config-file entries after this file, so the override wins.
+config-file = ?~/.local/state/ghostty/shader-override
 
 # --- Keybinds ---
 # Word navigation — send CSI sequences; zsh binds them to word widgets
