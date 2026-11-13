@@ -30,7 +30,7 @@ import {
   type GradientColor,
   type RippleDraw,
 } from "../lib/cairo-island"
-import { SlashEventState, RippleState } from "../lib/wave-state"
+import { SlashEventState, RippleState, type ActiveSlash } from "../lib/wave-state"
 import { BorderWaveState } from "../lib/border-wave-state"
 import { isMonitorFocused, onFocusChange } from "../lib/focus-monitor"
 
@@ -90,8 +90,8 @@ const INTERSECT_CY_THRESHOLD = 0.35  // ~14px on 40px bar
 const INTERSECT_X_MIN = 0.125
 const INTERSECT_X_MAX = 0.875
 
-/** Cairo clip overflow in px. Wave peaks reach about 10 px past the allocation. */
-const OVERFLOW_PX = 12
+/** Cairo clip overflow in px. Wave peaks reach about 7 px past the allocation. */
+const OVERFLOW_PX = 8
 
 export const ChamferedBar = GObject.registerClass(
   { GTypeName: "ChrysaChamferedBar" },
@@ -110,6 +110,8 @@ export const ChamferedBar = GObject.registerClass(
     private _lastW = 0
     private _lastH = 0
     private _innerBox!: Gtk.Box
+    // Slash list built once per tick. The snapshot reads it instead of rebuilding it.
+    private _active: readonly ActiveSlash[] = []
     private _focused = true
     private _unsubFocus: (() => void) | null = null
 
@@ -209,7 +211,11 @@ export const ChamferedBar = GObject.registerClass(
           this._slashState?.setBarDimensions(this._lastW, this._lastH)
         }
         this._slashState?.tick()
-        this._checkIntersections()
+        this._active = this._slashState?.activeSlashes ?? []
+        if (this._checkIntersections(this._active)) {
+          // onCollision changes slash alpha, so rebuild the list.
+          this._active = this._slashState?.activeSlashes ?? []
+        }
         this._rippleState?.tick(this._lastW, this._lastH)
         this._borderWaveState?.tick()
         // An unfocused island stops its timer once all motion in flight ends.
@@ -228,10 +234,11 @@ export const ChamferedBar = GObject.registerClass(
       })
     }
 
-    private _checkIntersections(): void {
-      if (!this._slashState || !this._rippleState) return
+    /** Returns true when it fired at least one collision. */
+    private _checkIntersections(active: readonly ActiveSlash[]): boolean {
+      if (!this._slashState || !this._rippleState) return false
 
-      const active   = this._slashState.activeSlashes
+      let collided = false
       const backs    = active.filter(s => s.dir === 'back')
       const forwards = active.filter(s => s.dir === 'forward')
 
@@ -273,6 +280,7 @@ export const ChamferedBar = GObject.registerClass(
             this._collidingIds.add(b.id)
             this._collidingIds.add(f.id)
             this._triggeredPairs.add(key)
+            collided = true
           }
         }
       }
@@ -288,6 +296,7 @@ export const ChamferedBar = GObject.registerClass(
       for (const id of this._collidingIds) {
         if (!activeIds.has(id)) this._collidingIds.delete(id)
       }
+      return collided
     }
 
     vfunc_snapshot(snapshot: Gtk.Snapshot): void {
@@ -298,7 +307,7 @@ export const ChamferedBar = GObject.registerClass(
 
       if (w > 0 && h > 0) {
         // Expand Cairo clip rect so wave peaks/troughs can draw past widget allocation.
-        // Max wave displacement: ~4.5px standing + ~6px pulse = ~10px; use 12 for margin.
+        // Max wave displacement: 1px standing + under 6px pulse, plus 0.25px stroke.
         const bounds = this._overflowBounds(w, h)
         const cr = snapshot.append_cairo(bounds)
 
@@ -326,7 +335,7 @@ export const ChamferedBar = GObject.registerClass(
         // Normal slashes rendered at reduced alpha behind content; colliding slashes
         // are drawn after super.vfunc_snapshot so they composite above text/icons.
         const NORMAL_ALPHA_SCALE = 0.25
-        const allSlashes     = this._slashState?.activeSlashes ?? []
+        const allSlashes     = this._active
         const normalSlashes  = allSlashes
           .filter(s => !this._collidingIds.has(s.id))
           .map(s => ({ ...s, alpha: s.alpha * NORMAL_ALPHA_SCALE }))
