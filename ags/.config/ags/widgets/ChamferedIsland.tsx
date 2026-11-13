@@ -33,6 +33,7 @@ import {
 import { SlashEventState, RippleState, type ActiveSlash } from "../lib/wave-state"
 import { BorderWaveState } from "../lib/border-wave-state"
 import { isMonitorFocused, onFocusChange } from "../lib/focus-monitor"
+import { ISLAND_ANIMATION } from "../lib/config"
 
 const DEFAULT_CHAMFER: ChamferConfig = Object.freeze({
   tl: false,
@@ -138,6 +139,7 @@ export const ChamferedBar = GObject.registerClass(
 
     /** Ties the animation to the focus state of one monitor. */
     setMonitor(m: Gdk.Monitor): void {
+      if (!ISLAND_ANIMATION) return
       this._unsubFocus?.()
       this._focused = isMonitorFocused(m)
       this._slashState?.setSpawning(this._focused)
@@ -204,7 +206,7 @@ export const ChamferedBar = GObject.registerClass(
     }
 
     private _startAnimation(): void {
-      if (this._timerId !== 0) return
+      if (!ISLAND_ANIMATION || this._timerId !== 0) return
 
       this._timerId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, TICK_MS, () => {
         if (this._lastW > 0 && this._lastH > 0) {
