@@ -50,26 +50,46 @@ function appIcon(windowClass: string): string {
   return APP_ICONS.get(lower) ?? "\u{F0219}" // fallback: nf-md-file_document
 }
 
+/** Parent pid of a process, read from /proc. Returns 0 when the read fails. */
+function parentPid(pid: number): number {
+  try {
+    const [, raw] = GLib.file_get_contents(`/proc/${pid}/stat`)
+    const text = new TextDecoder().decode(raw)
+    // The comm field can hold spaces and parentheses, so cut after the last ")".
+    const rest = text.slice(text.lastIndexOf(")") + 1).trim().split(/\s+/)
+    return Number(rest[1]) || 0
+  } catch {
+    return 0
+  }
+}
+
+/** True when `ancestor` is `pid` or one of its parents. */
+function hasAncestor(pid: number, ancestor: number): boolean {
+  let p = pid
+  for (let depth = 0; p > 1 && depth < 64; depth++) {
+    if (p === ancestor) return true
+    p = parentPid(p)
+  }
+  return false
+}
+
 /**
- * Shell script to find the tmux session for a given terminal PID.
+ * Find the tmux session for a given terminal PID from `tmux list-clients` output.
  * Ghostty uses a single process for all windows, so multiple tmux clients
  * may share the same ancestor PID. We sort by activity (most recent first)
  * so the most recently interacted-with session wins.
  */
-function tmuxScript(pid: number): string {
-  return `
-TPID=${pid}
-tmux list-clients -F '#{client_activity} #{client_pid} #{session_name}' 2>/dev/null \\
-  | sort -rn \\
-  | while read _act cpid session; do
-      p=$cpid
-      while [ "$p" -gt 1 ] 2>/dev/null; do
-        [ "$p" = "$TPID" ] && echo "$session" && exit 0
-        p=$(sed 's/.*) //' /proc/$p/stat 2>/dev/null | awk '{print $2}')
-      done
-    done \\
-  | head -1
-`
+function findTmuxSession(out: string, terminalPid: number): string {
+  const clients = out
+    .split("\n")
+    .map((line) => line.trim().split(/\s+/))
+    .filter((f) => f.length >= 3)
+    .map((f) => ({ activity: Number(f[0]), pid: Number(f[1]), session: f.slice(2).join(" ") }))
+    .sort((x, y) => y.activity - x.activity)
+  for (const c of clients) {
+    if (hasAncestor(c.pid, terminalPid)) return c.session
+  }
+  return ""
 }
 
 // Active-window state is desktop-global, so all monitor labels share one
@@ -78,12 +98,14 @@ const focusedClient = createBinding(hyprland, "focusedClient")
 const [tmuxSession, setTmuxSession] = createState("")
 const [forceUpdate, setForceUpdate] = createState(0)
 let timerId: number | null = null
+let kickId: number | null = null
+let focusPending = 0
 let pollGeneration = 0
 
 function pollTmux(pid: number, generation: number): void {
-  execAsync(["bash", "-c", tmuxScript(pid)])
+  execAsync(["tmux", "list-clients", "-F", "#{client_activity} #{client_pid} #{session_name}"])
     .then((out) => {
-      if (generation === pollGeneration) setTmuxSession(out.trim())
+      if (generation === pollGeneration) setTmuxSession(findTmuxSession(out, pid))
     })
     .catch(() => {
       if (generation === pollGeneration) setTmuxSession("")
@@ -93,7 +115,8 @@ function pollTmux(pid: number, generation: number): void {
 function startTmuxPoll(pid: number): void {
   const generation = pollGeneration
   pollTmux(pid, generation)
-  GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => {
+  kickId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => {
+    kickId = null
     pollTmux(pid, generation)
     return GLib.SOURCE_REMOVE
   })
@@ -105,6 +128,10 @@ function startTmuxPoll(pid: number): void {
 
 function stopTmuxPoll(): void {
   pollGeneration++
+  if (kickId !== null) {
+    GLib.source_remove(kickId)
+    kickId = null
+  }
   if (timerId !== null) {
     GLib.source_remove(timerId)
     timerId = null
@@ -122,8 +149,18 @@ function handleFocusChange(): void {
   setForceUpdate((v) => v + 1)
 }
 
-hyprland.connect("notify::focused-client", handleFocusChange)
-hyprland.connect("notify::focused-workspace", handleFocusChange)
+// A focus change often fires both signals. One idle callback handles them together.
+function scheduleFocus(): void {
+  if (focusPending) return
+  focusPending = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+    focusPending = 0
+    handleFocusChange()
+    return GLib.SOURCE_REMOVE
+  })
+}
+
+hyprland.connect("notify::focused-client", scheduleFocus)
+hyprland.connect("notify::focused-workspace", scheduleFocus)
 handleFocusChange()
 
 const activeWindowText = createComputed(() => {

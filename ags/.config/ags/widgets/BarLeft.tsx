@@ -44,6 +44,7 @@ export function BarLeft(gdkmonitor: Gdk.Monitor) {
         marginBottom={12}
         $={(self: any) => {
           self.setChamfer({ tl: false, tr: false, bl: true, br: true })
+          self.setMonitor(gdkmonitor)
           self.setGradientColors(JEWEL_PALETTE)
         }}
       >

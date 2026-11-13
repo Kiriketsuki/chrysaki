@@ -29,6 +29,7 @@ interface ServiceDef {
   readonly category: string
   readonly icon: string
   readonly healthCmd: string
+  readonly healthArgv?: string[]
   readonly startCmd: string | null
   readonly stopCmd: string | null
   readonly guiCmd: string | null
@@ -82,21 +83,55 @@ function groupByCategory(services: readonly ServiceDef[]): [string, ServiceDef[]
 
 const SERVICES = loadServices()
 
-// One health command per service, shared by every monitor and the popup panel.
+// One poll per service. It runs healthArgv directly and falls back to bash -c healthCmd.
+// A new check waits while the previous one runs, so a hung command cannot pile up.
+// A failed check, including a spawn error, reports "fail".
+function healthPoll(svc: ServiceDef) {
+  let busy = false
+  return createPoll("ok", svc.interval, (prev: string) => {
+    if (busy) return prev
+    busy = true
+    let run: Promise<string>
+    try {
+      run = svc.healthArgv
+        ? execAsync(svc.healthArgv).then(() => "ok")
+        : execAsync(["bash", "-c", svc.healthCmd])
+    } catch {
+      run = Promise.reject(new Error("spawn failed"))
+    }
+    return run.catch(() => "fail").finally(() => {
+      busy = false
+    })
+  })
+}
+
+// One health poll per service, shared by every monitor and the popup panel.
 // Previously each consumer created its own poll (four copies with three monitors).
 const SERVICE_STATUS = new Map(
-  SERVICES.map((svc) => [
-    svc.name,
-    createPoll("ok", svc.interval, ["bash", "-c", svc.healthCmd]),
-  ] as const),
+  SERVICES.map((svc) => [svc.name, healthPoll(svc)] as const),
 )
 
 // A single shared blink clock replaces one perpetual timeout per bar icon.
+// The timer runs only while at least one service fails.
 const [blinkOn, setBlinkOn] = createState(true)
-GLib.timeout_add(GLib.PRIORITY_DEFAULT, 600, () => {
-  setBlinkOn((on) => !on)
-  return GLib.SOURCE_CONTINUE
-})
+let blinkId = 0
+
+function syncBlink(): void {
+  const anyFail = [...SERVICE_STATUS.values()].some((s) => s().trim() !== "ok")
+  if (anyFail && !blinkId) {
+    blinkId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 600, () => {
+      setBlinkOn((on) => !on)
+      return GLib.SOURCE_CONTINUE
+    })
+  } else if (!anyFail && blinkId) {
+    GLib.source_remove(blinkId)
+    blinkId = 0
+    setBlinkOn(true)
+  }
+}
+
+for (const status of SERVICE_STATUS.values()) status.subscribe(syncBlink)
+syncBlink()
 
 const CATEGORY_ICONS: Record<string, string> = {
   "System": "\uf013",    // nf-fa-cog

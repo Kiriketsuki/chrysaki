@@ -27,6 +27,7 @@ import {
 } from "../lib/cairo-island"
 import { RippleState } from "../lib/wave-state"
 import { BorderWaveState } from "../lib/border-wave-state"
+import { ISLAND_ANIMATION } from "../lib/config"
 
 const DEFAULT_CHAMFER: ChamferConfig = Object.freeze({
   tl: false,
@@ -117,7 +118,7 @@ export const ChamferedPanel = GObject.registerClass(
     }
 
     private _startAnimation(): void {
-      if (this._timerId !== 0) return
+      if (!ISLAND_ANIMATION || this._timerId !== 0) return
 
       this._timerId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, TICK_MS, () => {
         // Popup windows remain constructed while hidden. Avoid advancing state

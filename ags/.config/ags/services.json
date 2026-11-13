@@ -5,23 +5,12 @@
     "category": "System",
     "icon": "openviking-symbolic",
     "healthCmd": "curl -sf http://localhost:1933/health >/dev/null 2>&1 && echo ok || echo fail",
+    "healthArgv": ["curl", "-sf", "-m", "2", "-o", "/dev/null", "http://localhost:1933/health"],
     "startCmd": "systemctl --user start openviking",
     "stopCmd": "systemctl --user stop openviking",
     "guiCmd": null,
     "cssAccent": "svc-emerald",
-    "interval": 5000
-  },
-  {
-    "name": "GitNexus",
-    "type": "process",
-    "category": "System",
-    "icon": "gitnexus-symbolic",
-    "healthCmd": "pgrep -f 'gitnexus' >/dev/null 2>&1 && echo ok || echo fail",
-    "startCmd": null,
-    "stopCmd": "pkill -f 'gitnexus'",
-    "guiCmd": null,
-    "cssAccent": "svc-teal",
-    "interval": 10000
+    "interval": 15000
   },
   {
     "name": "Ollama",
@@ -29,6 +18,7 @@
     "category": "System",
     "icon": "ollama-symbolic",
     "healthCmd": "curl -sf http://localhost:11434/api/version >/dev/null 2>&1 && echo ok || echo fail",
+    "healthArgv": ["curl", "-sf", "-m", "2", "-o", "/dev/null", "http://localhost:11434/api/version"],
     "startCmd": "systemctl start ollama",
     "stopCmd": "systemctl stop ollama",
     "guiCmd": null,
@@ -41,6 +31,7 @@
     "category": "System",
     "icon": "syncthing-symbolic",
     "healthCmd": "systemctl --user is-active syncthing >/dev/null 2>&1 && echo ok || echo fail",
+    "healthArgv": ["systemctl", "--user", "is-active", "--quiet", "syncthing"],
     "startCmd": "systemctl --user start syncthing",
     "stopCmd": "systemctl --user stop syncthing",
     "guiCmd": "xdg-open http://localhost:8384",
@@ -53,6 +44,7 @@
     "category": "MCP",
     "icon": "openpencil-symbolic",
     "healthCmd": "pgrep -f 'mcp-server.cjs' >/dev/null 2>&1 && echo ok || echo fail",
+    "healthArgv": ["pgrep", "-f", "mcp-server[.]cjs"],
     "startCmd": null,
     "stopCmd": "pkill -f 'mcp-server.cjs'",
     "guiCmd": "cd /home/kiriketsuki/dev/Personal/openpencil && bun run electron:dev",
@@ -65,10 +57,11 @@
     "category": "CLI Tools",
     "icon": "gws-symbolic",
     "healthCmd": "gws --version >/dev/null 2>&1 && echo ok || echo fail",
+    "healthArgv": ["gws", "--version"],
     "startCmd": null,
     "stopCmd": null,
     "guiCmd": null,
     "cssAccent": "svc-cerulean",
-    "interval": 30000
+    "interval": 300000
   }
 ]
