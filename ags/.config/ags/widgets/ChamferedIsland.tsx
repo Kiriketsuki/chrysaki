@@ -20,6 +20,7 @@
  */
 import GObject from "gi://GObject"
 import Gtk from "gi://Gtk?version=4.0"
+import type { Gdk } from "ags/gtk4"
 import GLib from "gi://GLib?version=2.0"
 import Graphene from "gi://Graphene?version=1.0"
 import {
@@ -31,6 +32,7 @@ import {
 } from "../lib/cairo-island"
 import { SlashEventState, RippleState } from "../lib/wave-state"
 import { BorderWaveState } from "../lib/border-wave-state"
+import { isMonitorFocused, onFocusChange } from "../lib/focus-monitor"
 
 const DEFAULT_CHAMFER: ChamferConfig = Object.freeze({
   tl: false,
@@ -108,6 +110,8 @@ export const ChamferedBar = GObject.registerClass(
     private _lastW = 0
     private _lastH = 0
     private _innerBox!: Gtk.Box
+    private _focused = true
+    private _unsubFocus: (() => void) | null = null
 
     _init(params: object = {}): void {
       super._init(params)
@@ -130,12 +134,33 @@ export const ChamferedBar = GObject.registerClass(
       this.queue_draw()
     }
 
+    /** Ties the animation to the focus state of one monitor. */
+    setMonitor(m: Gdk.Monitor): void {
+      this._unsubFocus?.()
+      this._focused = isMonitorFocused(m)
+      this._slashState?.setSpawning(this._focused)
+      this._unsubFocus = onFocusChange(() => this._setFocused(isMonitorFocused(m)))
+    }
+
+    private _setFocused(f: boolean): void {
+      if (f === this._focused) return
+      this._focused = f
+      this._slashState?.setSpawning(f)
+      if (f) {
+        this._slashState?.resetClock()
+        this._rippleState?.resetClock()
+        this._borderWaveState?.resetClock()
+        if (this.get_mapped() && this._gradientColors.length > 0) this._startAnimation()
+      }
+    }
+
     setGradientColors(colors: readonly GradientColor[]): void {
       // Full render palette: jewel tones (indices 0–N-1) + slash-only colors (indices N, N+1).
       // Ripple/background picks stay in the jewel range; slash renderers use the full range.
       this._gradientColors = [...colors, ...SLASH_COLORS]
       if (!this._slashState) {
         this._slashState = new SlashEventState(this._gradientColors.length, LR_COLOR_INDEX, RL_COLOR_INDEX)
+        this._slashState.setSpawning(this._focused)
       }
       if (!this._rippleState) {
         this._rippleState = new RippleState(colors.length)  // jewel range: 0-9
@@ -187,6 +212,17 @@ export const ChamferedBar = GObject.registerClass(
         this._checkIntersections()
         this._rippleState?.tick(this._lastW, this._lastH)
         this._borderWaveState?.tick()
+        // An unfocused island stops its timer once all motion in flight ends.
+        if (
+          !this._focused &&
+          !this._slashState?.hasSlashes &&
+          (this._rippleState?.isIdle ?? true) &&
+          !this._borderWaveState?.hasPulses
+        ) {
+          this.queue_draw()
+          this._timerId = 0
+          return GLib.SOURCE_REMOVE
+        }
         this.queue_draw()
         return GLib.SOURCE_CONTINUE
       })
@@ -333,6 +369,8 @@ export const ChamferedBar = GObject.registerClass(
 
     vfunc_unroot(): void {
       this._stopAnimation()
+      this._unsubFocus?.()
+      this._unsubFocus = null
       this._triggeredPairs.clear()
       this._collidingIds.clear()
       super.vfunc_unroot()

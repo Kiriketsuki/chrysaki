@@ -97,6 +97,16 @@ export class RippleState {
   private _lastTickMs: number
   private readonly _paletteLength: number
 
+  /** True when no ripple runs and the gradient transition is done. */
+  get isIdle(): boolean {
+    return this._ripples.length === 0 && this._transitionT >= 1
+  }
+
+  /** Resets the tick clock so the next tick does not see a long gap. */
+  resetClock(): void {
+    this._lastTickMs = Date.now()
+  }
+
   constructor(paletteLength = 10) {
     this._paletteLength = paletteLength
     const initial = pickColors(paletteLength, 2)
@@ -226,6 +236,8 @@ export class SlashEventState {
   private _lrWaitId: number | null = null
   private _rlWaitId: number | null = null
   private _lastTickMs: number
+  // False on an unfocused monitor. Spawners then stay off and the slashes drain.
+  private _spawning = true
   private _nextId = 0
   private readonly _paletteLength: number
   private readonly _lrColorIndex: number  // fixed color for all L→R slashes
@@ -242,6 +254,28 @@ export class SlashEventState {
     // Stagger initial runs so L→R and R→L don't fire simultaneously.
     this._lrTimer = 300  + Math.random() * 700
     this._rlTimer = 1500 + Math.random() * 1500
+  }
+
+  /** Turns slash spawning on or off. Slashes already in flight finish. */
+  setSpawning(on: boolean): void {
+    this._spawning = on
+    if (!on) {
+      this._lrSpawner = null
+      this._rlSpawner = null
+    } else {
+      this._lrTimer = 300 + Math.random() * 700
+      this._rlTimer = 1500 + Math.random() * 1500
+    }
+  }
+
+  /** True while at least one slash is alive. */
+  get hasSlashes(): boolean {
+    return this._slashes.length > 0
+  }
+
+  /** Resets the tick clock so the next tick does not see a long gap. */
+  resetClock(): void {
+    this._lastTickMs = Date.now()
   }
 
   /** Update bar pixel dimensions so spawn spacing stays proportional to bar geometry. */
@@ -335,7 +369,7 @@ export class SlashEventState {
         this._lrSpawner = null
         this._lrTimer = WAVE_INTERVAL_MIN + Math.random() * (WAVE_INTERVAL_MAX - WAVE_INTERVAL_MIN)
       }
-    } else if (this._lrWaitId === null) {
+    } else if (this._spawning && this._lrWaitId === null) {
       this._lrTimer -= dt
       if (this._lrTimer <= 0) this._lrSpawner = this._makeSpawner(1)
     }
@@ -346,7 +380,7 @@ export class SlashEventState {
         this._rlSpawner = null
         this._rlTimer = WAVE_INTERVAL_MIN + Math.random() * (WAVE_INTERVAL_MAX - WAVE_INTERVAL_MIN)
       }
-    } else if (this._rlWaitId === null) {
+    } else if (this._spawning && this._rlWaitId === null) {
       this._rlTimer -= dt
       if (this._rlTimer <= 0) this._rlSpawner = this._makeSpawner(-1)
     }

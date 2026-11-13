@@ -58,6 +58,16 @@ export class BorderWaveState {
   private _lastTickMs: number = Date.now()
   private readonly _t0: number = Date.now()
 
+  /** True while at least one collision pulse is alive. */
+  get hasPulses(): boolean {
+    return this._pulses.length > 0
+  }
+
+  /** Resets the tick clock so the next tick does not see a long gap. */
+  resetClock(): void {
+    this._lastTickMs = Date.now()
+  }
+
   tick(): void {
     const now = Date.now()
     const dt  = now - this._lastTickMs
