@@ -455,6 +455,9 @@ function drawRadialRippleFill(
     return
   }
 
+  // Each ring fills only its annulus. The gradient is transparent elsewhere.
+  cr.setFillRule(cairo.FillRule.EVEN_ODD)
+
   const PEAK      = 0.95  // leading ring alpha before lifecycle decay
   const N_RINGS   = 5     // number of concentric echo rings
   const RING_W    = 2     // px: solid body of each ring (thin = sharp)
@@ -501,7 +504,12 @@ function drawRadialRippleFill(
       pat.addColorStopRGBA(1 - eT,  c.r, c.g, c.b, ringA)  // hard outer edge
       pat.addColorStopRGBA(1,       c.r, c.g, c.b, 0)      // soft outer fade out
       cr.setSource(pat)
+      cr.newPath()
       cr.arc(ripple.cx, ripple.cy, outerR, 0, 2 * Math.PI)
+      if (innerR > 0) {
+        cr.newSubPath()
+        cr.arc(ripple.cx, ripple.cy, innerR, 0, 2 * Math.PI)
+      }
       cr.fill()
     }
 
