@@ -112,11 +112,26 @@ const SERVICE_STATUS = new Map(
 )
 
 // A single shared blink clock replaces one perpetual timeout per bar icon.
+// The timer runs only while at least one service fails.
 const [blinkOn, setBlinkOn] = createState(true)
-GLib.timeout_add(GLib.PRIORITY_DEFAULT, 600, () => {
-  setBlinkOn((on) => !on)
-  return GLib.SOURCE_CONTINUE
-})
+let blinkId = 0
+
+function syncBlink(): void {
+  const anyFail = [...SERVICE_STATUS.values()].some((s) => s().trim() !== "ok")
+  if (anyFail && !blinkId) {
+    blinkId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 600, () => {
+      setBlinkOn((on) => !on)
+      return GLib.SOURCE_CONTINUE
+    })
+  } else if (!anyFail && blinkId) {
+    GLib.source_remove(blinkId)
+    blinkId = 0
+    setBlinkOn(true)
+  }
+}
+
+for (const status of SERVICE_STATUS.values()) status.subscribe(syncBlink)
+syncBlink()
 
 const CATEGORY_ICONS: Record<string, string> = {
   "System": "\uf013",    // nf-fa-cog
