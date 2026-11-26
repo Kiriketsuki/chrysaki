@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 """Chrysaki thermal monitor for tmux — bar segment and interactive popup."""
 
 import json
@@ -10,6 +10,7 @@ import signal
 import subprocess
 import sys
 import termios
+import time
 import tty
 from dataclasses import dataclass
 from pathlib import Path
@@ -120,14 +121,51 @@ def fan_color(rpm: Optional[float]) -> str:
     return BLONDE
 
 
+SENSOR_CACHE_TTL = 4.0
+
+
+def _cache_path() -> Path:
+    base = os.environ.get("XDG_RUNTIME_DIR") or f"/tmp/chrysaki-{os.getuid()}"
+    return Path(base) / "chrysaki-thermal.json"
+
+
+def _read_cached(path: Path) -> Optional[dict]:
+    try:
+        if time.time() - path.stat().st_mtime > SENSOR_CACHE_TTL:
+            return None
+        return json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def _write_cache(path: Path, data: dict) -> None:
+    # Write then rename, so a reader never sees a partial file.
+    tmp = path.with_suffix(".tmp")
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp.write_text(json.dumps(data))
+        os.replace(tmp, path)
+    except OSError:
+        pass
+
+
 def _read_sensors() -> dict:
+    # Every attached tmux client runs this script on each status refresh.
+    # One sensors call per TTL window serves all of them.
+    path = _cache_path()
+    cached = _read_cached(path)
+    if cached is not None:
+        return cached
     try:
         result = subprocess.run(
             ["sensors", "-j"], capture_output=True, text=True, timeout=5
         )
-        return json.loads(result.stdout) if result.returncode == 0 else {}
+        data = json.loads(result.stdout) if result.returncode == 0 else {}
     except (subprocess.TimeoutExpired, json.JSONDecodeError, FileNotFoundError):
         return {}
+    if data:
+        _write_cache(path, data)
+    return data
 
 
 def _dig(data: dict, *keys) -> Optional[float]:
