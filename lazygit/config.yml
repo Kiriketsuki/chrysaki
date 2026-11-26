@@ -22,15 +22,6 @@ gui:
       - "⬡"
       - "⬢"
     rate: 100
-  # Branch color patterns — Chrysaki token mapping
-  branchColorPatterns:
-    "^(main|master)$": "#FBB13C" # Blonde — canonical/stable
-    "^feat/": "#1a8a6a" # Emerald Lt — new features
-    "^fix/": "#b53f4a" # Error Lt — bug fixes
-    "^release/": "#20969c" # Teal Lt — release branches
-  # Author color — Emerald Lt for all authors
-  authorColors:
-    "*": "#1a8a6a"
   # Static Chrysaki fallback theme (overridden by colors.yml from pipeline)
   theme:
     activeBorderColor:
@@ -59,16 +50,23 @@ gui:
       - "#FBB13C" # Blonde
     defaultFgColor:
       - "#e0e2ea" # Primary Text
+    # Author color — Emerald Lt for all authors
+    authorColors:
+      "*": "#1a8a6a"
+    # Branch color patterns — Chrysaki token mapping
+    branchColorPatterns:
+      "^(main|master)$": "#FBB13C" # Blonde — canonical/stable
+      "^feat/": "#1a8a6a" # Emerald Lt — new features
+      "^fix/": "#b53f4a" # Error Lt — bug fixes
+      "^release/": "#20969c" # Teal Lt — release branches
 git:
-  pagers:
-    - pager: "delta --dark --paging=never"
+  diffRenderers:
+    - command: "delta --dark --paging=never"
   log:
     showGraph: "always"
     # Replace ASCII graph chars with Unicode equivalents for a cleaner look
     branchLogCmd: >-
-      git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium {{branchName}} --
-      | sed 's/\*/●/g; s/|/┆/g; s/-/╌/g'
+      git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium {{branchName}} -- | sed 's/\*/●/g; s/|/┆/g; s/-/╌/g'
     allBranchesLogCmds:
       - >-
-        git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium --all
-        | sed 's/\*/●/g; s/|/┆/g; s/-/╌/g'
+        git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium --all | sed 's/\*/●/g; s/|/┆/g; s/-/╌/g'
