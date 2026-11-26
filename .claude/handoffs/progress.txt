@@ -442,3 +442,93 @@
 - Branch: feat/6-ags-service-centre
 
 ---
+
+## 2026-10-05 Handoff
+
+### Decisions
+- Mods live in chrysaki-claude/mods, developed in the session dev-mods folder and copied in with rsync
+- Bash statusline stays as fallback via CHRYSAKI_STATUSLINE_MOD guard; JSON relay feeds prompt_cache to the mod
+- Band uses the promptBorder theme colour, static line bars, aligned slot tables, mirrored header segments
+- Handoff key tracks /context-handoff from command.run or prompt.submit, state kept in $.state
+
+### Failed Approaches
+- Module variables lose pending state on hot reload
+- Issue branch automation ignores sub-issues and cuts child branches from main
+- Dark border box frame looked disjointed from the prompt
+
+### Handoff Target
+- Plan file: 2026-10-05-08h55-claude-code-mods-statusline-band.md
+- Branch: task/7-task-prompt-cache-warmth-warning (chrysaki-claude)
+
+---
+
+## 2026-10-06 Handoff
+
+### Decisions
+- Band is the Jewel Ledger: jewel badges with powerline edges, no frames, no fills, no vertical rules.
+- Neighbouring segments take distinct hues, since Emerald and Teal look alike in 256 colours.
+- A dashed rule with an animated OKLab gradient parts ledger rows. The ruleAnimation option turns it off.
+- The account switcher sets BROWSER to bin/open-in-profile, then runs /login.
+- ctx turns amber from 250k tokens and red from 500k.
+
+### Failed Approaches
+- Panel fills, partial L and U frames, gap rows (blank, hairline, half block) and dotted separators were all rejected.
+- gh GraphQL hits a secondary rate limit. Use REST with a per-command GH_TOKEN.
+
+### Handoff Target
+- Plan file: 2026-10-06-13h30-statusline-jewel-ledger-accounts.md
+- Branch: epic/3-epic-claude-code-mods (chrysaki-claude), head b2b0337
+
+---
+
+## 2026-10-06 Handoff
+
+### Decisions
+- Band reseeds on the first draw after /clear, because /clear fires no session.start
+- Usage comes from api/oauth/usage at start, every 5 min and on a press of the reset figure, with a 30 s press cooldown
+- Ledger layout is fit and justify, with padded column separators and crossings on the dashed rule (user choice)
+- Insight panes live in a new mod, chrysaki-insight, opened by /insight and by the ctx badge
+
+### Failed Approaches
+- Hot reload of a CLAUDE_CODE_PLUGIN_DIRS folder did not fire for an rsync install or an in-place rewrite
+- The zsh claude wrapper breaks claude plugin test. Use command claude
+
+### Handoff Target
+- Plan file: 2026-10-06-14h01-statusline-live-usage-insight-panes.md
+- Branch: feature/12-live-usage-fetch (chrysaki-claude), feature/13-session-insight-panes (chrysaki-claude-13 worktree)
+
+---
+
+## 2026-10-07 Handoff
+
+### Decisions
+- #12 and #15 squash-merged into epic/3 (PR #14, PR #16). Issues stay open until the epic reaches main.
+- chrysaki-lag (#17): PSI verdict, one-run python snapshot, a shared state file with sampler election, statusline badge, and stop keys with a confirm press (own processes and containers only).
+- Plugin API cannot share artifacts or make toasts clickable. The click goes on a notify-send action.
+
+### Failed Approaches
+- A second hooks module (hooks.json takes one path). $.env.get with a variable name (the validator refuses it). Automation branches base on main, not the epic.
+
+### Handoff Target
+- Plan file: 2026-10-07-15h45-chrysaki-lag-mod.md
+- Branch: feature/17-feature-lag-badge-and-lag-pane-with-kill-keys (chrysaki-claude, uncommitted)
+
+---
+
+## 2026-10-09 Handoff
+
+### Decisions
+- Band protocol is runtime JSON files with a TTL, no dependency. The client takes a BandHost bridge because the validator follows $ only in the register module.
+- Personal values move to ~/.config/chrysaki/claude.json. The dots chrysaki-claude package plus apply.sh, with Claude config kept in the vault.
+- The crest is a regular flat-top hexagon, folded by default. The mod row sits under the header, followed by one spacer row.
+- Lettering on any fill reaches at least 4.5:1. Never white on yellow.
+
+### Failed Approaches
+- Pointy-top and octant emblems blob at 2 to 3 rows. U+25E2 triangles are small in Iosevka.
+- The validator refuses rt.method($), a non-literal $.env.get or a non-literal $.state.get.
+
+### Handoff Target
+- Plan file: 2026-10-09-16h24-band-crossplatform-personal-split.md
+- Branch: chrysaki-claude feature/38 (PR #39 open) and wt/40 (feature/40, no PR yet)
+
+---
